@@ -1,148 +1,57 @@
-# InspireFlow (灵感流动)
+# MxinspireX
 
-**Otros idiomas / Other languages:** [简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+**De una idea a un diseño.** Un espacio de diseño con IA de 灵矩绘境 que prioriza el almacenamiento local y conecta conversaciones, referencias y un lienzo infinito.
 
-Aplicación de escritorio para creación y automatización de contenido con IA basada en nodos. Construye flujos de trabajo conectando nodos para texto, imagen, vídeo y 3D.
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
----
+![Imagen de producto, escena coherente y edición del fondo](docs/images/product-workflow.png)
 
-## Características
+## Funciones
 
-- **UI estilo difusión** — Diseño glassmorphism, modo oscuro
-- **Flujo por nodos** — Editor visual tipo ComfyUI/Dify
-- **Generación IA** — Texto, imagen, vídeo y modelos 3D
-- **Multilingüe** — Cambio entre 5 idiomas (enlaces arriba)
-- **Guardar / cargar** — Exportar e importar flujos como JSON; persistencia local
-- **Extensible** — Añadir nuevos nodos. Ver [Desarrollo de nodos](docs/NODE_DEVELOPMENT.md)
+- Logotipos, carteles, productos, envases, personajes coleccionables, espacios, textos y HTML interactivo.
+- La primera imagen real del producto sirve como referencia para las escenas posteriores; las ediciones conservan el original.
+- Conversaciones por proyecto, referencias a imágenes y documentos, nodos, versiones, vistas previas y exportación.
+- Imágenes, voz, vídeo, servicios externos de 3D y CAD paramétrico local. La disponibilidad depende de los proveedores configurados.
+- Consumo de Token y costes en yuanes, separando cargos confirmados, estimaciones y operaciones pendientes de conciliación.
 
-## Stack técnico
+Los resultados independientes pueden generarse en paralelo; las escenas dependientes esperan su imagen de origen. No hay una fase automática de revisión de calidad. Las solicitudes con facturación desconocida no se reenvían automáticamente.
 
-| Capa | Tecnología |
-|------|------------|
-| Frontend | React 18, Vite, TypeScript |
-| Editor de nodos | React Flow |
-| Estilos | Tailwind CSS, Framer Motion |
-| Estado | Zustand |
-| Escritorio | Electron |
-| i18n | i18next |
+## Inicio rápido
 
-## Primeros pasos
+Instala **Node.js 22 o 24** y **uv**:
 
-### Requisitos
+```sh
+git clone https://github.com/ziguishian/MxInspireX.git
+cd MxInspireX
+npm run start:portable
+```
 
-- Node.js 18+
-- npm o yarn
+El lanzador instala las dependencias fijadas y prepara Python 3.12 mediante uv. Abre la dirección indicada en la terminal, normalmente `http://127.0.0.1:5173`. Si el puerto está ocupado, se elige otro. Detén los servicios con Ctrl+C.
 
-### Instalación y ejecución
+Abre el avatar → **Ajustes / 设置 → Modelos y conexiones / 模型与连接**. Elige un proveedor, introduce tu clave, sincroniza su catálogo y selecciona los modelos. **La dirección oficial de EvoLink está integrada; solo necesitas la clave.** Vuelve al inicio, describe la tarea y añade referencias.
 
-```bash
-# Instalar dependencias
-npm install
+La interfaz está principalmente en chino. Estos README no implican una interfaz localizada. No se incluyen claves, cuentas, saldo ni proyectos personales. La generación 3D externa requiere configuración independiente.
 
-# Solo servidor web de desarrollo
-npm run dev
+## Guías y desarrollo
 
-# App de escritorio (Vite + Electron)
-npm run electron:dev
+[Guía ilustrada en chino](docs/USER_GUIDE.md) · [Migración](RUN_IN_CODEX.md) · [Empaquetado](docs/PACKAGING.md) · [Guía técnica](AGENTS.md) · [Flujo del Agent](docs/agent-flow.md) · [Validación](docs/RELEASE_VALIDATION.md)
 
-# Build de producción
+```sh
+npm run setup:portable
+npm run verify:portable   # Espacio vacío aislado, sin llamadas a modelos
+npm run typecheck
+npm test
+npm run api:test
+npm run build:web
 npm run build
-npm run electron:build   # o Windows: npm run build:win
 ```
 
-## Estructura del proyecto
+Para desarrollar la versión de escritorio, ejecuta `node node_modules/electron/install.js` y después `npm run dev`. El ZIP de código fuente requiere instalar dependencias; no es un instalador autónomo. Se excluyen los originales privados de los ejemplos: las pruebas de diseño siguen ejecutándose y dos comprobaciones de archivos se omiten solo si falta todo su conjunto de datos.
 
-```
-mxinspireFlows/
-├── docs/                    # Documentación
-│   ├── NODE_DEVELOPMENT.md  # Guía de desarrollo de nodos
-│   └── MODEL_API_CONFIG.md  # Configuración de API de modelos
-├── electron/                # Proceso principal Electron
-│   ├── main.js
-│   └── preload.js
-├── public/
-├── scripts/                 # Scripts de build
-├── src/
-│   ├── components/
-│   │   ├── 3D/              # Visor 3D, vista previa GLB
-│   │   ├── Edges/           # Aristas eliminables
-│   │   ├── Layout/          # Canvas, pestañas, barra lateral, barra de herramientas, paneles
-│   │   ├── Modals/          # Ayuda, atajos
-│   │   ├── Settings/        # Modal de configuración
-│   │   ├── Toast/
-│   │   └── UI/
-│   ├── config/             # Nombre de app, mapeo de modelos, proveedores
-│   ├── contexts/           # Idioma, tema
-│   ├── i18n/                # Config i18next y locales
-│   ├── nodes/               # Definición de nodos
-│   │   ├── text-gen/        # Generación de texto
-│   │   ├── image-gen/       # Generación de imagen
-│   │   ├── video-gen/       # Generación de vídeo
-│   │   ├── 3d-gen/          # Generación 3D
-│   │   ├── script-runner/   # Ejecución de scripts
-│   │   ├── *-input/         # Entrada texto/imagen/vídeo/3D
-│   │   ├── preview/         # Vista previa texto/imagen/vídeo/3D
-│   │   ├── BaseNode.tsx
-│   │   ├── handleSchema.ts
-│   │   ├── index.ts
-│   │   └── modelOptions.ts
-│   ├── services/           # API, ejecutor de flujos
-│   ├── stores/             # workflow, UI, settings
-│   ├── types/
-│   └── utils/
-├── index.html
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
+El proyecto usa Vue 3 / TypeScript / Vite / Vue Flow, Electron, FastAPI / Python y un worker Agent en Node. Los datos se guardan en `.local/portable-workspace/`. Detén la aplicación antes de hacer una copia de seguridad. No publiques claves, archivos `.env` ni bases de datos. Los modelos en la nube reciben el contenido necesario para procesar las solicitudes.
 
-## Configuración
+## Licencia y contacto
 
-En **Configuración** (icono de engranaje) configurar API:
+El código mantiene la licencia [MIT](LICENSE). Dependencias, fuentes y motores conservan sus licencias (`services/api/notices/`). Las obras y archivos subidos pertenecen a sus respectivos titulares.
 
-- **Base URL** — Endpoint de la API
-- **API Key** — Clave de autenticación
-- **Provider** — OpenAI, Claude, DeepSeek, Gemini, Seedream, Ollama o personalizado
-
-Ver [Configuración de API de modelos](docs/MODEL_API_CONFIG.md) para detalles y notas para desarrolladores.
-
-## Uso
-
-1. **Añadir nodos** — Arrastrar desde la barra lateral al canvas
-2. **Conectar** — Conectar salidas a entradas (mismo tipo o any)
-3. **Configurar** — Seleccionar nodo y editar propiedades en el panel derecho
-4. **Ejecutar** — Pulsar **Run** arriba a la derecha
-5. **Guardar / cargar** — Usar barra de herramientas o lateral para guardar/cargar y exportar JSON
-
-## Tipos de nodos
-
-| Categoría | Nodos |
-|-----------|--------|
-| **Generación** | Texto, imagen, vídeo, 3D, script |
-| **Utilidad** | Entrada texto/imagen/vídeo/3D |
-| **Vista previa** | Vista previa texto/imagen/vídeo/3D |
-
-Añadir nodos: [Desarrollo de nodos](docs/NODE_DEVELOPMENT.md).
-
-## Desarrollo
-
-- **Nuevos nodos**: Seguir [docs/NODE_DEVELOPMENT.md](docs/NODE_DEVELOPMENT.md)
-- **Tema**: `tailwind.config.js`
-- **Traducciones**: `src/i18n/locales/`
-- **Ejecución**: `src/services/workflowExecutor.ts`
-
-## Licencia
-
-MIT
-
-## Contribuir
-
-**Todo el mundo está invitado a participar en el desarrollo de InspireFlow.**
-
-Animamos a usar flujos de trabajo modernos y eficientes al contribuir:
-
-- **Vibe coding y desarrollo con IA** — Usa programación en pareja con IA (Cursor, GitHub Copilot, etc.) para iterar ideas, explorar implementaciones y refinar código. Valoramos la claridad de intención y una buena estructura; no dudes en colaborar con IA para avanzar más rápido.
-- **Iteración abierta** — Preferimos cambios pequeños y enfocados y el debate en abierto. Abre un issue para proponer ideas o preguntar; abre un PR cuando estés listo. Nos encanta iterar juntos en la revisión.
-- **Documentación y código** — Mejoras en documentación, ejemplos y tests son tan bienvenidas como nuevas funcionalidades. Si añades un nodo o feature, considera actualizar [Desarrollo de nodos](docs/NODE_DEVELOPMENT.md) o el README.
-
-Ya sea corrigiendo un typo, añadiendo un nodo, mejorando i18n o sugiriendo una nueva dirección: gracias por ayudar a mejorar InspireFlow. Abre un issue o pull request cuando quieras.
+**灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

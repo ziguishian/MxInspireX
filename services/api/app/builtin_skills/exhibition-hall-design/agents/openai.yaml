@@ -1,0 +1,4 @@
+interface:
+  display_name: "展厅空间与逐墙设计"
+  short_description: "先梳理墙面与内容，再生成空间总效果并经确认逐墙深化"
+  default_prompt: "用 $exhibition-hall-design 读取我提供的空间视图、展陈文档和风格参考，先分析墙面及内容并生成整体效果图，等我确认后再逐墙深化。"

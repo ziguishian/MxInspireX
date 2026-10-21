@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "title": "景区导览系统设计",
+  "requiredTools": [
+    "asset_inspect",
+    "asset_search",
+    "canvas_read",
+    "canvas_create_text",
+    "design_plan",
+    "generate_image",
+    "generate_batch",
+    "conversation_memory_read",
+    "conversation_memory_update"
+  ]
+}

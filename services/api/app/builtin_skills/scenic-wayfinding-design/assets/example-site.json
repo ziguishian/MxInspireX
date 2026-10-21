@@ -1,0 +1,47 @@
+{
+  "fictional": true,
+  "title": "青屿湿地示意数据",
+  "coordinateSystem": "local illustrative x east, y north; not surveyed",
+  "nodes": [
+    {
+      "id": "E",
+      "name": "入口",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "V",
+      "name": "游客中心",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "id": "B",
+      "name": "观鸟台",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "id": "L",
+      "name": "湖畔",
+      "x": 1,
+      "y": 1
+    }
+  ],
+  "edges": [
+    [
+      "E",
+      "V"
+    ],
+    [
+      "V",
+      "B"
+    ],
+    [
+      "V",
+      "L"
+    ]
+  ],
+  "distances": null,
+  "accessibleRoutes": null
+}

@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><div id="app"></div>
+<script type="module">
+import { createApp, h, reactive } from 'vue';
+import CadPanel from '/src/components/CadPanel.vue';
+import '/src/style.css';
+const query = new URLSearchParams(location.search);
+const state = reactive({ updated: 0, closed: false }); window.fixture = state;
+const originalFetch = window.fetch; window.requests = [];
+window.fetch = (url, options) => { window.requests.push({ url: String(url), method: options?.method || 'GET' }); return originalFetch(url, options); };
+createApp({render: () => state.closed ? null : h(CadPanel, {
+  apiBaseUrl: '', projectId: query.get('project'), assetId: query.get('asset'), nodeId: query.get('node'),
+  onUpdated: () => state.updated++, onClose: () => state.closed = true,
+})}).mount('#app');
+</script></body></html>

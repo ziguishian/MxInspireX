@@ -1,0 +1,54 @@
+<!doctype html><html><body><div id="app"></div><script type="module">
+import { createApp, h, ref, reactive, Teleport, nextTick } from 'vue';
+import { useVueFlow } from '@vue-flow/core';
+import GeneralCanvas from '/src/components/GeneralCanvas.vue';
+import CanvasBoardPreview from '/src/components/CanvasBoardPreview.vue';
+import '/src/style.css';
+import '/src/features/composer/composer.css';
+const projectId = 'workspace-interaction-fixture';
+localStorage.clear();
+const state = reactive({ board: {nodes:[],edges:[]}, ready: false, epoch:0 });
+window.errors = []; window.generated = []; window.uploads = 0;
+const nativeFetch = window.fetch;
+window.fetch = async (url, options={}) => {
+  if (!String(url).startsWith('http://fixture.invalid/')) return nativeFetch(url, options);
+  const body = typeof options.body === 'string' ? JSON.parse(options.body) : {};
+  let board = JSON.parse(JSON.stringify(state.board));
+  if (String(url).endsWith('/assets/upload')) {
+    window.uploads++; return Response.json({id:'uploaded-reference',kind:'image',mime:'image/png',name:'reference.png'});
+  }
+  if (String(url).endsWith('/content')) return new Response(await (await nativeFetch('/assets/langju-agent-sprite.png')).blob());
+  if (String(url).endsWith('/canvas_create_node')) {
+    const node={id:'created-'+crypto.randomUUID(),type:'creative',position:{x:body.x,y:body.y},data:{kind:body.kind,title:body.title,draft:true}};
+    board.nodes.push(node); state.board=board; return Response.json({node,canvas:board});
+  }
+  if (String(url).endsWith('/canvas_update_node')) {
+    const node=board.nodes.find(n=>n.id===body.node_id);Object.assign(node.data,body.patch.data);state.board=board;return Response.json({node,canvas:board});
+  }
+  if (String(url).endsWith('/canvas_link_nodes')) {
+    const edge={id:crypto.randomUUID(),source:body.source_node_id,target:body.target_node_id,sourceHandle:'output',targetHandle:'input'};
+    board.edges.push(edge);state.board=board;return Response.json({edge,canvas:board});
+  }
+  if(options.method==='PATCH') {
+    for(const key of ['nodes','edges']) {
+      const singular=key==='nodes'?'Node':'Edge'; board[key]=board[key].filter(n=>!body['remove'+singular+'Ids'].includes(n.id));
+      for(const item of body['upsert'+singular+'s']) {const previous=board[key].find(n=>n.id===item.id);if(previous)Object.assign(previous,item);else board[key].push(item);}
+    }
+    state.board=board;
+  }
+  return Response.json(board);
+};
+createApp({setup(){
+  const flow=useVueFlow('design-canvas'), draft=ref('保留输入中的设计需求');
+  window.flow=flow;window.state=state;
+  window.reset=async(kind='image')=>{localStorage.removeItem('langjuart.nodeDraft.'+projectId+'.primary');state.epoch++;state.board={nodes:[{id:'primary',type:'creative',position:{x:0,y:0},data:{kind,title:'测试节点',draft:true}},{id:'neighbor',type:'creative',position:{x:600,y:10},data:{kind:'text',title:'参考节点',text:'参考内容'}}],edges:[]};await nextTick();await flow.setViewport({x:600,y:110,zoom:.8});};
+  window.select=async(id='primary')=>{flow.removeSelectedNodes(flow.getSelectedNodes.value);flow.addSelectedNodes([flow.findNode(id)]);await nextTick();};
+  return ()=>[
+    h(GeneralCanvas,{key:state.epoch,projectId,apiBaseUrl:'http://fixture.invalid',canvasDocument:state.board,messages:[{role:'assistant',content:'这是一段直接回答。'}],busy:false,modelOptions:['test-image'],videoModelOptions:['test-video'],audioModelOptions:['test-audio'],textModelOptions:['test-text'],onComposerReady:()=>state.ready=true,onCanvasChange:board=>state.board=board,onCanvasError:error=>window.errors.push(error),onGenerateNode:(...args)=>window.generated.push(args)}),
+    state.ready?h(Teleport,{key:'composer-'+state.epoch,to:'#design-composer-host',defer:true},h('div',{class:'intake-composer'},[h('textarea',{class:'intake-composer-editor','aria-label':'对话输入框',value:draft.value,onInput:e=>draft.value=e.target.value}),h('div',{class:'composer-toolbar'},'资料 · 模型 · 风格')])):null,
+    h('button',{class:'support-fab','aria-label':'使用说明'},'?'),
+    h(CanvasBoardPreview,{board:state.board,apiBaseUrl:'http://fixture.invalid',projectId,style:'display:none'})
+  ];
+}}).mount('#app');
+await window.reset();window.ready=true;
+</script><style>html,body,#app{height:100%;margin:0}.intake-composer-editor{width:100%;background:transparent;color:inherit;border:0} .design-canvas-area{background:#111811}</style></body></html>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Logo 样机与品牌延展"
+  short_description: "围绕提供的 Logo、标准色和行业约束，分批完成多场景品牌延展并提示下一步"
+  default_prompt: "用 $logo-mockup-suite 基于我提供的 Logo、标准色与行业资料规划多场景延展，先完成第一批图片，再建议下一批内容。"

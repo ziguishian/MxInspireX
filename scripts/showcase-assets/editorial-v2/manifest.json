@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "images": [
+    {
+      "slug": "showcase-ci",
+      "file": "ci-atmosphere.png",
+      "title": "青瓷器物｜光影氛围概念",
+      "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-9b2cbe73-0064-4d21-924c-53bd9fa504e6.png",
+      "sha256": "74368166f9b97154aac21a39f09d7cbb68e404f403c232fbe66c1f28147301c1",
+      "role": "generated-editorial",
+      "productionNotes": "图像模型根据现有器物/包装方案生成的氛围概念图，不作为实物摄影、生产或已核准标签证据。"
+    },
+    {
+      "slug": "showcase-shan-ming",
+      "file": "shan-ming-atmosphere.png",
+      "title": "山茗包装｜山林氛围概念",
+      "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-4fd0f7cb-a504-4885-b866-8472bbca5da0.png",
+      "sha256": "5db78bafda2769993941242ff2e691f446ba97df4678799be65dbcde74f824e1",
+      "role": "generated-editorial",
+      "productionNotes": "图像模型根据现有器物/包装方案生成的氛围概念图，不作为实物摄影、生产或已核准标签证据。"
+    }
+  ]
+}

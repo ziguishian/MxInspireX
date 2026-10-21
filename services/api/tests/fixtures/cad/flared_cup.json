@@ -1,0 +1,60 @@
+{
+  "source": "H = params['height']\nR = params['rim_diameter'] / 2\nF = params['base_diameter'] / 2\nT = params['wall']\nfootH = H * 0.09\nwaistH = H * 0.14\nfloorH = waistH + T\n# 闭合材料截面：圈足外侧 -> 杯口 -> 内腔 -> 底板 -> 圈足内侧\nprofile = cq.Workplane('XZ').moveTo(F-T, 0).lineTo(F, 0).lineTo(F, footH)\nprofile = profile.lineTo(F*0.92, waistH)\nprofile = profile.threePointArc((R*0.85, H*0.35), (R*0.93, H*0.72))\nprofile = profile.threePointArc((R*0.945, H*0.90), (R, H))\nprofile = profile.lineTo(R-T, H)\nprofile = profile.threePointArc((R*0.945-T, H*0.90), (R*0.93-T, H*0.72))\nprofile = profile.threePointArc((R*0.85-T, H*0.35), (F*0.92-T, floorH))\nprofile = profile.lineTo(0, floorH).lineTo(0, waistH).lineTo(F-T, waistH).close()\nresult = profile.revolve(360, (0,0), (0,1))",
+  "parameter_definitions": [
+    {
+      "name": "height",
+      "label": "杯体总高",
+      "type": "number",
+      "default": 85,
+      "unit": "mm",
+      "minimum": 20.0,
+      "maximum": 300.0,
+      "options": [],
+      "expression": null
+    },
+    {
+      "name": "rim_diameter",
+      "label": "杯口外径",
+      "type": "number",
+      "default": 95,
+      "unit": "mm",
+      "minimum": 20.0,
+      "maximum": 300.0,
+      "options": [],
+      "expression": null
+    },
+    {
+      "name": "base_diameter",
+      "label": "圈足外径",
+      "type": "number",
+      "default": 58,
+      "unit": "mm",
+      "minimum": 10.0,
+      "maximum": 200.0,
+      "options": [],
+      "expression": null
+    },
+    {
+      "name": "wall",
+      "label": "概念壁厚",
+      "type": "number",
+      "default": 3,
+      "unit": "mm",
+      "minimum": 1.0,
+      "maximum": 15.0,
+      "options": [],
+      "expression": null
+    }
+  ],
+  "parameters": {
+    "height": 85,
+    "rim_diameter": 95,
+    "base_diameter": 58,
+    "wall": 3
+  },
+  "expected_dimensions": {
+    "x": 95.0,
+    "y": 95.0,
+    "z": 85.0
+  }
+}

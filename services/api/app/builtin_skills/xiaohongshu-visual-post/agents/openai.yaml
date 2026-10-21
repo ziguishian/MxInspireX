@@ -1,0 +1,4 @@
+interface:
+  display_name: "小红书图文创作"
+  short_description: "完成小红书封面、逐页图文与标题正文，保持视觉一致并校对事实"
+  default_prompt: "用 $xiaohongshu-visual-post 把当前项目做成一篇完整小红书图文笔记。"

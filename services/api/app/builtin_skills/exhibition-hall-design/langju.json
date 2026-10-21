@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "title": "展厅空间与逐墙设计",
+  "requiredTools": [
+    "asset_inspect",
+    "asset_search",
+    "canvas_read",
+    "canvas_create_text",
+    "design_plan",
+    "generate_image",
+    "generate_batch",
+    "context_read",
+    "conversation_read",
+    "conversation_memory_read",
+    "conversation_memory_update",
+    "document_read",
+    "document_part_inspect",
+    "document_part_promote",
+    "reference_search",
+    "reference_inspect",
+    "request_reference_selection"
+  ]
+}

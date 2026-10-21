@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><div id="app"></div>
+<script type="module">
+import { createApp, h, reactive, nextTick } from 'vue';
+import GeneralCanvas from '/src/components/GeneralCanvas.vue';
+import '/src/style.css';
+document.documentElement.dataset.theme = 'dark';
+window.fetch = async () => Response.json({ nodes: [], edges: [] });
+const history = '这是一条历史回复，打开页面时直接显示。';
+const state = reactive({ messages: [{ role: 'assistant', taskId: 'history', content: history, status: 'succeeded' }, { role: 'assistant', taskId: 'live', content: '', status: 'running', animateReply: true }] });
+window.updateReply = async (content, status = 'running', animateReply = true) => { Object.assign(state.messages[1], { content, status, animateReply }); await nextTick(); };
+window.longHistory = async () => { state.messages[0].content = Array.from({length: 45}, (_, i) => `历史段落 ${i + 1}：已完成的内容保持可阅读。`).join('\n\n'); await nextTick(); };
+window.latest = () => document.querySelector('.design-message:last-child .agent-markdown');
+createApp({ render: () => h(GeneralCanvas, { messages: state.messages, busy: true, projectId: 'reply-typing-fixture', apiBaseUrl: 'http://fixture.invalid', canvasDocument: {nodes: [], edges: []} }) }).mount('#app');
+await nextTick(); window.ready = true;
+</script><style>html,body,#app{height:100%;margin:0}</style></body></html>

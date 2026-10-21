@@ -1,0 +1,44 @@
+[project]
+name = "ai-creative-studio-api"
+version = "0.1.0"
+description = "Local-first API and agent runtime for Langju Design Studio"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.34,<1",
+  "pydantic>=2.10,<3",
+  "httpx>=0.28,<1",
+  "PyYAML>=6,<7",
+  "python-multipart>=0.0.20,<1",
+  "reportlab>=4.3,<5",
+  "pypdf>=5.4,<6",
+  "pypdfium2>=4.30,<6",
+  "python-docx>=1.1,<2",
+  "python-pptx>=1.0,<2",
+  "Pillow>=11,<13",
+  "fonttools>=4.65,<5",
+  "psutil>=7,<8",
+  "tzdata>=2025.2; sys_platform == 'win32'",
+]
+
+[dependency-groups]
+dev = [
+  "cadquery==2.8.0",
+  "imageio-ffmpeg==0.6.0",
+  "pytest>=8.3,<9",
+  "pyinstaller>=6.16,<7",
+]
+
+[project.optional-dependencies]
+cad = [
+  "cadquery==2.8.0",
+]
+media = [
+  "imageio-ffmpeg==0.6.0",
+]
+rag = [
+  "lancedb>=0.22,<1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

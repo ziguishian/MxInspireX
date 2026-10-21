@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "purpose": "上线前固定条件的旧/新设计链路盲测；样本本身不触发生成。",
+  "fixedRun": {
+    "repetitionsPerChain": 2,
+    "model": "manual-record-before-run",
+    "quality": "standard",
+    "size": "1536x1024",
+    "referenceSelection": "recorded-per-case",
+    "randomSeed": "not-supported-record-request-and-result-order"
+  },
+  "cases": [
+    {"id":"packaging-tea-gift","category":"packaging","mode":"new_image","brief":"为山野白茶做横向双罐礼盒主视觉，面向节日送礼。","constraints":["硬盒分缝可生产","本色纸与凹压","不出现伪文字"],"referenceSelection":"造型语言 + 材质工艺","reviewFocus":["结构合理性","材质可信度","信息层级"]},
+    {"id":"packaging-snack-series","category":"packaging","mode":"new_image","brief":"为三种低糖米点建立同一系列的货架包装效果图。","constraints":["同一盒型","口味以色带区分","三款不能只换颜色"],"referenceSelection":"色彩关系 + 构图/信息层级","reviewFocus":["套系差异化","比例","AI伪迹"]},
+    {"id":"culture-creative-museum","category":"cultural_creative","mode":"new_image","brief":"为宋瓷展做可售文创茶具组合的产品摄影。","constraints":["器型参考真实瓷器","可辨识注水口与把手","不堆砌纹样"],"referenceSelection":"造型语言 + 光影摄影","reviewFocus":["造型合理性","材质可信度","创意可见性"]},
+    {"id":"culture-creative-textile","category":"cultural_creative","mode":"new_image","brief":"为地方织锦开发一组随身徽章与包装卡。","constraints":["纹样服务于织物结构","金属边缘真实","避免泛国潮装饰"],"referenceSelection":"材质工艺 + 色彩关系","reviewFocus":["工艺细节","非同质化","AI伪迹"]},
+    {"id":"brand-kv-tea-origin","category":"brand_key_visual","mode":"new_image","brief":"为高山茶品牌制作一张品牌发布主视觉。","constraints":["以地形与采摘时间为线索","文字区保留","不是通用山水海报"],"referenceSelection":"构图/信息层级 + 光影摄影","reviewFocus":["设计意图","层级","需求满足"]},
+    {"id":"brand-kv-maritime","category":"brand_key_visual","mode":"new_image","brief":"为海事文化展制作一张开幕主视觉。","constraints":["参考船体剖面结构","蓝灰金属体系","不使用赛博霓虹"],"referenceSelection":"造型语言 + 色彩关系","reviewFocus":["结构语言","差异化","AI伪迹"]},
+    {"id":"product-photo-ceramic","category":"product_photography","mode":"new_image","brief":"拍摄一只手作青瓷盖碗的电商首图。","constraints":["口沿薄厚可信","釉面有细微橘皮感","单一真实光源"],"referenceSelection":"材质工艺 + 光影摄影","reviewFocus":["材质可信度","物理结构","伪文字"]},
+    {"id":"product-photo-leather","category":"product_photography","mode":"new_image","brief":"拍摄植鞣皮工具包的静物照片。","constraints":["缝线、五金和折角可信","收纳结构可用","避免塑料皮质"],"referenceSelection":"材质工艺 + 构图/信息层级","reviewFocus":["工艺","结构","表面真实度"]},
+    {"id":"space-wayfinding-teahouse","category":"space_wayfinding","mode":"new_image","brief":"为山间茶室入口制作导视与等候区效果图。","constraints":["动线可读","招牌与材质受当地潮湿环境约束","避免概念建筑拼贴"],"referenceSelection":"造型语言 + 材质工艺","reviewFocus":["空间逻辑","层级","材料真实性"]},
+    {"id":"space-wayfinding-museum","category":"space_wayfinding","mode":"new_image","brief":"为小型海洋博物馆设计展厅导向节点。","constraints":["无障碍高度合理","信息层级清楚","灯光不遮蔽展品"],"referenceSelection":"构图/信息层级 + 光影摄影","reviewFocus":["可用性","空间比例","需求满足"]},
+    {"id":"local-edit-box-seam","category":"local_edit","mode":"edit_image","brief":"仅修复礼盒侧边不合理的拼接和伪文字。","constraints":["保留盒体比例与主色","不改变背景、镜头或品牌位置","新建版本"],"referenceSelection":"不新增参考，使用源图 edit","reviewFocus":["定点修改","保留项","结构合理性"]},
+    {"id":"local-edit-product-glaze","category":"local_edit","mode":"edit_image","brief":"仅修复瓷器釉面塑料感和口沿变形。","constraints":["保留器型、构图与背景","不新增装饰","新建版本"],"referenceSelection":"不新增参考，使用源图 edit","reviewFocus":["定点修改","材质可信度","AI伪迹"]}
+  ]
+}

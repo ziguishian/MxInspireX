@@ -1,148 +1,57 @@
-# InspireFlow (灵感流动)
+# MxinspireX
 
-**Other languages:** [简体中文](README.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
+**From a brief to a design.** A local-first AI design workspace by 灵矩绘境, connecting conversations, reference materials and an infinite canvas.
 
-A node-based AI content creation and automation desktop application. Build workflows by connecting nodes for text, image, video, and 3D generation.
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
----
+![Product image, consistent scene and background edit](docs/images/product-workflow.png)
 
 ## Features
 
-- **Diffusion-style UI** — Glassmorphism design, dark mode
-- **Node-based workflow** — Visual editor similar to ComfyUI/Dify
-- **AI generation** — Text, image, video, and 3D model generation
-- **Multi-language** — Switch between 5 languages (see links above)
-- **Save / load** — Export and import workflows as JSON; local persistence
-- **Extensible** — Add new node types; see [Node Development](docs/NODE_DEVELOPMENT.md)
+- Create logos, posters, product concepts, packaging, character toys, interiors, copy and interactive HTML.
+- Reuse the actual first product image in subsequent scenes; preserve originals when editing.
+- Persistent project conversations, image/document references, canvas nodes, versions, previews and exports.
+- Images, speech, video, a separate external 3D service and local parametric CAD. Availability depends on your configured providers.
+- Token usage and CNY billing, separating provider-confirmed charges, estimates and pending reconciliation.
 
-## Tech Stack
+Independent deliverables can run concurrently; dependent scenes wait for their source image. There is no automatic design-quality review stage. Requests with an unknown billing outcome are not automatically resubmitted.
 
-| Layer | Stack |
-|-------|--------|
-| Frontend | React 18, Vite, TypeScript |
-| Node editor | React Flow |
-| Styling | Tailwind CSS, Framer Motion |
-| State | Zustand |
-| Desktop | Electron |
-| i18n | i18next |
+## Quick start
 
-## Getting Started
+Install **Node.js 22 or 24** and **uv**, then run:
 
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Install & run
-
-```bash
-# Install dependencies
-npm install
-
-# Web dev server only
-npm run dev
-
-# Desktop app (Vite + Electron)
-npm run electron:dev
-
-# Build for production
-npm run build
-npm run electron:build   # or: npm run build:win (Windows)
+```sh
+git clone https://github.com/ziguishian/MxInspireX.git
+cd MxInspireX
+npm run start:portable
 ```
 
-## Project Structure
+The launcher installs locked dependencies and prepares Python 3.12 through uv. Open the URL printed in the terminal (normally `http://127.0.0.1:5173`); occupied ports are handled automatically. Stop with Ctrl+C.
 
-```
-mxinspireFlows/
-├── docs/                    # Documentation
-│   ├── NODE_DEVELOPMENT.md  # Node development guide
-│   └── MODEL_API_CONFIG.md  # Model API configuration
-├── electron/                # Electron main process
-│   ├── main.js
-│   └── preload.js
-├── public/
-├── scripts/                 # Build scripts (e.g. prebuild-win.cjs)
-├── src/
-│   ├── components/
-│   │   ├── 3D/              # 3D viewer, GLB preview
-│   │   ├── Edges/           # DeletableEdge
-│   │   ├── Layout/          # Canvas, TabBar, LeftSidebar, Toolbar, Panels
-│   │   ├── Modals/          # Help, Shortcuts
-│   │   ├── Settings/        # Settings modal
-│   │   ├── Toast/
-│   │   └── UI/              # CustomSelect, etc.
-│   ├── config/             # appName, modelMapping, modelProviders
-│   ├── contexts/            # Language, Theme
-│   ├── i18n/                # i18next config & locales (en-US, zh-CN)
-│   ├── nodes/               # Node definitions
-│   │   ├── text-gen/        # Text generation
-│   │   ├── image-gen/       # Image generation
-│   │   ├── video-gen/       # Video generation
-│   │   ├── 3d-gen/          # 3D generation
-│   │   ├── script-runner/   # Script execution
-│   │   ├── *-input/         # text/image/video/3d input
-│   │   ├── preview/         # Text/Image/Video/3D preview
-│   │   ├── BaseNode.tsx
-│   │   ├── handleSchema.ts
-│   │   ├── index.ts         # nodeTypes registry
-│   │   └── modelOptions.ts
-│   ├── services/            # apiService, workflowExecutor
-│   ├── stores/              # workflowStore, uiStore, settingsStore
-│   ├── types/
-│   └── utils/               # fileSave, workflowIO, nodeValidation, etc.
-├── index.html
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
+Open the avatar → **Settings / 设置 → Models and connections / 模型与连接**. Choose a provider, enter your own API key, sync its model catalog and select models. **EvoLink's official endpoint is built in; only the key is required.** Return home, describe a task and optionally attach references.
+
+The app UI is primarily Chinese. These READMEs do not imply a localized interface. No credentials, credits or personal projects are bundled. External 3D generation requires separate configuration.
+
+## Guides and development
+
+[Illustrated guide (Chinese)](docs/USER_GUIDE.md) · [Migration](RUN_IN_CODEX.md) · [Packaging](docs/PACKAGING.md) · [Developer map](AGENTS.md) · [Agent flow](docs/agent-flow.md) · [Release validation](docs/RELEASE_VALIDATION.md)
+
+```sh
+npm run setup:portable
+npm run verify:portable   # Empty workspace; no model calls
+npm run typecheck
+npm test
+npm run api:test
+npm run build:web
+npm run build            # Renderer and Electron compilation
 ```
 
-## Configuration
+For desktop development, run `node node_modules/electron/install.js`, then `npm run dev`. Source ZIPs require dependency installation; they are not standalone installers. Private showcase originals are omitted: layout tests still run; two media-integrity checks skip only when their entire dataset is absent.
 
-Configure API credentials in **Settings** (gear icon):
+Stack: Vue 3 / TypeScript / Vite / Vue Flow, Electron, FastAPI / Python and a Node Agent worker. Portable data lives in `.local/portable-workspace/`. Stop the app before backing it up. Never commit keys, `.env` files or databases. Data is stored locally; selected cloud providers receive content required for model requests.
 
-- **Base URL** — API endpoint
-- **API Key** — Authentication key
-- **Provider** — OpenAI, Claude, DeepSeek, Gemini, Seedream, Ollama, or Custom
+## License and contact
 
-See [Model API configuration](docs/MODEL_API_CONFIG.md) for detailed setup and developer notes.
+[MIT](LICENSE) for project code; dependencies, fonts and engines retain their own licenses (`services/api/notices/`). Artwork and uploaded content retain their respective owners' rights.
 
-## Usage
-
-1. **Add nodes** — Drag nodes from the left sidebar onto the canvas.
-2. **Connect** — Connect output handles to input handles (same type or `any`).
-3. **Configure** — Select a node to edit properties in the right panel.
-4. **Run** — Click **Run** in the top-right to execute the workflow.
-5. **Save / load** — Use toolbar or sidebar to save/load workflows and export JSON.
-
-## Node Types
-
-| Category | Nodes |
-|----------|--------|
-| **Generation** | Text Gen, Image Gen, Video Gen, 3D Gen, Script Runner |
-| **Utility** | Text/Image/Video/3D Input |
-| **Preview** | Text/Image/Video/3D Preview |
-
-See [Node Development](docs/NODE_DEVELOPMENT.md) for adding new nodes.
-
-## Development
-
-- **New nodes:** Follow [docs/NODE_DEVELOPMENT.md](docs/NODE_DEVELOPMENT.md) (schema, index, sidebar, executor, validation).
-- **Theme:** `tailwind.config.js`
-- **Translations:** `src/i18n/locales/`
-- **Execution:** `src/services/workflowExecutor.ts`
-
-## License
-
-MIT
-
-## Contributing
-
-**We welcome everyone to participate in building InspireFlow.**
-
-We encourage contributors to use modern, efficient workflows when contributing:
-
-- **Vibe coding & AI-assisted development** — Use AI pair programming (e.g. Cursor, GitHub Copilot, or similar) to iterate on ideas, explore implementations, and refine code. We value clear intent and good structure; feel free to collaborate with AI to get there faster.
-- **Iterative and open** — Prefer small, focused changes and discussions. Open an issue to propose ideas or ask questions; open a PR when you're ready. We're happy to iterate together in review.
-- **Docs and code** — Improvements to docs, examples, and tests are as welcome as new features. If you add a node or feature, consider updating [Node Development](docs/NODE_DEVELOPMENT.md) or README so others can follow.
-
-Whether you fix a typo, add a node, improve i18n, or suggest a new direction — thank you for helping make InspireFlow better. Open an issue or pull request when you're ready.
+**灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

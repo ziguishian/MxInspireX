@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><div id="app"></div>
+<script type="module">
+import { createApp, h, reactive, nextTick, Teleport } from 'vue';
+import GeneralCanvas from '/src/components/GeneralCanvas.vue';
+import '/src/style.css';
+import '/src/features/composer/composer.css';
+document.documentElement.dataset.theme = 'dark';
+window.fetch = async () => Response.json({ nodes: [], edges: [] });
+const clarification = { intro: '在动手设计之前，先对齐几个关键信息，让方案更贴合你的品牌。', questions: [
+  { id: 'audience', question: '这套品牌视觉主要面向哪些人群？', options: ['亲子家庭', '年轻情侣与自由行游客', '高净值定制客群', '海外游客'] },
+  { id: 'deliverables', question: '希望本轮优先交付哪些内容？', options: ['Logo / 品牌标志', '标准色与字体规范', '名片 / 信纸 / 办公应用', '社交媒体头像与封面', '产品外观或包装贴图'], multi: true },
+  { id: 'brand', question: '品牌名称是什么？', options: [] },
+] };
+const messages = () => [{role:'user', content:'设计一套文旅品牌视觉，保持白鹭造型。'}, {role:'assistant',taskId:'clarification-fixture-1',status:'succeeded',content:'不应重复显示的全部问题列表',clarification}];
+const state = reactive({ projectId:'clarification-fixture', busy:false, mounted:true, composer:false, messages:messages(), submitted:[] });
+window.fixture = state;
+window.remount = async () => { state.mounted=false; state.composer=false; await nextTick(); state.mounted=true; await nextTick(); };
+window.respond = () => { state.messages.push({role:'user',content:state.submitted.at(-1).answers}, {role:'assistant',taskId:'next',status:'succeeded',content:'已收到补充。'}); state.busy=false; };
+window.newQuestions = () => { state.messages.push({role:'assistant',taskId:'clarification-fixture-2',status:'succeeded',content:'',clarification}); };
+window.showDelivery = () => {
+  state.busy = false;
+  state.messages = [{role:'assistant',taskId:'delivery-fixture',status:'succeeded',content:'保留已生成结果，工程展开图等待尺寸。',execution:{
+    deliverables:[{id:'outer',title:'杭州历史经典产业博览会政府伴手礼盒外观概念图',kind:'image',status:'passed'},{id:'inner',title:'五件内装及丝绸套编排图',kind:'image',status:'ready'},{id:'cut',title:'可编辑工程展开图',kind:'image',status:'blocked',blockingFields:['dimensions']},{id:'copy',title:'礼赠主题说明',kind:'text',status:'pending'}],
+    decisions:[{label:'制作数量',value:'1000套以上',status:'confirmed'},{label:'官方六色',value:'暂未提供，概念配色等待官方规范',status:'unknown'},{label:'内托材质',value:'纸浆托',status:'assumed'}]
+  }}];
+};
+createApp({ render: () => [state.mounted ? h(GeneralCanvas, { messages:state.messages, busy:state.busy, projectId:state.projectId, apiBaseUrl:'http://fixture.invalid', canvasDocument:{nodes:[],edges:[]},
+  onClarify: submission => { state.submitted.push(submission); state.busy=true; }, 'onComposer-ready': async () => { await nextTick(); state.composer=true; } }) : null,
+  state.composer ? h(Teleport, {to:'#design-composer-host'}, h('section',{class:'intake-composer'},[
+    h('div',{contenteditable:true,class:'intake-composer-editor','aria-label':'设计需求草稿'},'输入框中的未发送草稿'),
+    h('div',{class:'composer-toolbar'},'＋  资料　模型　风格'), h('div',{class:'composer-caption'},'支持粘贴图片与文件 · 用 @ 引用资料')])) : null] }).mount('#app');
+await nextTick(); window.ready=true;
+</script><style>html,body,#app{height:100%;margin:0}</style></body></html>

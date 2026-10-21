@@ -1,0 +1,331 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "key": "ci",
+      "slug": "showcase-ci",
+      "name": "瓷｜德寿宫青瓷葫芦礼",
+      "subtitle": "青瓷器物 · 包装礼赠",
+      "cover": "ci-cover-calligraphy.png",
+      "credit": "用户提供的德寿宫产品实拍与概念设计资料",
+      "images": [
+        {
+          "file": "ci-01.png",
+          "sourceFile": "/Users/alexi/Downloads/新建多个演示/微信图片_2026-10-10_203326_177.png",
+          "title": "德寿宫器物与礼盒实拍",
+          "group": "实拍起点",
+          "role": "photo",
+          "width": 1080,
+          "height": 1440,
+          "sha256": "9d5daf3c85333cd6817470d547c711a4245748518545f2078a1e4372d2bba2e5"
+        },
+        {
+          "file": "ci-02.png",
+          "sourceFile": "/Users/alexi/Downloads/新建多个演示/微信图片_2026-10-10_203358_288.png",
+          "title": "青瓷礼盒开盒与系列陈列",
+          "group": "实拍起点",
+          "role": "photo",
+          "width": 1080,
+          "height": 1439,
+          "sha256": "5835ce1512edbbe2af737c336d766cd1c17aa24f2761ebba7c6cb89923527097"
+        },
+        {
+          "file": "ci-03.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_16-1.png",
+          "title": "器型剖面与尺寸方案",
+          "group": "器型与材质",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "5dfb5ff39ba426282174660ff3f8b38f659f0ff7e9b64835c723f785a0183027"
+        },
+        {
+          "file": "ci-04.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/青瓷葫芦罐工程视图板.png",
+          "title": "青瓷葫芦罐三视图方案",
+          "group": "器型与材质",
+          "role": "concept",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "4a80996b96f4b641481e23762a95615de622fe2e16d3d62da31bed95e2fdf627"
+        },
+        {
+          "file": "ci-05.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_18-2.png",
+          "title": "陶瓷成型与模具关系",
+          "group": "器型与材质",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "df3168d38ba1c3367ab1c69aeae6390dd1584b3c077a8d859b342eb5cad37020"
+        },
+        {
+          "file": "ci-06.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_19-3.png",
+          "title": "釉色与瓷面质感方案",
+          "group": "器型与材质",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "2ff63386e49386ead08da3de66bb515749278a82487b2189ed411ca854c8b32f"
+        },
+        {
+          "file": "ci-07.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_20-4.png",
+          "title": "金属挂件与系绳关系",
+          "group": "器型与材质",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "62971f3a222ad17601fd26fe6ce03be8a88e96a9a42723e79282f37c51d45dbe"
+        },
+        {
+          "file": "ci-08.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_21-5.png",
+          "title": "礼盒、提袋与包装系统",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "f22516c17a34573195a13ee149a13dcffb0cb887611130c61c1e5e6df1b650e6"
+        },
+        {
+          "file": "ci-09.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_37_49-3.png",
+          "title": "全套器物与包装展示",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "224e22deaf7bd7daf83a16f8cebda38c554482a10e3b104f706ad91b820ae2da"
+        },
+        {
+          "file": "ci-10.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_26-8.png",
+          "title": "开盒体验与纸品组合",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "a9bf3386c6f26a90f3abf241d1c6b1d5b5e724c3b883012873d0159493afc1e4"
+        },
+        {
+          "file": "ci-11.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_23-6.png",
+          "title": "盒型展开与折叠方案",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "86701e6575ee23e20932fd4e0392280922cea1fb65a60d3a136eae38ce30205a"
+        },
+        {
+          "file": "ci-12.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_24-7.png",
+          "title": "内托与器物固定关系",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "85cfc98b95052041397a4175757623eac4acddaffa5a08a2e8a0a8fc9d27ae01"
+        },
+        {
+          "file": "ci-13.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_37_45-1.png",
+          "title": "单品盒与侧面信息",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "70bfc0fa7a1e6ecd632f243a5de09218b2823547627fefbc1a7f5db242ce1ca3"
+        },
+        {
+          "file": "ci-14.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_37_47-2.png",
+          "title": "手提袋与携带关系",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "ede381e90a4898cf7e67c3a44e7e0c6aebb010dc92c8b7f6676f26dfcd39f207"
+        },
+        {
+          "file": "ci-15.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_35_28-9.png",
+          "title": "包装文字与印刷层级",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "8c78921620971594e5a3221e10020b7a868e5f84f3a18efc9610fe426323b778"
+        },
+        {
+          "file": "ci-16.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/瓷/ChatGPT 图像 2026年10月13日 14_37_51-4.png",
+          "title": "釉面、纸材与辅料样板",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1448,
+          "height": 1086,
+          "sha256": "bfb335c9cb7dabc85701ace7cd990bc6c79ab8ad36b5642b6e90dcadc6592f3e"
+        }
+      ],
+      "coverProvenance": {
+        "role": "approved-generated-cover",
+        "sourceFile": "exec-58f60417-e4c1-4e1c-a829-24b78064020c.png",
+        "sha256": "98f4b3990fb5863f1ae26aecd2958bb9261c82d5d8c362a35bdc03b7458ad036",
+        "description": "用户确认的青瓷葫芦与书法瓷、竖排德寿宫封面；案例原始图片保持不变。"
+      }
+    },
+    {
+      "key": "jin",
+      "slug": "showcase-jin",
+      "name": "锦｜宋锦葫芦饰品",
+      "subtitle": "织锦饰品 · 系列礼赠",
+      "cover": "jin-cover.jpg",
+      "credit": "用户提供的概念设计资料；实拍摄影：静物摄影师冯婉静 / CITONG STUDIO",
+      "images": [
+        {
+          "file": "jin-01.jpg",
+          "sourceFile": "/Users/alexi/Downloads/新建多个演示/中式静物摄影 _ 非遗宋锦胸针_2_静物摄影师冯婉静📷_来自小红书网页版.jpg",
+          "title": "宋锦葫芦饰品实拍系列",
+          "group": "实拍起点",
+          "role": "photo",
+          "width": 1623,
+          "height": 1080,
+          "sha256": "6d8489ab8c8f0babb6db60e3a70e65db93d10cc717d81e7b6aaaaefe7ea5298f"
+        },
+        {
+          "file": "jin-02.jpg",
+          "sourceFile": "/Users/alexi/Downloads/新建多个演示/中式静物摄影 _ 非遗宋锦胸针_3_静物摄影师冯婉静📷_来自小红书网页版.jpg",
+          "title": "葫芦饰品织纹与金属包边实拍",
+          "group": "实拍起点",
+          "role": "photo",
+          "width": 1080,
+          "height": 1623,
+          "sha256": "d10b26a2c7a89d1679536ad69f6b25ec8232e868d90a5ea1d3603e35d642826c"
+        },
+        {
+          "file": "jin-03.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_19_26.png",
+          "title": "自然光下的系列陈列",
+          "group": "系列与织纹",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "e7c491de67c06c168f7bfa89f0e3fbdb13055503736530a0b0579bf1ae3886be"
+        },
+        {
+          "file": "jin-04.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_00.png",
+          "title": "六款葫芦饰品正面系列",
+          "group": "系列与织纹",
+          "role": "concept",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "86aa89beea5af7411ebd09c4c53bfa8a4cbf9144fd97c2f36c6a36b1df34a37b"
+        },
+        {
+          "file": "jin-05.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_04.png",
+          "title": "织纹配色与系列样板",
+          "group": "系列与织纹",
+          "role": "concept",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "1408bae57ecf42cf2041583c97f5d7173d57057ca5d62efd3f3137397c87f445"
+        },
+        {
+          "file": "jin-06.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/六款葫芦绣饰奢华陈列.png",
+          "title": "六款葫芦饰品陈列与纹样",
+          "group": "系列与织纹",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "facd16f60945694dc35a6b5ff3dc66ccc4d39c0b9cbc569e808f0f2663e3d822"
+        },
+        {
+          "file": "jin-07.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_39.png",
+          "title": "葫芦饰品三视图与分件关系",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "a43d56da4835cda5b589c298978011e35fd6896d007b22270681d89f5665e759"
+        },
+        {
+          "file": "jin-08.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/葫芦织锦吊坠三视图设计板.png",
+          "title": "葫芦织锦饰品三视图方案",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "cc9849e282636052664faed6d791bf8a3a4c6df453667e47263a68d1575c557e"
+        },
+        {
+          "file": "jin-09.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_44.png",
+          "title": "金属边框与织物层次",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "8863dc53f1ece398d9f6a68be3490562235eb48461cbaf7b5ac995cfa231d9ca"
+        },
+        {
+          "file": "jin-10.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_48.png",
+          "title": "织物、背板与边框装配",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "93edbfa0e9ef15289be2a531367af5e8ded28a078fb71476a5b3036793f08346"
+        },
+        {
+          "file": "jin-11.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_18_52.png",
+          "title": "金属包边与纹理细节",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "3612057242192d74865e0f75ff1b7daa5698f8fa8755f0d7f5aec84fdcc510b6"
+        },
+        {
+          "file": "jin-12.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_19_31.png",
+          "title": "织纹与边缘工艺近景",
+          "group": "结构与细节",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "830b8f69f699fa442c6f649198ab23861a492a4d78f0c92909924ffd4af34d47"
+        },
+        {
+          "file": "jin-13.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_19_36.png",
+          "title": "单件礼盒与收藏展示",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "c146c1081018dae7e1681db3935c55e5fafe6b2acdbde0a19d2ed9793ad73903"
+        },
+        {
+          "file": "jin-14.png",
+          "sourceFile": "/Users/alexi/Downloads/两个项目/锦/ChatGPT 图像 2026年10月13日 16_19_40.png",
+          "title": "六款套装礼盒方案",
+          "group": "包装与礼赠",
+          "role": "concept",
+          "width": 1672,
+          "height": 941,
+          "sha256": "3b53d71955068c024ba43e129fbfb4f042d9028ac2cce203c0f2e50239b54165"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "source": "L = float(params.get('length', 200))\nW = params['width']\nT = params['thickness']\nR = params['corner_radius']\nD = params['mounting_hole_diameter']\nO = params['mounting_hole_offset']\nC = params['center_hole_diameter']\nx = L/2 - O\ny = W/2 - O\nassert R < min(L,W)/2, '外角半径必须小于长宽的一半'\nassert O > D/2, '安装孔必须与外边界保留材料'\nassert x > D/2, '长度与边距导致安装孔重合'\nassert y > D/2, '宽度与边距导致安装孔重合'\nassert C < min(L,W), '中央孔必须小于底座长宽'\nassert math.sqrt(x*x+y*y) > (C+D)/2, '中央孔与安装孔相交'\nif O < R:\n    assert math.sqrt(2)*(R-O)+D/2 < R, '安装孔穿出圆角边界'\nbody = cq.Workplane('XY').box(L, W, T, centered=(True,True,False))\nbody = body.edges('|Z').fillet(R)\npoints = [(-x,-y), (x,-y)] + [(-x,y), (x,y)]\nbody = body.faces('>Z').workplane().pushPoints(points).hole(D)\nresult = body.faces('>Z').workplane().hole(C)",
+  "parameter_definitions": [
+    {
+      "name": "length",
+      "label": "长度",
+      "type": "number",
+      "default": 200,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "width",
+      "label": "宽度",
+      "type": "number",
+      "default": 120,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "thickness",
+      "label": "厚度",
+      "type": "number",
+      "default": 12,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "corner_radius",
+      "label": "外角半径",
+      "type": "number",
+      "default": 10,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "mounting_hole_diameter",
+      "label": "安装孔直径",
+      "type": "number",
+      "default": 8,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "mounting_hole_offset",
+      "label": "安装孔边距",
+      "type": "number",
+      "default": 20,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    },
+    {
+      "name": "center_hole_diameter",
+      "label": "中央孔直径",
+      "type": "number",
+      "default": 30,
+      "minimum": 0.1,
+      "maximum": 10000,
+      "unit": "mm"
+    }
+  ],
+  "parameters": {
+    "length": 200,
+    "width": 120,
+    "thickness": 12,
+    "corner_radius": 10,
+    "mounting_hole_diameter": 8,
+    "mounting_hole_offset": 20,
+    "center_hole_diameter": 30
+  },
+  "title": "参数化设备安装底座 CAD 模型",
+  "expected_dimensions": {
+    "x": 200,
+    "y": 120,
+    "z": 12
+  },
+  "assumptions": []
+}

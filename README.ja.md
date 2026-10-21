@@ -1,148 +1,57 @@
-# InspireFlow（灵感流动）
+# MxinspireX
 
-**他の言語 / Other languages:** [简体中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Español](README.es.md)
+**ひとつの要望から、デザインへ。** 灵矩绘境が開発するローカル優先の AI デザインワークスペースです。対話、参考資料、無限キャンバスをつなぎます。
 
-ノードベースの AI コンテンツ作成・自動化デスクトップアプリ。テキスト・画像・動画・3D 生成のためのワークフローをノード接続で構築できます。
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
----
+![商品画像、同一商品のシーン、背景編集](docs/images/product-workflow.png)
 
-## 機能
+## 主な機能
 
-- **拡散スタイル UI** — グラスモーフィズム、ダークモード対応
-- **ノードベースワークフロー** — ComfyUI/Dify 風のビジュアルエディタ
-- **AI 生成** — テキスト・画像・動画・3D モデル生成
-- **多言語** — 5 言語切り替え（上記リンク参照）
-- **保存・読み込み** — ワークフロー JSON のエクスポート/インポート、ローカル永続化
-- **拡張** — 新ノード追加可能。[ノード開発](docs/NODE_DEVELOPMENT.md) 参照
+- ロゴ、ポスター、商品、パッケージ、キャラクタートイ、空間、文章、HTML の制作。
+- 最初の商品画像を後続シーンの参照に使用。画像編集では元の作品を保持します。
+- 継続的な対話、画像・文書の参照、キャンバス、バージョン、プレビューとエクスポート。
+- 画像・音声・動画生成、外部 3D サービス、ローカルのパラメトリック CAD。利用できる機能は設定したサービスに依存します。
+- Token と人民元の料金を表示。確定請求、参考見積もり、照合待ちを区別します。
 
-## 技術スタック
+独立した成果物は並列処理でき、参照画像に依存するシーンはその完成を待ちます。自動の品質レビュー工程はありません。課金結果が不明なリクエストを自動再送しません。
 
-| レイヤー | 技術 |
-|----------|------|
-| フロント | React 18、Vite、TypeScript |
-| ノードエディタ | React Flow |
-| スタイル | Tailwind CSS、Framer Motion |
-| 状態 | Zustand |
-| デスクトップ | Electron |
-| i18n | i18next |
+## 起動方法
 
-## はじめに
+**Node.js 22 または 24** と **uv** を用意してください。
 
-### 必要環境
+```sh
+git clone https://github.com/ziguishian/MxInspireX.git
+cd MxInspireX
+npm run start:portable
+```
 
-- Node.js 18+
-- npm または yarn
+ロックファイルに従って依存関係をインストールし、uv が Python 3.12 を準備します。表示された URL（通常 `http://127.0.0.1:5173`）を開いてください。ポート使用中の場合は空きポートを選びます。停止は Ctrl+C です。
 
-### インストール・実行
+アバター → **設定（设置）→ モデルと接続（模型与连接）** からサービスと自分の Key を設定し、モデル一覧を同期して選択します。**EvoLink の公式 URL は内蔵されており、Key のみ入力します。** ホームで要望と資料を送信してください。
 
-```bash
-# 依存関係のインストール
-npm install
+UI は主に中国語です。README の翻訳は UI の多言語対応を意味しません。Key、利用枠、個人プロジェクトは付属しません。外部 3D 生成には別途設定が必要です。
 
-# Web 開発サーバーのみ
-npm run dev
+## ガイド・開発
 
-# デスクトップアプリ（Vite + Electron）
-npm run electron:dev
+[画像付きガイド（中国語）](docs/USER_GUIDE.md) · [移行手順](RUN_IN_CODEX.md) · [パッケージ作成](docs/PACKAGING.md) · [開発ガイド](AGENTS.md) · [Agent の流れ](docs/agent-flow.md) · [リリース検証](docs/RELEASE_VALIDATION.md)
 
-# 本番ビルド
+```sh
+npm run setup:portable
+npm run verify:portable   # 空の作業領域で起動確認。モデル呼び出しなし
+npm run typecheck
+npm test
+npm run api:test
+npm run build:web
 npm run build
-npm run electron:build   # または Windows: npm run build:win
 ```
 
-## プロジェクト構造
+デスクトップ開発は `node node_modules/electron/install.js` の後に `npm run dev` を実行します。ソース ZIP は依存関係のインストールが必要で、単体起動可能なインストーラーではありません。非公開の事例素材は含まれません。レイアウトテストは実行され、素材一式がない場合のみ素材整合性テスト 2 件をスキップします。
 
-```
-mxinspireFlows/
-├── docs/                    # ドキュメント
-│   ├── NODE_DEVELOPMENT.md  # ノード開発ガイド
-│   └── MODEL_API_CONFIG.md  # モデル API 設定
-├── electron/                # Electron メインプロセス
-│   ├── main.js
-│   └── preload.js
-├── public/
-├── scripts/                 # ビルドスクリプト
-├── src/
-│   ├── components/
-│   │   ├── 3D/              # 3D ビューア、GLB プレビュー
-│   │   ├── Edges/           # 削除可能エッジ
-│   │   ├── Layout/          # キャンバス、タブ、左サイドバー、ツールバー、パネル
-│   │   ├── Modals/          # ヘルプ、ショートカット
-│   │   ├── Settings/        # 設定モーダル
-│   │   ├── Toast/
-│   │   └── UI/
-│   ├── config/             # アプリ名、モデルマッピング、プロバイダ
-│   ├── contexts/            # 言語、テーマ
-│   ├── i18n/                # i18next 設定・ロケール
-│   ├── nodes/               # ノード定義
-│   │   ├── text-gen/        # テキスト生成
-│   │   ├── image-gen/       # 画像生成
-│   │   ├── video-gen/       # 動画生成
-│   │   ├── 3d-gen/          # 3D 生成
-│   │   ├── script-runner/   # スクリプト実行
-│   │   ├── *-input/         # テキスト/画像/動画/3D 入力
-│   │   ├── preview/         # テキスト/画像/動画/3D プレビュー
-│   │   ├── BaseNode.tsx
-│   │   ├── handleSchema.ts
-│   │   ├── index.ts
-│   │   └── modelOptions.ts
-│   ├── services/           # API サービス、ワークフロー実行
-│   ├── stores/              # ワークフロー、UI、設定 store
-│   ├── types/
-│   └── utils/
-├── index.html
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
+構成は Vue 3 / TypeScript / Vite / Vue Flow、Electron、FastAPI / Python、Node Agent worker です。データは `.local/portable-workspace/` に保存されます。バックアップ前にアプリを停止し、Key、`.env`、データベースをコミットしないでください。クラウドモデルには処理に必要な入力が送信されます。
 
-## 設定
+## ライセンス・連絡先
 
-**設定**（歯車アイコン）で API を設定：
+コードは [MIT](LICENSE)。依存ライブラリ、フォント、エンジンには各ライセンスが適用されます（`services/api/notices/`）。作品やアップロード内容の権利は各権利者に帰属します。
 
-- **Base URL** — API エンドポイント
-- **API Key** — 認証キー
-- **Provider** — OpenAI、Claude、DeepSeek、Gemini、Seedream、Ollama またはカスタム
-
-詳細な設定と開発者向け説明は [モデル API 設定](docs/MODEL_API_CONFIG.md) を参照。
-
-## 使い方
-
-1. **ノード追加** — 左サイドバーからキャンバスへドラッグ
-2. **接続** — 出力ハンドルを入力ハンドルに接続（同タイプまたは any）
-3. **設定** — ノード選択後、右パネルでプロパティ編集
-4. **実行** — 右上 **Run** でワークフロー実行
-5. **保存・読み込み** — ツールバー/サイドバーでワークフロー保存・JSON エクスポート
-
-## ノード種類
-
-| カテゴリ | ノード |
-|----------|--------|
-| **生成** | テキスト/画像/動画/3D 生成、スクリプト実行 |
-| **ユーティリティ** | テキスト/画像/動画/3D 入力 |
-| **プレビュー** | テキスト/画像/動画/3D プレビュー |
-
-新規ノードは [ノード開発](docs/NODE_DEVELOPMENT.md) を参照。
-
-## 開発
-
-- **新ノード**: [docs/NODE_DEVELOPMENT.md](docs/NODE_DEVELOPMENT.md) に従う
-- **テーマ**: `tailwind.config.js`
-- **翻訳**: `src/i18n/locales/`
-- **実行**: `src/services/workflowExecutor.ts`
-
-## ライセンス
-
-MIT
-
-## コントリビューション
-
-**InspireFlow の構築に参加する皆さんを歓迎します。**
-
-以下のようなモダンで効率的な開発スタイルでの参加を推奨しています。
-
-- **Vibe coding・AI 活用** — Cursor、GitHub Copilot などの AI ペアプログラミングでアイデアを反復し、実装を探り、コードを磨いてください。意図の明確さと良い構造を大切にしています。AI と協力して素早く形にすることは大歓迎です。
-- **小さく・オープンに** — 小さく焦点を絞った変更と議論を推奨します。アイデアや質問は Issue で、準備ができたら PR を。レビューで一緒に改善していきましょう。
-- **ドキュメントもコード同様に** — ドキュメント・サンプル・テストの改善も、新機能と同様に歓迎します。ノードや機能を追加した際は [ノード開発](docs/NODE_DEVELOPMENT.md) や README の更新も検討してください。
-
-typo 修正、ノード追加、i18n の改善、新しい方向性の提案など、どんな形でも貢献を歓迎します。Issue や Pull Request をお待ちしています。
+**灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

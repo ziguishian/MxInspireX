@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "case": {
+    "key": "ce-ma",
+    "slug": "showcase-ce-ma",
+    "name": "策马寻路｜东方青瓷挂件系列",
+    "subtitle": "青瓷挂件 · 系列包装",
+    "cover": "ce-ma-cover.png",
+    "createdBy": "ce-ma-import",
+    "credit": "用户提供的六张系列视觉与两张产品资料；包装、刀版、制作文件模拟及封面由内置 imagegen 生成",
+    "intro": "两张用户提供的产品资料、六张系列视觉图，另补充包装、刀版、制作文件模拟图和首页封面。",
+    "marketing": "一路相伴，向心而行。\n\n六款青瓷轮廓承接平安、行旅与相赠的心意。用于随盒卡、系列展示和礼赠传播；材质、挂绳强度及使用方式待实物确认。",
+    "heroIntro": "从两张产品资料进入六款东方青瓷挂件，以统一视觉、包装和模拟制作图串联完整礼赠方案。",
+    "groupDescriptions": {
+      "产品资料": "两张用户提供的产品资料用于观察马蹄、马形挂件、黑色绳结与丝带。保留原图标识；图中文化及使用描述属于资料内容，不作为独立核实的事实。",
+      "六款系列视觉": "马踏平安、策马寻路、云伴千里、月照归途、青山有路、风信来时，沿用青瓷、黑色丝带、枯木与自然光的共同视觉语言。",
+      "包装与制作模拟": "新增抽屉盒与随盒卡、包装展开刀版及制作文件展示，均由图像模型生成。展开关系、套合、内托与印刷分层是模拟视觉，后续需重新测量和打样，不提供实际可编辑生产文件。",
+      "首页封面": "以马形挂件和策马寻路题字呈现横向封面，统一首页与项目识别。"
+    },
+    "images": [
+      {
+        "file": "product-horseshoe.png",
+        "sourceFile": "/var/folders/_r/n37xbny13tz18pvgt84f55m80000gn/T/codex-clipboard-afb3bde0-2830-4acd-82df-93cce09e9497.png",
+        "title": "马踏平安｜产品资料",
+        "group": "产品资料",
+        "role": "source",
+        "productionNotes": "用户提供的产品资料，保留原图文字及标识；文化、材质、香片或使用效果不作为已验证结论。",
+        "width": 1080,
+        "height": 1440,
+        "sha256": "3033af82c20d6a2677ce7aed2e0391ccb4e3894caf3db682b5b2225f70189696"
+      },
+      {
+        "file": "product-horse.png",
+        "sourceFile": "/var/folders/_r/n37xbny13tz18pvgt84f55m80000gn/T/codex-clipboard-19d5140b-f05c-4793-8f3b-3eadbd0886c6.png",
+        "title": "策马寻路｜产品资料",
+        "group": "产品资料",
+        "role": "source",
+        "productionNotes": "用户提供的产品资料，保留原图文字及标识；文化、材质、香片或使用效果不作为已验证结论。",
+        "width": 1080,
+        "height": 1440,
+        "sha256": "23e1dde98a443cc5099295bae64d5698204e16bec2dfeb37c308a7d75fe4b028"
+      },
+      {
+        "file": "series-01.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_41-1.png",
+        "title": "马踏平安｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "7cc06f54e92cefc643b387c65f704d1dfaaf82a8ff19f34804e98affa2c51e64"
+      },
+      {
+        "file": "series-02.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_43-2.png",
+        "title": "策马寻路｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "68f98b46120efd48a60673cf37b97bbb255497864c5527401bfaf3f5f18b323e"
+      },
+      {
+        "file": "series-03.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_45-3.png",
+        "title": "云伴千里｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "f9adf0de010a84ed4d7e745a5f742c66cfba7be024f35c1cad8783d7fdf120e9"
+      },
+      {
+        "file": "series-04.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_47-4.png",
+        "title": "月照归途｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "a0e37c9dcd574e25db3de1a906b561b48856c0d20a61674e9115eda7ce6129d8"
+      },
+      {
+        "file": "series-05.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_49-5.png",
+        "title": "青山有路｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "65531b635c63bd3d81836d5a385645dee8d790b76426aba331faaf578153dac5"
+      },
+      {
+        "file": "series-06.png",
+        "sourceFile": "/Users/alexi/Downloads/ChatGPT 图像 2026年10月13日 17_14_51-6.png",
+        "title": "风信来时｜系列视觉",
+        "group": "六款系列视觉",
+        "role": "supplied-concept",
+        "productionNotes": "用户提供的系列视觉方案。具体尺寸、材质、挂绳强度和使用条件待实物确认。",
+        "width": 1086,
+        "height": 1448,
+        "sha256": "6bfc1a9cfefa75d86aaf852eb2bacae01435ea7240401433771c2523d9e39695"
+      },
+      {
+        "file": "packaging.png",
+        "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-954cea48-35ff-4173-9d33-85d2005e6031.png",
+        "title": "抽屉礼盒与随盒卡｜包装方案",
+        "group": "包装与制作模拟",
+        "role": "generated",
+        "productionNotes": "由内置 imagegen 生成的视觉模拟。刀版、图层、材质、结构与印刷关系未经测量或打样，不是可编辑制作文件或可直接投产刀模。",
+        "width": 1536,
+        "height": 1024,
+        "sha256": "4ca77fac530646c6ece43acaf3ae9b712e8ac89692853c2bd0715c8061386328"
+      },
+      {
+        "file": "dieline.png",
+        "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-06f00958-3f6b-4b3e-a6d3-cf476ec40e4d.png",
+        "title": "外套、抽屉与内托｜刀版模拟",
+        "group": "包装与制作模拟",
+        "role": "generated",
+        "productionNotes": "由内置 imagegen 生成的视觉模拟。刀版、图层、材质、结构与印刷关系未经测量或打样，不是可编辑制作文件或可直接投产刀模。",
+        "width": 1536,
+        "height": 1024,
+        "sha256": "2c60f152563fb4de20ccb0d02a0113244335cd273d2ae1b681b3304c082f539a"
+      },
+      {
+        "file": "production.png",
+        "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-f9894ebb-f84a-4706-9ff7-19bb592cff17.png",
+        "title": "印刷面、图层与材质｜制作文件模拟",
+        "group": "包装与制作模拟",
+        "role": "generated",
+        "productionNotes": "由内置 imagegen 生成的视觉模拟。刀版、图层、材质、结构与印刷关系未经测量或打样，不是可编辑制作文件或可直接投产刀模。",
+        "width": 1536,
+        "height": 1024,
+        "sha256": "e2927d5dcfc23b2139e4195310bdcfef15ccd48f64c7a3fd72a17f69a1593420"
+      },
+      {
+        "file": "cover.png",
+        "sourceFile": "/Users/alexi/.codex/generated_images/01a1341c-3bba-7a50-9362-4393f00992ae/exec-3f84b163-7d25-4286-9c6c-38a2c6d38e7b.png",
+        "title": "策马寻路｜首页封面",
+        "group": "首页封面",
+        "role": "generated",
+        "productionNotes": "由内置 imagegen 生成的视觉模拟。刀版、图层、材质、结构与印刷关系未经测量或打样，不是可编辑制作文件或可直接投产刀模。",
+        "width": 1672,
+        "height": 941,
+        "sha256": "de436a94368b3d439e42a7ba4e0a9232fd5e4493828a72ddbf7f44ef3ebac384"
+      }
+    ]
+  }
+}

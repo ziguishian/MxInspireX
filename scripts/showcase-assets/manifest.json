@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "sourceDirectory": "用户提供的《新建多个演示》；原图留在用户目录，不作为交付成品",
+  "readyDirectory": "clean",
+  "cases": [
+    {
+      "slug": "showcase-shan-yan",
+      "role": "deliverable",
+      "credit": "BU MANGO / 小红书原摄影来源；用户已确认演示使用与水印修整授权",
+      "images": [
+        { "file": "shan-yan-01.png", "source": "山砚_以石为形，以静为韵 新中式静奢_1_Bumango_来自小红书网页版.jpg", "title": "岩茶礼盒与手提结构" },
+        { "file": "shan-yan-02.png", "source": "山砚_以石为形，以静为韵 新中式静奢_2_Bumango_来自小红书网页版.jpg", "title": "岩茶产品系列" },
+        { "file": "shan-yan-03.png", "source": "山砚_以石为形，以静为韵 新中式静奢_3_Bumango_来自小红书网页版.jpg", "title": "包装图形与材质" },
+        { "file": "shan-yan-04.png", "source": "山砚_以石为形，以静为韵 新中式静奢_4_Bumango_来自小红书网页版.jpg", "title": "茶品陈列细节" },
+        { "file": "shan-yan-10.png", "source": "山砚_以石为形，以静为韵 新中式静奢_10_Bumango_来自小红书网页版.jpg", "title": "品牌空间应用" },
+        { "file": "shan-yan-11.png", "source": "山砚_以石为形，以静为韵 新中式静奢_11_Bumango_来自小红书网页版.jpg", "title": "礼赠系列收束" }
+      ]
+    },
+    {
+      "slug": "showcase-song-yun",
+      "role": "reference",
+      "credit": "雲天雨過 / 汐山明产品资料；仅作视觉研究，不作为宋韵雅集交付物或奖项证明",
+      "images": [
+        { "file": "celadon-reference-01.png", "source": "微信图片_2026-10-10_205006_036.png", "title": "青瓷礼盒色彩参考" },
+        { "file": "celadon-reference-02.png", "source": "微信图片_2026-10-10_205016_804.png", "title": "器物与包装比例参考" },
+        { "file": "celadon-reference-03.png", "source": "微信图片_2026-10-10_205042_965.png", "title": "瓷面与陈列光线参考" }
+      ]
+    },
+    {
+      "slug": "showcase-de-shou-gong",
+      "role": "deliverable",
+      "credit": "德寿宫主题器物与礼盒原图；用户已确认演示使用与水印修整授权",
+      "images": [
+        { "file": "de-shou-gong-01.png", "source": "微信图片_2026-10-10_203326_177.png", "title": "德寿宫礼盒与器物全景" },
+        { "file": "de-shou-gong-02.png", "source": "微信图片_2026-10-10_203358_288.png", "title": "器物及包装细节" }
+      ]
+    },
+    {
+      "slug": "showcase-ma-ti",
+      "role": "deliverable",
+      "credit": "马蹄陶瓷小物原图；用户已确认演示使用与水印修整授权",
+      "images": [
+        { "file": "ma-ti-01.png", "source": "微信图片_2026-10-10_203621_424.png", "title": "马形陶瓷随行挂饰" },
+        { "file": "ma-ti-02.png", "source": "微信图片_2026-10-10_203645_632.png", "title": "马蹄系列与杯具" },
+        { "file": "ma-ti-03.png", "source": "微信图片_2026-10-10_203658_311.png", "title": "青瓷器物与礼赠组合" }
+      ]
+    },
+    {
+      "slug": "showcase-song-jin",
+      "role": "deliverable",
+      "credit": "静物摄影师冯婉静 / CITONG STUDIO；用户已确认演示使用与水印修整授权",
+      "images": [
+        { "file": "song-jin-01.png", "source": "中式静物摄影 _ 非遗宋锦胸针_2_静物摄影师冯婉静📷_来自小红书网页版.jpg", "title": "宋锦葫芦胸针系列" },
+        { "file": "song-jin-02.png", "source": "中式静物摄影 _ 非遗宋锦胸针_3_静物摄影师冯婉静📷_来自小红书网页版.jpg", "title": "织纹与金属包边细节" }
+      ]
+    }
+  ]
+}

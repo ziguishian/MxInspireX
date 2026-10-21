@@ -1,0 +1,18 @@
+# 首页设计示例
+
+使用内置 image_gen 工具生成，无 CLI/API fallback。最终素材：`apps/renderer/public/assets/home-design-examples-v1.png`（实际输出 1254×1254）。单张雪碧图承载四组示例，每组三张。组件按生成图实际边界裁取，避免相邻图片串入。
+
+模拟数据：`apps/renderer/src/features/home/designExamples.ts`。每帧有独立标题、无障碍说明和可填入输入框的需求。数据只服务首页示例，不写入项目、资产库或任务历史；点击示例保留已有草稿，追加需求，不自动生成。卡片支持自动轮播、上一张/下一张、分页和方向键；聚焦、悬停、页面不可见时暂停，减少动态效果时关闭自动播放，手动切换后保持当前帧。
+
+## 最终生成提示词
+
+```text
+Use case: product-mockup
+Asset type: one production sprite atlas for four independent design-example carousels in a general-purpose design Agent homepage.
+Primary request: Create a polished, art-directed 2048x2048 SQUARE raster atlas with EXACTLY THREE equal columns and FOUR equal rows (12 cells total). Every cell is a separate landscape 4:3 design work image. Edges meet exactly at x=1/3, 2/3 and y=1/4, 1/2, 3/4. No gutters, no margin, no lines between cells, no collage overlap. Every cell must be usable cropped individually; keep subjects safely within its own cell.
+Row 1 = one coherent joyful citrus beverage brand identity, orange, cream and a small dark-green accent, modern professional branding. Column 1: overhead identity composition with a simple orange-slice circular mark, blank cards, an embossed symbol, swatch shapes. Column 2: sophisticated can and carton packaging mockups with the same simple citrus symbol, studio light, tactile cream paper. Column 3: bold campaign still life of the same beverage can with sliced citrus, sculptural orange shapes, cream and orange background.
+Row 2 = one coherent elegant portable table lamp industrial design, warm ivory body, sage accent, rounded mushroom shade with a slim handle, premium realistic rendering. Column 1: complete hero lamp product on a soft sage studio background. Column 2: beautiful close detail of the lamp dial, handle joint and frosted diffuser, realistic materials. Column 3: same lamp warmly glowing on a modern wooden bedside table beside a book, calm lifestyle scene.
+Row 3 = one coherent contemporary creative-designer portfolio web interface, electric cobalt with pale butter-yellow and charcoal accents, sharp editorial composition. Column 1: front-on sophisticated desktop website mockup with oversized abstract blue 3D folded ribbon hero and precise grid layout, small minimal UI line motifs. Column 2: two modern mobile screens showing the same ribbon artwork, gallery cards and project detail. Column 3: a clean UI design board with consistent project gallery tiles, typography blocks as abstract bars, navigation pill and color swatches. Make this row look like beautiful designed interfaces rather than real text documents.
+Row 4 = one coherent welcoming small urban corner coffee shop interior/architecture concept, warm oak, travertine, olive upholstery and brushed metal. Column 1: wide interior view of curved wooden service counter with daylight, beautifully composed architectural visualization. Column 2: street-corner facade with generous glazing, rounded doorway, a small abstract coffee-circle shop sign, planting. Column 3: intimate seating nook in same space with sculptural chair, round table, material detail and sunlight.
+Style: premium contemporary design studio portfolio, beautifully balanced compositions, vivid but restrained, tangible materials and realistic lighting for rows 1,2,4; crisp high-end interface presentation for row 3. Images must read well as small homepage cards. Each project coherent across its three views. No legible words, letters, captions, numbers, watermarks, outer border, or surrounding application chrome. Do not add headings or labels to the grid. This is the artwork atlas only, not a screenshot of a website.
+```

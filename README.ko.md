@@ -1,148 +1,57 @@
-# InspireFlow (灵感流动)
+# MxinspireX
 
-**다른 언어 / Other languages:** [简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [Español](README.es.md)
+**하나의 요청에서 디자인까지.** 灵矩绘境의 로컬 우선 AI 디자인 작업 공간입니다. 대화, 참고 자료, 무한 캔버스를 연결합니다.
 
-노드 기반 AI 콘텐츠 제작·자동화 데스크톱 앱. 텍스트, 이미지, 비디오, 3D 생성을 위한 워크플로를 노드 연결로 구성합니다.
+[简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
----
+![제품 이미지, 동일 제품의 장면, 배경 편집](docs/images/product-workflow.png)
 
-## 기능
+## 주요 기능
 
-- **디퓨전 스타일 UI** — 글래스모피즘, 다크 모드
-- **노드 기반 워크플로** — ComfyUI/Dify 스타일 시각 편집기
-- **AI 생성** — 텍스트·이미지·비디오·3D 모델 생성
-- **다국어** — 5개 언어 전환 (위 링크 참고)
-- **저장·불러오기** — 워크플로 JSON 내보내기/가져오기, 로컬 저장
-- **확장** — 새 노드 추가 가능. [노드 개발](docs/NODE_DEVELOPMENT.md) 참고
+- 로고, 포스터, 제품, 패키지, 캐릭터 토이, 공간 이미지, 문안 및 HTML 제작.
+- 첫 제품 이미지를 후속 장면의 실제 참고 이미지로 사용하며 편집 시 원본을 보존합니다.
+- 프로젝트 대화, 이미지·문서 참조, 캔버스 노드, 버전, 미리보기 및 내보내기.
+- 이미지·음성·영상, 외부 3D 서비스, 로컬 파라메트릭 CAD. 기능은 설정한 서비스에 따라 달라집니다.
+- Token과 위안화 요금 표시. 확인된 청구, 참고 견적, 대사 대기 상태를 구분합니다.
 
-## 기술 스택
+독립 결과물은 병렬로 처리하고 원본 이미지가 필요한 장면은 해당 이미지 완성을 기다립니다. 자동 디자인 품질 심사 단계는 없습니다. 과금 결과가 불명확한 요청은 자동 재전송하지 않습니다.
 
-| 레이어 | 기술 |
-|--------|------|
-| 프론트 | React 18, Vite, TypeScript |
-| 노드 에디터 | React Flow |
-| 스타일 | Tailwind CSS, Framer Motion |
-| 상태 | Zustand |
-| 데스크톱 | Electron |
-| i18n | i18next |
+## 빠른 시작
 
-## 시작하기
+**Node.js 22 또는 24**와 **uv**를 준비하세요.
 
-### 요구 사항
+```sh
+git clone https://github.com/ziguishian/MxInspireX.git
+cd MxInspireX
+npm run start:portable
+```
 
-- Node.js 18+
-- npm 또는 yarn
+잠금 파일에 맞춰 의존성을 설치하고 uv가 Python 3.12를 준비합니다. 터미널에 표시되는 주소(기본 `http://127.0.0.1:5173`)를 여세요. 포트가 사용 중이면 빈 포트를 선택합니다. Ctrl+C로 종료합니다.
 
-### 설치 및 실행
+아바타 → **설정(设置) → 모델 및 연결(模型与连接)**에서 서비스와 본인의 Key를 입력하고 모델 목록을 동기화해 선택하세요. **EvoLink 공식 주소는 내장되어 있어 Key만 입력합니다.** 홈에서 요청을 작성하고 참고 자료를 첨부하세요.
 
-```bash
-# 의존성 설치
-npm install
+UI는 주로 중국어입니다. README 번역은 UI의 다국어 지원을 의미하지 않습니다. 계정, Key, 사용 크레딧, 개인 프로젝트는 포함되지 않습니다. 외부 3D 생성은 별도 설정이 필요합니다.
 
-# Web 개발 서버만
-npm run dev
+## 가이드 및 개발
 
-# 데스크톱 앱 (Vite + Electron)
-npm run electron:dev
+[스크린샷 가이드(중국어)](docs/USER_GUIDE.md) · [다른 컴퓨터에서 실행](RUN_IN_CODEX.md) · [패키징](docs/PACKAGING.md) · [개발 가이드](AGENTS.md) · [Agent 흐름](docs/agent-flow.md) · [릴리스 검증](docs/RELEASE_VALIDATION.md)
 
-# 프로덕션 빌드
+```sh
+npm run setup:portable
+npm run verify:portable   # 빈 작업 공간에서 확인, 모델 호출 없음
+npm run typecheck
+npm test
+npm run api:test
+npm run build:web
 npm run build
-npm run electron:build   # 또는 Windows: npm run build:win
 ```
 
-## 프로젝트 구조
+데스크톱 개발은 `node node_modules/electron/install.js` 실행 후 `npm run dev`를 사용합니다. 소스 ZIP은 의존성 설치가 필요하며 독립 실행 설치 프로그램이 아닙니다. 비공개 사례 원본은 제외됩니다. 레이아웃 테스트는 실행하고 자료 전체가 없을 때만 원본 무결성 테스트 2개를 건너뜁니다.
 
-```
-mxinspireFlows/
-├── docs/                    # 문서
-│   ├── NODE_DEVELOPMENT.md  # 노드 개발 가이드
-│   └── MODEL_API_CONFIG.md  # 모델 API 설정
-├── electron/                # Electron 메인 프로세스
-│   ├── main.js
-│   └── preload.js
-├── public/
-├── scripts/                 # 빌드 스크립트
-├── src/
-│   ├── components/
-│   │   ├── 3D/              # 3D 뷰어, GLB 미리보기
-│   │   ├── Edges/           # 삭제 가능 엣지
-│   │   ├── Layout/          # 캔버스, 탭바, 왼쪽 사이드바, 툴바, 패널
-│   │   ├── Modals/          # 도움말, 단축키
-│   │   ├── Settings/        # 설정 모달
-│   │   ├── Toast/
-│   │   └── UI/
-│   ├── config/             # 앱 이름, 모델 매핑, 프로바이더
-│   ├── contexts/           # 언어, 테마
-│   ├── i18n/                # i18next 설정 및 로케일
-│   ├── nodes/               # 노드 정의
-│   │   ├── text-gen/        # 텍스트 생성
-│   │   ├── image-gen/       # 이미지 생성
-│   │   ├── video-gen/       # 비디오 생성
-│   │   ├── 3d-gen/          # 3D 생성
-│   │   ├── script-runner/   # 스크립트 실행
-│   │   ├── *-input/         # 텍스트/이미지/비디오/3D 입력
-│   │   ├── preview/         # 텍스트/이미지/비디오/3D 미리보기
-│   │   ├── BaseNode.tsx
-│   │   ├── handleSchema.ts
-│   │   ├── index.ts
-│   │   └── modelOptions.ts
-│   ├── services/           # API 서비스, 워크플로 실행
-│   ├── stores/             # 워크플로, UI, 설정 store
-│   ├── types/
-│   └── utils/
-├── index.html
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
+Vue 3 / TypeScript / Vite / Vue Flow, Electron, FastAPI / Python, Node Agent worker로 구성됩니다. 데이터는 `.local/portable-workspace/`에 저장됩니다. 백업 전에 앱을 종료하고 Key, `.env`, 데이터베이스를 커밋하지 마세요. 클라우드 모델에는 작업에 필요한 입력이 전송됩니다.
 
-## 설정
+## 라이선스 및 문의
 
-**설정**(톱니 아이콘)에서 API 구성:
+코드는 [MIT](LICENSE)를 따릅니다. 의존성, 글꼴, 엔진은 각각의 라이선스를 따릅니다(`services/api/notices/`). 작품과 업로드한 콘텐츠의 권리는 각 권리자에게 있습니다.
 
-- **Base URL** — API 엔드포인트
-- **API Key** — 인증 키
-- **Provider** — OpenAI, Claude, DeepSeek, Gemini, Seedream, Ollama 또는 사용자 지정
-
-자세한 설정 및 개발자 노트는 [모델 API 설정](docs/MODEL_API_CONFIG.md) 참고.
-
-## 사용법
-
-1. **노드 추가** — 왼쪽 사이드바에서 캔버스로 드래그
-2. **연결** — 출력 핸들을 입력 핸들에 연결 (동일 타입 또는 any)
-3. **설정** — 노드 선택 후 오른쪽 패널에서 속성 편집
-4. **실행** — 우측 상단 **Run** 클릭
-5. **저장·불러오기** — 툴바/사이드바에서 워크플로 저장, JSON 내보내기
-
-## 노드 유형
-
-| 카테고리 | 노드 |
-|----------|------|
-| **생성** | 텍스트/이미지/비디오/3D 생성, 스크립트 실행 |
-| **유틸** | 텍스트/이미지/비디오/3D 입력 |
-| **미리보기** | 텍스트/이미지/비디오/3D 미리보기 |
-
-새 노드 추가는 [노드 개발](docs/NODE_DEVELOPMENT.md) 참고.
-
-## 개발
-
-- **새 노드**: [docs/NODE_DEVELOPMENT.md](docs/NODE_DEVELOPMENT.md) 참고
-- **테마**: `tailwind.config.js`
-- **번역**: `src/i18n/locales/`
-- **실행**: `src/services/workflowExecutor.ts`
-
-## 라이선스
-
-MIT
-
-## 기여
-
-**InspireFlow를 함께 만들어 가실 분들을 환영합니다.**
-
-다음과 같은 현대적이고 효율적인 방식으로 기여해 주시면 좋습니다.
-
-- **바이브 코딩·AI 활용** — Cursor, GitHub Copilot 등 AI 페어 프로그래밍으로 아이디어를 반복하고, 구현을 탐색하고, 코드를 다듬어 보세요. 의도가 분명하고 구조가 좋은 것을 중요하게 봅니다. AI와 협업해 빠르게 구현하는 것을 환영합니다.
-- **작은 단위·열린 논의** — 작고 집중된 변경과 논의를 권합니다. 아이디어나 질문은 Issue로, 준비되면 PR로 보내 주세요. 리뷰 과정에서 함께 개선해 나가면 됩니다.
-- **문서와 코드 함께** — 문서·예제·테스트 개선도 새 기능만큼 환영합니다. 노드나 기능을 추가하셨다면 [노드 개발](docs/NODE_DEVELOPMENT.md)이나 README 업데이트를 고려해 주세요.
-
-오타 수정, 노드 추가, i18n 보완, 새 방향 제안 등 어떤 형태든 기여를 환영합니다. Issue나 Pull Request를 보내 주세요.
+**灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

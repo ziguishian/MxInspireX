@@ -1,0 +1,4 @@
+interface:
+  display_name: "文旅 IP 形象设计"
+  short_description: "把文旅文化线索转成原创角色母版、三视图、动作表情与文创应用"
+  default_prompt: "用 $tourism-ip-design 为这个文旅项目设计原创 IP 和一组延展。"

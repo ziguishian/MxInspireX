@@ -1,0 +1,26 @@
+{
+  "description": "Four 16:9 homepage covers selected from the user-supplied LangJuAgent showcase project images, October 2026.",
+  "source": "LangJuAgent_演示数据",
+  "assets": [
+    {
+      "file": "home-cover-song-yun.png",
+      "sha256": "f8928bd3981182737680f75171119ef427b0fe445b0196936641e2b383fffb90",
+      "dimensions": "1672x941"
+    },
+    {
+      "file": "home-cover-shan-yan.png",
+      "sha256": "47032efedece7d671fb895d5eeb90393c63e271b44151c108d235ec56eb1c0b1",
+      "dimensions": "1672x941"
+    },
+    {
+      "file": "home-cover-yun-zi-wu-xin.png",
+      "sha256": "8fd1389f96e080d2b297400a1a0271b600f3a0045bdb0e6fddb9f76e1f65615e",
+      "dimensions": "1672x941"
+    },
+    {
+      "file": "home-cover-yun-jin-xu.png",
+      "sha256": "489d2cce152c588f4d3f64adf4b3f53dd93f54e707d38f382fce60622274074f",
+      "dimensions": "1672x941"
+    }
+  ]
+}

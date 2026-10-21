@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "slug": "showcase-shan-ming",
+  "name": "山茗｜高山茶品牌包装系统",
+  "source": "用户提供的《归档 2》图片；原始作者未注明",
+  "images": [
+    { "file": "shan-ming-overview.png", "sourceFile": "无标题.png", "role": "deliverable", "title": "茶品、礼盒与传播物料全景", "sha256": "b18ddccbcd4beb21ec5dccfcd62992f9c33d294b3c97c3f85f75de680d70e518" },
+    { "file": "shan-ming-gift-box-design.png", "sourceFile": "山茗手提礼盒刀版设计-1.png", "role": "deliverable", "title": "手提礼盒外观与展开关系", "sha256": "7437887a2f0398e3886c0ca929384c64c555f6c05c859f7c717f28ae9c2107df" },
+    { "file": "shan-ming-system-dielines.png", "sourceFile": "山茗茶品牌包装刀版合集.png", "role": "deliverable", "title": "包装系统与物料矩阵", "sha256": "cb242036de0453372e2c8bcccce6aa50fb78663007dc2000c41feda6dc4dffbc" },
+    { "file": "shan-ming-tea-box-dieline.png", "sourceFile": "山茗茶盒包装刀版图.png", "role": "deliverable", "title": "方形茶盒结构与视觉面", "sha256": "32d0f0090a1d36565e4454cd531a273eec50c206d11bf74956a71a07eb382fbd" },
+    { "file": "shan-ming-cup-sleeve.png", "sourceFile": "山茗纸杯杯身展开图.png", "role": "deliverable", "title": "纸杯杯身展开与效果对照", "sha256": "0b508e5d1c81909d73527bbf84dde8ca0204dd41c6d0a093c09829dd581fa604" },
+    { "file": "shan-ming-gift-box-detail.png", "sourceFile": "山茗手提礼盒刀版展示-2.png", "role": "deliverable", "title": "手提礼盒正反面与结构细节", "sha256": "56bcadaffce4bfd658501ccbace6faa471f0a52d16b669f6b88ebb3805d65915" },
+    { "file": "shan-ming-gift-box-flat.png", "sourceFile": "高山茶手提礼盒刀版展开图-3.png", "role": "deliverable", "title": "手提礼盒展开方案", "sha256": "4af4e077721f590f85dd6f9e6f99ac00e59b8c81368b3001f649c0d7657ac962" },
+    { "file": "reference-yun-tian-qing-poster.png", "sourceFile": "雲破天晴雨過極簡雅韻海報.png", "role": "reference", "title": "其他品牌：雲天晴海报排版参考", "sha256": "2976bd9201ba563613384cb4f09a72f1edd3ab58e5d44deb76b20872bef02d2e" },
+    { "file": "reference-rock-grind-box.png", "sourceFile": "茶礼盒包装刀版图与效果参考.png", "role": "reference", "title": "其他品牌：ROCK GRIND 礼盒结构参考", "sha256": "5ece6c1c751aca5069b4a0cc6d1eabbe7d5140c223abc4819d2279cea2ba24d2" }
+  ]
+}

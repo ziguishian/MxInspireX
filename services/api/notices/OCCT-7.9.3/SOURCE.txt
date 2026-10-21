@@ -1,0 +1,18 @@
+Open CASCADE Technology (OCCT) 7.9.3
+Copyright (c) Open CASCADE SAS and contributors.
+
+This application uses OCCT through CadQuery / cadquery-ocp.
+The OCCT license and additional exception are reproduced without modification.
+
+Upstream source and license files:
+https://github.com/Open-Cascade-SAS/OCCT/tree/V7_9_3
+https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V7_9_3.tar.gz
+https://github.com/Open-Cascade-SAS/OCCT/blob/V7_9_3/LICENSE_LGPL_21.txt
+https://github.com/Open-Cascade-SAS/OCCT/blob/V7_9_3/OCCT_LGPL_EXCEPTION.txt
+
+Python bindings and wheel build sources:
+https://github.com/CadQuery/OCP
+https://github.com/CadQuery/ocp-build-system
+
+Installed wheel versions and their bundled notices are recorded in the
+CAD-LICENSES/inventory.json file included with this distribution.

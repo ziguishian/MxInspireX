@@ -1,0 +1,865 @@
+{
+  "unmappedPlan": {
+    "plan": {
+      "goal": "完成杭州首届历史经典产业博览会“和光同尘赴自在”政府伴手礼七项概念视觉，统一表现杭州秋桂文化与历史经典产业工艺特征。",
+      "preserve": [
+        "主题文字“和光同尘赴自在”及杭州、历史经典产业、秋桂时令的融合方向。",
+        "概念测试色板：桂金、漆红、湖青、黛蓝、陶褐、米白；官方色值后续替换。",
+        "七项各一张独立图片；中药枕不呈现未经证实的医疗功效。",
+        "画面保持干净，不加入概念、待确认等角标；不做HTML、PDF或额外延展。"
+      ],
+      "visualDirection": {
+        "audience": "政府贵宾与历史经典产业博览会来宾；克制庄重、适合正式礼赠。",
+        "theme": "杭州秋日桂香与历史经典工艺相遇，以当代器物语言表达自在、温润。",
+        "coreConcept": "以“和光同尘赴自在”为意，把西湖水纹、远山、桂枝和杭州园林空间抽象成可在包装及器物间延续的连续层叠纹理。",
+        "visualHierarchy": [
+          "器物与礼盒轮廓优先，呈现真实可辨的使用形态。",
+          "桂枝、湖波和山影为第二层，仅以克制的纸雕/浅压纹/釉色纹理出现。",
+          "主题文字作为简洁识别点，避免长段说明和非必要标签。"
+        ],
+        "formLanguage": [
+          "简洁当代礼盒与器物比例，局部运用圆角、层叠、留白和柔和弧线。",
+          "将历史经典产业表达为材料工艺细节，不堆叠仿古纹样。"
+        ],
+        "materialProcess": [
+          "纸艺以精密多层纸雕呈现山湖与桂枝的前后景深。",
+          "玉石枕为温润浅色玉石感滚珠/嵌片与织物枕体的组合，不描绘医疗或疗效符号。",
+          "陶瓷呈现细腻哑光陶土表面；主人杯表现多层大漆玳瑁斑纹；丝绸套以柔软织纹和自然垂坠为核心。"
+        ],
+        "colorRelationships": [
+          "米白与湖青为宁静基底，黛蓝用于湖水和阴影层次。",
+          "桂金点亮桂花与细部，漆红少量提气，陶褐连接陶器与纸材。"
+        ],
+        "compositionLighting": [
+          "七图统一为暖白至浅米色摄影台面与柔和侧光，呈现材质微光和自然投影。",
+          "外盒及内装采用三分之四视角产品静物构图；单品图聚焦器物本身并保留清晰轮廓。"
+        ],
+        "avoid": [
+          "避免泛化古风符号、龙凤/祥云满铺、过度金色奢华、促销式标牌及伪造官方标识。",
+          "中药枕不加入治病、保健、热疗效果等文字、医疗图标或暗示性功效画面。",
+          "禁止额外角标、参数文字、概念水印及未经用户提供的官方机构标志。"
+        ]
+      },
+      "currentItemIds": [
+        "gift_outer",
+        "gift_open",
+        "gift_notebook",
+        "gift_pillow",
+        "gift_teajar",
+        "gift_cup",
+        "gift_silk"
+      ],
+      "deliverables": [
+        {
+          "id": "gift_outer",
+          "title": "礼盒外盒设计效果图",
+          "kind": "image",
+          "acceptance": "独立呈现礼盒外观；主题氛围、杭州秋桂抽象意象及六色概念系统可辨，材质与构图庄重当代，不含待确认角标。",
+          "imageSpec": {
+            "subjectStructure": "方正书盒式硬质礼盒，独立盒盖带简洁主题字样“和光同尘赴自在”；盒面一侧为层叠湖波、山影和少量桂枝纹理，表现历史经典工艺的克制礼赠识别。",
+            "formProportion": "厚实低矮的长方形礼盒，盒盖与盒身比例稳重；尺寸仅作视觉概念，不出现尺寸标注。",
+            "materialConstruction": "米白细纹裱纸，局部桂金烫印细线与浅浮雕压纹，漆红窄边或内衬点缀；显现真实纸纤维和硬盒转角。",
+            "compositionFraming": "三分之四视角单品产品摄影，盒子居中略偏右，完整展示正面与侧边；暖米白无缝背景，留白简洁。",
+            "lightSurface": "柔和侧上方暖光，细腻阴影勾勒盒体厚度，烫金仅局部低调反光。",
+            "preserve": [
+              "主题文字准确为“和光同尘赴自在”。",
+              "六色仅用作整体概念色彩关系，不出现色值或额外解释文字。"
+            ],
+            "avoid": [
+              "不得出现未提供的主办方Logo、具体年份、展会口号或伪造文字。",
+              "避免满版传统纹样、龙凤、祥云、艳金光泽和角标水印。"
+            ]
+          }
+        },
+        {
+          "id": "gift_open",
+          "title": "礼盒打开后的五件礼品内装陈列效果图",
+          "kind": "image",
+          "acceptance": "独立展示打开的礼盒及五件对应礼品，数量恰为五件且类别可辨；统一陈列、合理分隔，无功效宣称或待确认标记。",
+          "imageSpec": {
+            "subjectStructure": "打开的方正礼盒中以定制内托安放五件礼品：杭州纸雕笔记本、玉石发热中药枕、迷你茶叶陶罐、大漆玳瑁主人杯、茶罐丝绸套。五件均完整可辨，避免互相遮挡。",
+            "formProportion": "礼盒为稳重横向长方形，盖子向后打开；分格托盘清楚容纳五件形态不同的物品，单品大小关系自然。",
+            "materialConstruction": "米白纸浆内托与细纹裱纸；纸雕笔记本呈层叠纸艺边缘，枕体织物包裹温润玉石感细节，陶罐哑光，杯体有大漆玳瑁纹，丝绸套柔软织纹。",
+            "compositionFraming": "微俯三分之四视角，打开的礼盒占画面主体，五件逐件摆放可数，背景为浅米白静物台面。",
+            "lightSurface": "柔和暖光与清晰但不生硬的接触阴影，避免过度反光遮盖材质。",
+            "preserve": [
+              "恰好五件礼品，类别按用户清单。",
+              "统一使用桂金、漆红、湖青、黛蓝、陶褐、米白的节制搭配。"
+            ],
+            "avoid": [
+              "不得多出第六件赠品、茶叶包装或花瓶摆件。",
+              "不呈现医疗功效、治病暗示、参数标签或概念角标。"
+            ]
+          }
+        },
+        {
+          "id": "gift_notebook",
+          "title": "杭州主题纸雕笔记本",
+          "kind": "image",
+          "acceptance": "纸雕笔记本单品清楚呈现多层纸雕结构与杭州山湖桂枝意象，主题识别克制，无外加参数角标。",
+          "imageSpec": {
+            "subjectStructure": "一本合拢的精装笔记本，封面以多层切割纸雕构成西湖水波、远山轮廓和一枝秋桂的前后层次，纸雕层缘清楚，具有可翻阅本册的实体感。",
+            "formProportion": "竖向本册比例，方正书脊及自然纸页厚度；封面构图留白，主题文字可简洁置于下方。",
+            "materialConstruction": "米白与湖青、黛蓝、桂金色纸层精密叠合，局部陶褐纸层作山影；纸张纤维与切割边缘真实可见，不做塑料浮雕。",
+            "compositionFraming": "单本立放并略微斜置，封面正面清晰，背景浅米白，留白充分，微距产品摄影。",
+            "lightSurface": "斜侧柔光穿过纸层制造自然投影，突出层叠深度与纸张哑光质感。",
+            "preserve": [
+              "表现杭州主题与秋桂意象，延续套系概念色。"
+            ],
+            "avoid": [
+              "不要堆叠密集古风纹样或伪造长篇文字。",
+              "不出现书页悬浮、纸层粘连或塑料/金属质感。"
+            ]
+          }
+        },
+        {
+          "id": "gift_pillow",
+          "title": "玉石发热中药枕",
+          "kind": "image",
+          "acceptance": "产品图呈现枕体、温润玉石与草本填充的概念组合，不含任何未经证实的疗效文字或医疗暗示。",
+          "imageSpec": {
+            "subjectStructure": "一只可使用的横向柔软枕体，表面为米白与黛蓝交织织物，局部透明织面/开口展示少量温润浅玉色石珠与干燥草本填充物，呈现产品构成而非医学剖面。",
+            "formProportion": "饱满低矮、边角圆润的枕形，织物自然起伏，表面细节简洁。",
+            "materialConstruction": "亚麻或棉麻织物表现可触摸的纤维感；玉石为圆润抛光但不镜面的小颗粒，草本为少量可辨的干燥植物纤维；不虚构加热结构。",
+            "compositionFraming": "单品静物斜置于浅米白台面，枕体完整入镜，少量材质细节清晰，画面干净。",
+            "lightSurface": "柔和自然侧光表现织物褶皱、玉石温润透光和草本干燥质感。",
+            "preserve": [
+              "仅作产品概念外观表达，产品类别保持为玉石发热中药枕。"
+            ],
+            "avoid": [
+              "不得出现治疗、疗效、舒缓病痛、医疗认证、热疗波纹或医疗十字图案。",
+              "不得描绘未知电路、插头或特定加热构造。"
+            ]
+          }
+        },
+        {
+          "id": "gift_teajar",
+          "title": "迷你茶叶陶罐",
+          "kind": "image",
+          "acceptance": "单独呈现可辨识的迷你带盖陶瓷茶叶罐，陶土釉面特征明确，杭州套系语言克制统一。",
+          "imageSpec": {
+            "subjectStructure": "一只迷你带盖陶罐，圆润罐身、清晰盖沿与小钮，比例适合盛装茶叶，旁边不放额外物件。",
+            "formProportion": "掌心大小的短颈圆罐，肩线柔和，盖身吻合，重心稳定。",
+            "materialConstruction": "陶褐色细陶胎配局部米白哑光釉，罐身有克制的湖青水纹浅刻或细线，表面保留微妙窑变与陶土颗粒。",
+            "compositionFraming": "罐体居中，三分之四视角展示罐身、盖与足部，浅米白背景的单品产品摄影。",
+            "lightSurface": "柔和侧光表现陶器哑光肌理与釉面微亮差别，阴影自然。",
+            "preserve": [
+              "保持迷你茶叶陶罐单品属性，与丝绸套套系一致。"
+            ],
+            "avoid": [
+              "不显示茶叶品牌、产地、净含量或虚构官方标识。",
+              "避免过度做旧、仿古裂纹或夸张高亮。"
+            ]
+          }
+        },
+        {
+          "id": "gift_cup",
+          "title": "大漆玳瑁主人杯",
+          "kind": "image",
+          "acceptance": "主人杯轮廓、杯口与底足完整可见，大漆多层深色玳瑁斑纹表现清楚且自然。",
+          "imageSpec": {
+            "subjectStructure": "一只独立主人杯，开口杯形，略外撇杯沿、收束杯腰与小巧稳固底足；杯身呈深漆红、黛黑与桂金褐交融的玳瑁斑纹。",
+            "formProportion": "手持友好的小型茶杯比例，杯壁厚度可信，器形简洁温润。",
+            "materialConstruction": "多层手工大漆般深润表面，半透明漆层下有不规则天然玳瑁云斑与细密光泽变化，边缘漆层细腻；不做金属镶边。",
+            "compositionFraming": "单杯居中略偏左，以三分之四近景展示杯口、杯身纹理和底足，浅米白台面背景。",
+            "lightSurface": "柔和侧上方光形成细长漆面高光，黑红深浅层次可辨而不过曝。",
+            "preserve": [
+              "体现大漆与玳瑁纹理的工艺质感，延续礼盒概念色。"
+            ],
+            "avoid": [
+              "避免塑料树脂感、过亮镜面、夸张龙凤或古董道具。",
+              "不添加茶水、茶叶品牌或未经指定的文字标识。"
+            ]
+          }
+        },
+        {
+          "id": "gift_silk",
+          "title": "茶罐丝绸套",
+          "kind": "image",
+          "acceptance": "独立呈现为迷你陶罐适配的丝绸套，织物织纹、柔软垂坠与套口结构可辨，不增添多余产品。",
+          "imageSpec": {
+            "subjectStructure": "一只为迷你茶罐设计的丝绸保护套，筒状软袋自然包裹罐身轮廓，顶部留有整洁收口，旁边露出配套迷你陶罐的一小部分以说明适配关系，但主体为丝绸套。",
+            "formProportion": "短小圆筒套袋，略松弛地呈现软织物厚度，口沿平整；整体适合小罐尺度。",
+            "materialConstruction": "黛蓝或湖青真丝织物，细腻经纬纹与温润缎面光泽，局部一条桂金色细绳收束，布料有真实折痕和垂坠。",
+            "compositionFraming": "丝绸套作为画面中心主体，半套于陶罐或自然立放，干净浅米白背景，近景产品摄影。",
+            "lightSurface": "柔和侧光沿布面形成宽缓光泽，清楚表现丝织纹路和柔软褶皱。",
+            "preserve": [
+              "作为茶罐配套的独立礼品，色彩与其余六项一致。"
+            ],
+            "avoid": [
+              "避免塑料缎带感、过度繁复刺绣或满版纹样。",
+              "不出现商标、参数牌、过多搭配道具或角标。"
+            ]
+          }
+        }
+      ],
+      "visualSeries": [
+        {
+          "id": "gift_suite",
+          "memberIds": [
+            "gift_outer",
+            "gift_open",
+            "gift_notebook",
+            "gift_pillow",
+            "gift_teajar",
+            "gift_cup",
+            "gift_silk"
+          ],
+          "size": "1024x1024",
+          "lockedLayout": [
+            "统一温暖米白摄影背景与柔和自然侧光，整体色彩克制。",
+            "统一抽象杭州水纹、山影、秋桂的设计线索，避免泛化传统纹样。",
+            "画面均为干净产品视觉，主体真实完整，保留自然接触阴影。"
+          ],
+          "variableFields": [
+            "礼盒与单品的主体形态、材料质感和展示角度。",
+            "各自工艺焦点：纸雕层叠、织物与玉石草本、陶土釉面、大漆玳瑁斑纹、丝绸垂坠。"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "area": "礼盒外观与主题识别",
+          "status": "included",
+          "detail": "独立产品效果图，呈现主题字样、杭州秋桂抽象纹样及套系概念色。"
+        },
+        {
+          "area": "打开礼盒五件内装陈列",
+          "status": "included",
+          "detail": "单幅展示恰好五件指定礼品，方便辨认材质和分隔陈列。"
+        },
+        {
+          "area": "五件礼品单品图",
+          "status": "included",
+          "detail": "纸雕笔记本、玉石发热中药枕、迷你陶罐、大漆主人杯、茶罐丝绸套各一张。"
+        },
+        {
+          "area": "预算、数量与制造报价",
+          "status": "deferred",
+          "detail": "用户给定预算13–15万元与100套作为项目条件；实际单价、工艺报价后续确认，不在图片内表达。"
+        },
+        {
+          "area": "尺寸与官方色值",
+          "status": "deferred",
+          "detail": "本轮采用概念外观及用户指定六色名称方向，不标尺寸；正式尺寸、工艺及博览会官方印刷色值后续确认。"
+        },
+        {
+          "area": "医疗功效宣称",
+          "status": "not_applicable",
+          "detail": "中药枕只描述外观材料，不表达未经证实的医疗功效。"
+        },
+        {
+          "area": "PDF、HTML与额外延展",
+          "status": "not_applicable",
+          "detail": "用户明确不需要。"
+        }
+      ],
+      "deferred": [
+        "礼盒结构尺寸、内托工程适配与最终材料规格。",
+        "各项工艺可制造性核算、13–15万元预算内的分配及正式报价。",
+        "官方色值确认后替换六色概念色。"
+      ],
+      "openQuestions": [],
+      "research": "用户明确无需外部参考；按已给主题、材料、品类、颜色与概念阶段要求完成创作，不另行调研。"
+    }
+  },
+  "labeledPlan": {
+    "plan": {
+      "goal": "完成杭州首届历史经典产业博览会“和光同尘赴自在”政府伴手礼七项概念视觉，统一表现杭州秋桂文化与历史经典产业工艺特征。",
+      "preserve": [
+        "主题“和光同尘赴自在”；结合历史经典产业、杭州文化与秋桂时令。",
+        "概念色板为桂金、漆红、湖青、黛蓝、陶褐、米白；后续替换官方色值。",
+        "本轮七项各一张独立图片；中药枕不宣称未经证实的医疗功效。",
+        "图片干净，不加概念或待确认角标；不做HTML、PDF及额外延展。",
+        "预算13–15万元、制作数量100套为项目条件；本轮不在视觉中虚构报价或工艺参数。"
+      ],
+      "visualDirection": {
+        "audience": "政府贵宾与历史经典产业博览会来宾；正式礼赠语境。",
+        "theme": "杭州秋桂与经典工艺相遇，以当代器物表达温润、自在。",
+        "coreConcept": "以湖水、远山、桂枝的抽象层叠纹理连接七项礼品，使历史经典工艺成为材质与制作细节，而非符号堆叠。",
+        "visualHierarchy": [
+          "礼盒和器物轮廓清晰完整。",
+          "杭州山湖与秋桂作为克制的第二层纹理。",
+          "主题文字少量准确呈现，避免非必要文案。"
+        ],
+        "formLanguage": [
+          "当代简洁、稳重比例与适度留白。",
+          "以层叠、柔和弧线及真实器物轮廓连接各项。"
+        ],
+        "materialProcess": [
+          "笔记本呈多层纸雕切割与投影。",
+          "中药枕呈织物、温润玉石与少量草本的外观组合，不呈现未经证实功效。",
+          "陶罐为哑光陶土质感；主人杯表现深润大漆玳瑁纹；丝绸套呈现织纹和垂坠。"
+        ],
+        "colorRelationships": [
+          "米白为基底，湖青与黛蓝表现水色和层次。",
+          "桂金、漆红、陶褐作为局部材质点缀。"
+        ],
+        "compositionLighting": [
+          "七图使用浅米白静物背景及柔和侧光，强调真实表面质感。",
+          "盒体三分之四角度；单品图主体完整、构图简洁。"
+        ],
+        "avoid": [
+          "避免传统符号堆砌、满版纹样、艳金、虚构Logo及额外角标。",
+          "中药枕避免治疗、疗效或医疗认证暗示。",
+          "不在图像中加入未经提供的规格、工艺参数或官方标识。"
+        ],
+        "evidence": [
+          {
+            "source": "user",
+            "use": "主题、目标、色板、七项交付、预算数量、概念阶段、无角标、中药枕合规要求及无需外部参考均依用户原文。"
+          }
+        ]
+      },
+      "currentItemIds": [
+        "gift_outer",
+        "gift_open",
+        "gift_notebook",
+        "gift_pillow",
+        "gift_teajar",
+        "gift_cup",
+        "gift_silk"
+      ],
+      "deliverables": [
+        {
+          "id": "gift_outer",
+          "title": "礼盒外盒设计效果图",
+          "kind": "image",
+          "acceptance": "一张外盒效果图，主题及杭州秋桂抽象视觉可辨，材料与构图庄重当代，不含待确认角标。",
+          "imageSpec": {
+            "subjectStructure": "方正书盒式硬质长方礼盒，盒盖简洁呈现主题文字“和光同尘赴自在”；盒面用层叠湖波、山影和少量桂枝形成克制装饰。",
+            "formProportion": "稳重低矮长方体，盒盖与盒身完整可见，不标尺寸。",
+            "materialConstruction": "米白细纹裱纸、局部桂金细线压印感与浅浮雕纹理，漆红少量作边缘点缀；真实硬盒纸材。",
+            "compositionFraming": "三分之四视角单品静物，盒体完整，浅米白背景。",
+            "lightSurface": "柔和暖侧光显示纸纹、盒体转角与微弱金色反光。",
+            "preserve": [
+              "主题字样准确为“和光同尘赴自在”。",
+              "采用用户指定六色的概念搭配。"
+            ],
+            "avoid": [
+              "不出现虚构Logo、年份、长段文字、概念标识或参数角标。",
+              "避免满版传统纹样、艳金与促销风格。"
+            ]
+          }
+        },
+        {
+          "id": "gift_open",
+          "title": "礼盒打开后的五件礼品内装陈列效果图",
+          "kind": "image",
+          "acceptance": "一张打开礼盒图，恰有五件指定礼品且都可辨认；无功效宣称和待确认标记。",
+          "imageSpec": {
+            "subjectStructure": "打开的长方礼盒与分格内托，恰好安放五件：纸雕笔记本、玉石发热中药枕、迷你茶叶陶罐、大漆玳瑁主人杯、茶罐丝绸套。五件完整、互不遮挡。",
+            "formProportion": "稳重横向盒体打开，内托分格与五件物品比例自然。",
+            "materialConstruction": "米白纸托；纸雕层次、枕体织物与玉石、哑光陶器、大漆斑纹、丝绸织纹各自可辨。",
+            "compositionFraming": "微俯三分之四静物构图，打开礼盒为主体，五件逐一可数，浅米白背景。",
+            "lightSurface": "柔和暖光及自然接触阴影，避免高光遮蔽材质。",
+            "preserve": [
+              "严格呈现清单中的五件礼品。",
+              "统一六色概念色板与杭州秋桂山湖线索。"
+            ],
+            "avoid": [
+              "不多出赠品、茶叶包装或装饰道具。",
+              "不出现医疗功效文字、伪造标识或角标。"
+            ]
+          }
+        },
+        {
+          "id": "gift_notebook",
+          "title": "杭州主题纸雕笔记本",
+          "kind": "image",
+          "acceptance": "一张笔记本单品图，呈现多层纸雕及杭州山湖桂枝意象。",
+          "imageSpec": {
+            "subjectStructure": "一本合拢的精装笔记本，封面多层切割纸雕形成湖波、远山及一枝秋桂的前后景深。",
+            "formProportion": "竖向方正本册，书脊与纸页厚度可信，封面留白。",
+            "materialConstruction": "米白、湖青、黛蓝、桂金与陶褐纸层，纸纤维和切割边缘可见，非塑料质感。",
+            "compositionFraming": "单本略斜立放，完整封面清晰，浅米白背景。",
+            "lightSurface": "斜侧柔光形成纸层投影，突出真实层叠深度。",
+            "preserve": [
+              "杭州山湖与秋桂主题，融入套系概念色。"
+            ],
+            "avoid": [
+              "避免密集古风图案和不可读长文案。",
+              "不出现纸层粘连或塑料浮雕效果。"
+            ]
+          }
+        },
+        {
+          "id": "gift_pillow",
+          "title": "玉石发热中药枕",
+          "kind": "image",
+          "acceptance": "一张单品图，呈现枕体及玉石、草本材质组合，不含疗效或医疗暗示。",
+          "imageSpec": {
+            "subjectStructure": "横向柔软枕体，米白与黛蓝织物，局部织面展示温润浅玉色圆润石珠及少量干燥草本，作为产品构成外观。",
+            "formProportion": "饱满低矮、圆润枕形，织物自然起伏。",
+            "materialConstruction": "棉麻纤维、非镜面浅色玉石颗粒、少量干燥植物纤维；不虚构加热结构。",
+            "compositionFraming": "完整枕体斜置于浅米白台面，材质细节清楚，干净单品摄影。",
+            "lightSurface": "柔和自然侧光呈现织物、石珠和草本的差异质感。",
+            "preserve": [
+              "产品品类按玉石发热中药枕表现，仅作外观视觉。"
+            ],
+            "avoid": [
+              "禁止治疗、病痛缓解、医疗认证、热疗波纹或医疗图标。",
+              "不绘制未知电路、插头及加热结构。"
+            ]
+          }
+        },
+        {
+          "id": "gift_teajar",
+          "title": "迷你茶叶陶罐",
+          "kind": "image",
+          "acceptance": "一张迷你带盖陶罐单品图，陶土与釉面特征清楚。",
+          "imageSpec": {
+            "subjectStructure": "一只迷你带盖陶罐，圆润罐身、清晰盖沿与小钮，独立呈现。",
+            "formProportion": "掌心大小的短颈圆罐，盖身吻合、稳定。",
+            "materialConstruction": "陶褐细陶胎与局部米白哑光釉，少量湖青水纹细节，保留自然窑变与微颗粒。",
+            "compositionFraming": "罐体居中三分之四视角，展示盖、罐身与足部，浅米白背景。",
+            "lightSurface": "柔和侧光区分陶胎哑光与釉面的微亮。",
+            "preserve": [
+              "迷你茶叶陶罐单品属性，延续礼套配色。"
+            ],
+            "avoid": [
+              "不出现品牌、产地、净含量或虚构官方标识。",
+              "避免做旧裂纹与夸张镜面光。"
+            ]
+          }
+        },
+        {
+          "id": "gift_cup",
+          "title": "大漆玳瑁主人杯",
+          "kind": "image",
+          "acceptance": "一张主人杯图，杯口、杯身、底足完整，深润大漆玳瑁纹可辨。",
+          "imageSpec": {
+            "subjectStructure": "独立开口茶杯，略外撇杯沿、收束杯腰与稳固小底足；深漆红、黛黑、桂金褐形成自然玳瑁斑纹。",
+            "formProportion": "手持友好的小型主人杯，杯壁可信、器形温润。",
+            "materialConstruction": "多层大漆般深润半透明表面，漆层下不规则玳瑁云斑与柔和光泽变化，不加金属镶边。",
+            "compositionFraming": "三分之四近景单杯，展示杯口、纹理和底足，浅米白台面。",
+            "lightSurface": "柔和侧上光形成细腻漆面高光，深色层次不过曝。",
+            "preserve": [
+              "突出大漆玳瑁工艺质感与套系色彩。"
+            ],
+            "avoid": [
+              "避免塑料树脂感、过亮镜面、龙凤纹及古董道具。",
+              "不添加品牌或未经指定文字。"
+            ]
+          }
+        },
+        {
+          "id": "gift_silk",
+          "title": "茶罐丝绸套",
+          "kind": "image",
+          "acceptance": "一张丝绸套单品图，织纹、垂坠及适配迷你茶罐的结构可辨。",
+          "imageSpec": {
+            "subjectStructure": "为迷你茶罐配套的筒状丝绸保护套，柔软包裹罐身，可露出少量配套陶罐以说明适配；主体为丝绸套。",
+            "formProportion": "短小圆筒软袋，口沿整洁，布料有自然松弛与厚度。",
+            "materialConstruction": "黛蓝或湖青真丝织物，细密经纬纹和温润缎面光泽，桂金细绳收束。",
+            "compositionFraming": "丝绸套居中，可半套于陶罐或自然立放，浅米白干净背景。",
+            "lightSurface": "柔和侧光沿布面形成宽缓高光，显示织纹及褶皱。",
+            "preserve": [
+              "明确呈现茶罐配套套件，维持六色概念系统。"
+            ],
+            "avoid": [
+              "避免塑料缎带、繁复刺绣、满版纹样、商标及参数牌。"
+            ]
+          }
+        }
+      ],
+      "visualSeries": [
+        {
+          "id": "gift_suite",
+          "memberIds": [
+            "gift_outer",
+            "gift_open",
+            "gift_notebook",
+            "gift_pillow",
+            "gift_teajar",
+            "gift_cup",
+            "gift_silk"
+          ],
+          "size": "1024x1024",
+          "lockedLayout": [
+            "统一浅米白背景、柔和自然侧光与克制色彩。",
+            "以抽象山湖、桂枝线索贯穿，避免泛化传统纹样。",
+            "产品完整、干净、自然接触阴影。"
+          ],
+          "variableFields": [
+            "礼盒、内装及不同单品的主体结构与视角。",
+            "纸雕、织物玉石草本、陶器、大漆、丝绸各自的材质表现。"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "area": "目标与项目条件",
+          "status": "included",
+          "detail": "设计杭州首届历史经典产业博览会政府礼赠概念方案；预算13–15万元、数量100套作为已知项目条件，不虚构其成本拆分。"
+        },
+        {
+          "area": "整体概念与色彩",
+          "status": "included",
+          "detail": "主题“和光同尘赴自在”；杭州、秋桂与六色测试色板形成统一视觉系统。"
+        },
+        {
+          "area": "专业设计系统",
+          "status": "included",
+          "detail": "七图以统一材质光线、抽象山湖桂枝线索和当代器物语言连接。"
+        },
+        {
+          "area": "七项关键视觉",
+          "status": "included",
+          "detail": "外盒、五件内装陈列及五个单品各一张独立图。"
+        },
+        {
+          "area": "生产落地与交付边界",
+          "status": "deferred",
+          "detail": "尺寸、工艺可行性及报价、官方印刷色值后续确认；本轮仅概念视觉，不生成PDF/HTML。"
+        }
+      ],
+      "deferred": [
+        "尺寸、内托工程适配、材料规格与具体工艺报价后续确认。",
+        "预算分配与100套生产成本核算后续确认。",
+        "六色概念色替换为经博会官方印刷色值后定稿。"
+      ],
+      "openQuestions": [],
+      "research": "按用户要求不搜外部参考，直接制作概念视觉；真实生产参数与官方色值不臆测。"
+    }
+  },
+  "misnestedPlan": {
+    "plan": {
+      "goal": "为杭州首届历史经典产业博览会完成“和光同尘赴自在”政府伴手礼七项概念视觉，一项一张独立图片。",
+      "preserve": [
+        "主题“和光同尘赴自在”，融合历史经典产业标签、杭州文化与秋桂时令。",
+        "预算13–15万元、数量100套；本轮为概念视觉。",
+        "概念测试色桂金、漆红、湖青、黛蓝、陶褐、米白，后续替换官方色值。",
+        "七项：外盒、五件内装陈列、纸雕笔记本、中药枕、迷你茶叶陶罐、大漆玳瑁主人杯、茶罐丝绸套。",
+        "庄重温润、当代审美，避免传统符号堆砌；突出纸雕、玉石、陶瓷、大漆、丝绸材质。",
+        "中药枕不宣称未经证实的医疗功效；图片干净无角标。",
+        "尺寸、工艺报价、正式印刷色值后续确认；不做HTML、PDF或额外延展。"
+      ],
+      "visualDirection": {
+        "audience": "政府礼赠对象与博览会来宾。",
+        "theme": "杭州秋桂与历史经典产业工艺的当代礼赠表达。",
+        "coreConcept": "以抽象湖波、山影与桂枝线索贯穿礼盒及器物，借真实材质呈现经典工艺。",
+        "visualHierarchy": [
+          "礼盒与单品轮廓清晰完整。",
+          "材质肌理作为主要视觉细节。",
+          "杭州秋桂线索与六色概念色板克制点缀。"
+        ],
+        "formLanguage": [
+          "简洁稳重的器物比例与留白。",
+          "层叠、柔和弧线、自然纹理，避免符号拼贴。"
+        ],
+        "materialProcess": [
+          "笔记本多层纸雕与投影。",
+          "枕体表现织物与玉石部件，不暗示疗效。",
+          "陶罐哑光陶土、大漆玳瑁纹、丝绸经纬与垂坠质感清晰。"
+        ],
+        "colorRelationships": [
+          "米白为基底，湖青与黛蓝表现山水层次。",
+          "桂金、漆红、陶褐作克制器物细节。"
+        ],
+        "compositionLighting": [
+          "统一浅米白静物背景、柔和暖侧光与自然接触阴影。",
+          "外盒三分之四视角；内装微俯展示；单品完整呈现。"
+        ],
+        "avoid": [
+          "传统符号堆砌、满版纹样、虚构Logo或文字、概念角标。",
+          "中药枕医疗功效暗示、虚构尺寸和工程结构。"
+        ],
+        "evidence": [
+          {
+            "source": "user",
+            "reference": "用户明确的主题、范围、色板与风格要求",
+            "use": "确定套系主题、交付数量、概念色及表现边界。"
+          }
+        ]
+      }
+    },
+    "currentItemIds": [
+      "gift_outer",
+      "gift_open",
+      "gift_notebook",
+      "gift_pillow",
+      "gift_teajar",
+      "gift_cup",
+      "gift_silk"
+    ],
+    "deliverables": [
+      {
+        "id": "gift_outer",
+        "title": "礼盒外盒设计效果图",
+        "kind": "image",
+        "acceptance": "单图呈现完整礼盒外观，以杭州秋桂与抽象山水克制表达主题，色彩与其余六图一致，无概念角标。",
+        "imageSpec": {
+          "subjectStructure": "刚性书型礼盒闭合状态，清晰呈现盒盖与盒身结构。",
+          "formProportion": "沉稳横向比例，三分之四视角，概念阶段不标注尺寸。",
+          "materialConstruction": "米白触感纸面，桂金细节与漆红窄边装饰；盒盖呈现克制山水与桂枝层叠图形。",
+          "compositionFraming": "单盒居中完整入镜，浅米白背景，保留呼吸留白。",
+          "lightSurface": "暖色柔和侧光，强调纸面纹理与自然投影。",
+          "preserve": [
+            "主题文字精确使用“和光同尘赴自在”。"
+          ],
+          "avoid": [
+            "不得添加虚构Logo、无关文案、参数标注或概念角标。",
+            "避免传统元素拼贴及过度金色装饰。"
+          ]
+        }
+      },
+      {
+        "id": "gift_open",
+        "title": "五件礼品内装陈列效果图",
+        "kind": "image",
+        "acceptance": "打开礼盒内清晰显示恰好五件：纸雕笔记本、中药枕、陶罐、主人杯、丝绸套；造型材质可辨，统一套系色彩，无虚构文字与角标。",
+        "imageSpec": {
+          "subjectStructure": "开启式礼盒与分隔内托，五件物品各自完整、互不遮挡。",
+          "formProportion": "微俯三分之四视角，五件礼品均可明确识别。",
+          "materialConstruction": "内托采用米白纸材；五件分别呈现纸雕、织物与玉石、陶土、大漆玳瑁纹、丝绸。",
+          "compositionFraming": "礼盒居中打开，五件分区陈列并可数清，浅米白背景。",
+          "lightSurface": "温润暖侧光，兼顾各材质细节，不出现硬反光。",
+          "preserve": [
+            "恰好五件礼品，丝绸套与陶罐分别呈现。"
+          ],
+          "avoid": [
+            "不得增加第六件物品、合并或遮挡物品。",
+            "不加宣传文字、医疗功效、Logo、尺寸或角标。"
+          ]
+        }
+      },
+      {
+        "id": "gift_notebook",
+        "title": "杭州主题纸雕笔记本",
+        "kind": "image",
+        "acceptance": "单独展示笔记本，封面可辨多层纸雕结构及杭州山水、秋桂意象，呈现纸层厚度和投影；风格与套系一致。",
+        "imageSpec": {
+          "subjectStructure": "一本合拢的硬壳笔记本，封面层叠纸雕清楚可辨。",
+          "formProportion": "直立三分之四视角，完整呈现封面与书脊。",
+          "materialConstruction": "多层切割纸片表现湖面、山影与桂枝，切边整齐并投下细腻阴影。",
+          "compositionFraming": "单品置于浅米白静物背景，构图简洁留白。",
+          "lightSurface": "暖侧光强调纸层厚度、边缘与立体投影。",
+          "avoid": [
+            "避免平面印刷插画感、复杂堆砌符号及无关文字。"
+          ]
+        }
+      },
+      {
+        "id": "gift_pillow",
+        "title": "玉石发热中药枕",
+        "kind": "image",
+        "acceptance": "单独呈现织物枕体与可辨识的玉石部件，体现柔软织物和玉石质地，不出现未经证实的医疗功效暗示或文字。",
+        "imageSpec": {
+          "subjectStructure": "一只柔软长方形织物枕，旁置少量光润玉石部件以表达设计构成。",
+          "formProportion": "舒展、温和的长方比例，单品与部件清楚完整。",
+          "materialConstruction": "米白天然织物带细腻织纹，玉石呈温润半透光泽；不虚构内部发热结构。",
+          "compositionFraming": "单品静物陈列于浅米白背景，留白充分。",
+          "lightSurface": "柔暖侧光分别表现织物纤维与玉石柔和高光。",
+          "avoid": [
+            "不得出现医疗、治疗、改善睡眠等功效宣称或医疗化符号。",
+            "不添加参数、文字、Logo或角标。"
+          ]
+        }
+      },
+      {
+        "id": "gift_teajar",
+        "title": "迷你茶叶陶罐",
+        "kind": "image",
+        "acceptance": "单独展示一只迷你陶质茶罐，哑光陶土肌理真实清晰，以克制色彩呼应套系，不出现品牌或参数文字。",
+        "imageSpec": {
+          "subjectStructure": "一只带严密配盖的小型陶质茶叶罐，盖罐关系清楚。",
+          "formProportion": "紧凑圆筒或温和圆腹比例，整体单品完整入镜。",
+          "materialConstruction": "陶褐哑光陶土表面带轻微手作质感，少量湖青或桂金细节。",
+          "compositionFraming": "单罐居中三分之四视角，浅米白背景。",
+          "lightSurface": "暖侧光掠过陶面，显示微细颗粒与哑光曲面。",
+          "avoid": [
+            "不呈现塑料质感、复杂纹样、标签文字或虚构Logo。"
+          ]
+        }
+      },
+      {
+        "id": "gift_cup",
+        "title": "大漆玳瑁主人杯",
+        "kind": "image",
+        "acceptance": "单独呈现一只主人杯，造型完整且大漆玳瑁纹与层次光泽明显，庄重克制并与套系统一。",
+        "imageSpec": {
+          "subjectStructure": "单只中式主人杯，杯口、杯壁与杯底轮廓完整。",
+          "formProportion": "小巧端正、杯壁自然收放，三分之四视角。",
+          "materialConstruction": "漆红、陶褐与暗金层次构成玳瑁斑纹，表现深邃漆层与手工髹饰光泽。",
+          "compositionFraming": "单杯置于浅米白背景，不搭配其他器物。",
+          "lightSurface": "柔暖侧光形成受控细长高光，揭示漆面层次且不刺眼。",
+          "avoid": [
+            "避免塑料感、过度反光、繁复传统纹饰及多余配件。"
+          ]
+        }
+      },
+      {
+        "id": "gift_silk",
+        "title": "茶罐丝绸套",
+        "kind": "image",
+        "acceptance": "单独展示适配迷你茶罐的丝绸套，丝绸经纬、垂坠与柔和光泽可见，配色和细节与套系统一。",
+        "imageSpec": {
+          "subjectStructure": "一只可收纳小茶罐的柔性束口丝绸套，轮廓完整自然。",
+          "formProportion": "竖向小巧袋形，展示束口和自然褶皱。",
+          "materialConstruction": "湖青与米白丝绸，低调织入桂金水纹或桂枝细节，织物经纬可辨。",
+          "compositionFraming": "单独陈列于浅米白背景，可附一个陶罐作为配套展示但丝绸套必须清晰可见。",
+          "lightSurface": "柔暖侧光表现丝绸光泽、织纹与自然垂褶。",
+          "avoid": [
+            "避免镜面缎面塑料感、密集花纹、文字Logo及无关物件。"
+          ]
+        }
+      }
+    ],
+    "coverage": [
+      {
+        "area": "概念视觉七项",
+        "status": "included",
+        "detail": "按清单制作七张独立图片。"
+      },
+      {
+        "area": "预算与数量",
+        "status": "included",
+        "detail": "预算13–15万元、100套作为项目条件保留，不推算成本明细。"
+      },
+      {
+        "area": "尺寸与工艺报价",
+        "status": "deferred",
+        "detail": "本轮概念图不标注；后续据实核定。"
+      },
+      {
+        "area": "正式印刷色值",
+        "status": "deferred",
+        "detail": "暂用六色概念测试色，后续替换官方色值。"
+      },
+      {
+        "area": "图中文字与标识",
+        "status": "included",
+        "detail": "仅外盒主题需准确呈现，其余避免虚构文字与Logo。"
+      },
+      {
+        "area": "HTML、PDF与额外延展",
+        "status": "not_applicable",
+        "detail": "用户明确不需要。"
+      }
+    ],
+    "deferred": [
+      "七色值？用户指定六色（桂金、漆红、湖青、黛蓝、陶褐、米白）；后续换官方色。",
+      "具体尺寸、材料结构、工艺报价与正式印刷色值后续确认。",
+      "100套预算分配与生产核价后续确认。"
+    ],
+    "openQuestions": [],
+    "research": "按用户要求不进行外部参考搜索。"
+  },
+  "batch": {
+    "items": [
+      {
+        "deliverable_ids": [
+          "gift_outer"
+        ],
+        "arguments": {
+          "prompt": "Elegant contemporary government gift box concept for Hangzhou First Historical Classics Industry Expo, theme text exactly: 和光同尘赴自在. A refined rigid book-style box, three-quarter view, tactile warm ivory textured paper with restrained osmanthus-gold foil impression, deep lacquer-red slim accent. Lid artwork uses abstract West Lake ripples, layered distant hills and a small autumn osmanthus branch, expressing heritage crafts with quiet contemporary restraint. No logos, no extra text, no labels, no dimensions, no concept badges. Clean warm ivory studio backdrop, soft warm side light, sophisticated realistic product still life. Ensure the exact Chinese theme text is legible and correctly written.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "traditional motif collage, clutter, excessive gold, invented logos, garbled extra text, watermark, concept label, dimensions, medical claims",
+          "deliverable_ids": [
+            "gift_outer"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_open"
+        ],
+        "arguments": {
+          "prompt": "Opened premium rigid gift box for Hangzhou First Historical Classics Industry Expo, overhead three-quarter still life on warm ivory background. Exactly five distinct gifts clearly visible, arranged in fitted compartments: a layered paper-cut relief notebook with Hangzhou lake and autumn osmanthus scene; a small soft herbal pillow with subtle pale jade bead details; a miniature matte clay tea canister; a dark red-brown tortoiseshell-patterned Chinese lacquer master cup; a folded silk sleeve for the tea canister in lake teal and muted gold. The objects must be individually recognizable and count exactly five; the silk sleeve is a separate gift, not covering the canister. Box interior echoes abstract lake ripples, hill silhouettes and restrained autumn osmanthus details. Warm directional light reveals paper, fabric, ceramic, jade and lacquer surfaces. No text except a small exact theme inscription 和光同尘赴自在 on inside lid, no logos, no extra props, no labels or badges.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "more or fewer than five gifts, fused objects, clutter, invented logo, garbled text, medical claims, dimensions, badges",
+          "deliverable_ids": [
+            "gift_open"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_notebook"
+        ],
+        "arguments": {
+          "prompt": "Standalone premium Hangzhou-themed notebook, upright three-quarter product still life. Cover is a delicate multilayer paper-cut relief depicting abstract West Lake water, distant hills and autumn osmanthus branch; visible stacked cut-paper edges and soft cast shadows communicate handcrafted paper sculpture. Restrained palette ivory, lake teal, ink blue and tiny osmanthus gold detail. Contemporary understated cultural gift, refined proportions, clean warm ivory backdrop, soft side light. No invented logos, no extra text, no labels, no badges.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "flat printed illustration, cluttered traditional symbols, excessive gold, text, watermark, concept label",
+          "deliverable_ids": [
+            "gift_notebook"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_pillow"
+        ],
+        "arguments": {
+          "prompt": "Standalone elegant herbal warming pillow gift, gently rounded rectangular pillow in natural ivory woven fabric, subtle embroidered abstract lake-wave line. A few smooth pale jade-like warm stones/beads displayed beside it to suggest a heated jade element without depicting medical effects. Calm contemporary Hangzhou heritage gift styling, warm ivory studio surface, soft warm side lighting revealing textile weave and smooth stone sheen. Do not show herbs as medicinal cure, no health claims, no text, no logo, no labels, no badges or dimensions.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "medical symbolism, healing claims, people, clinical setting, text, labels, invented logo, concept badge",
+          "deliverable_ids": [
+            "gift_pillow"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_teajar"
+        ],
+        "arguments": {
+          "prompt": "A single miniature tea canister in matte warm pottery, elegant rounded cylindrical form with a small fitted lid, clay-brown body and restrained lake-teal abstract waterline with a tiny osmanthus-gold detail. Clearly ceramic, subtle wheel-thrown texture, refined Hangzhou heritage gift product. Centered standalone three-quarter view on warm ivory studio backdrop; soft side light reveals matte ceramic grain. No tea labels, no text, no logo, no dimensions, no badges.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "plastic, glossy mass-produced finish, clutter, text, logo, watermark, labels, concept badge",
+          "deliverable_ids": [
+            "gift_teajar"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_cup"
+        ],
+        "arguments": {
+          "prompt": "One Chinese master cup, standalone three-quarter still life. Compact graceful cup with dark cinnabar lacquer and rich tortoiseshell mottling in deep lacquer-red, tea-brown and subtle warm gold, visibly layered polished lacquer surface, elegant contemporary profile, no overly ornate motifs. Warm ivory background, soft warm side light with controlled reflections revealing depth of lacquer; dignified heritage craft gift. No saucer, no text, no logo, no labels, no badges.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "plastic appearance, excessive gold, busy traditional ornament, text, logo, watermark, concept label",
+          "deliverable_ids": [
+            "gift_cup"
+          ]
+        }
+      },
+      {
+        "deliverable_ids": [
+          "gift_silk"
+        ],
+        "arguments": {
+          "prompt": "Standalone silk sleeve designed for the miniature tea canister, displayed beside the canister as a matched set but visually focused on the sleeve. Softly structured drawstring silk pouch with subtle woven abstract West Lake ripples and tiny autumn osmanthus motif, lake teal and muted ivory with fine osmanthus-gold thread accents. Visible silk weave, natural folds and gentle sheen, refined restrained cultural gift styling. Warm ivory studio background, soft side lighting. No text, no logo, no dimensions, no badges.",
+          "params": {
+            "aspect_ratio": "4:3"
+          },
+          "quality": "standard",
+          "negative_prompt": "synthetic satin glare, clutter, excessive ornament, text, logos, labels, watermark, concept badge",
+          "deliverable_ids": [
+            "gift_silk"
+          ]
+        }
+      }
+    ]
+  }
+}

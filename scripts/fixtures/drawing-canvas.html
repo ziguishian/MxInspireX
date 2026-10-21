@@ -1,0 +1,49 @@
+<!doctype html><html><body><div id="app"></div><script type="module">
+import {createApp,h,reactive,nextTick} from 'vue';
+import {useVueFlow} from '@vue-flow/core';
+import GeneralCanvas from '/src/components/GeneralCanvas.vue';
+import '/src/style.css';
+localStorage.clear();
+document.documentElement.dataset.theme='light';
+const state=reactive({board:{nodes:[],edges:[]},epoch:0});
+let persistedBoard={nodes:[],edges:[]};
+window.saved=[];window.references=[];window.errors=[];window.generated=[];window.failNext=false;window.failDelete=false;window.saveDelay=0;window.writing=false;window.deletedWhileWriting=false;
+const nativeFetch=window.fetch.bind(window);
+window.fetch=async(url,options={})=>{
+  if(!String(url).startsWith('http://fixture.invalid'))return nativeFetch(url,options);
+  const body=options.body?JSON.parse(options.body):{};
+  if(String(url).endsWith('/content'))return new Response(await (await nativeFetch('/assets/langju-agent-sprite.png')).blob());
+  if(String(url).endsWith('/drawing')&&options.method==='PUT'&&window.saveDelay){window.writing=true;await new Promise(r=>setTimeout(r,window.saveDelay));window.writing=false;}
+  const board=structuredClone(JSON.parse(JSON.stringify(persistedBoard)));
+  if(String(url).endsWith('/canvas')&&options.method==='PATCH'){
+    if(window.failDelete){window.failDelete=false;return new Response('测试删除失败',{status:503});}
+    window.deletedWhileWriting=window.writing;
+    board.nodes=board.nodes.filter(n=>!body.removeNodeIds.includes(n.id));
+    board.edges=board.edges.filter(e=>!body.removeEdgeIds.includes(e.id));
+    persistedBoard=board;return Response.json(board);
+  }
+  if(String(url).endsWith('/canvas_create_node')){
+    const node={id:'drawing',type:'creative',position:{x:body.x,y:body.y},data:{kind:'image',editor:'drawing',title:body.title,previewSize:{width:720,height:540},drawing:{width:1024,height:768,strokes:[],revision:'initial',hasContent:false}}};
+    board.nodes.push(node);persistedBoard=board;return Response.json({node,canvas:board});
+  }
+  if(String(url).endsWith('/drawing')&&options.method==='PUT'){
+    if(window.failNext){window.failNext=false;return Response.json({detail:'测试保存失败，笔迹已保留'},{status:503});}
+    const node=board.nodes.find(n=>n.id==='drawing');
+    if(node.data.drawing.revision!==body.baseRevision)return Response.json({detail:'版本冲突'},{status:409});
+    window.saved.push(body);
+    const hasContent=body.drawing.strokes.length>0;
+    Object.assign(node.data,{drawing:{...body.drawing,revision:crypto.randomUUID(),hasContent},assetId:hasContent?'drawing-png-'+window.saved.length:null,asset:hasContent?{id:'drawing-png-'+window.saved.length,kind:'image',mime:'image/png',metadata:{source:'canvas-drawing'}}:null,draft:!hasContent});
+    persistedBoard=board;return Response.json({node,projectId:'drawing-check'});
+  }
+  if(String(url).endsWith('/canvas_update_node')){
+    const node=board.nodes.find(n=>n.id===body.node_id);Object.assign(node.data,body.patch.data);persistedBoard=board;return Response.json({node,canvas:board});
+  }
+  return Response.json(board);
+};
+createApp({setup(){const flow=useVueFlow('design-canvas');window.state=state;window.flow=flow;
+  window.restore=async()=>{state.epoch++;await nextTick();};
+  window.position=async(zoom=.8)=>{const node=flow.findNode('drawing');await flow.setViewport({x:620-node.position.x*zoom,y:90-node.position.y*zoom,zoom});};
+  window.addTarget=async()=>{state.board={...state.board,nodes:[...state.board.nodes,{id:'target',type:'creative',position:{x:1600,y:0},data:{kind:'image',title:'生成图像',draft:true}}],edges:[{id:'link',source:'drawing',target:'target',sourceHandle:'output',targetHandle:'input'}]};persistedBoard=JSON.parse(JSON.stringify(state.board));await nextTick();flow.removeSelectedNodes(flow.getSelectedNodes.value);flow.addSelectedNodes([flow.findNode('target')]);};
+  return()=>h(GeneralCanvas,{key:state.epoch,projectId:'drawing-check',apiBaseUrl:'http://fixture.invalid',canvasDocument:state.board,messages:[],busy:false,modelOptions:['test-image'],onCanvasChange:doc=>{state.board=doc;persistedBoard=JSON.parse(JSON.stringify(doc));},onCanvasError:error=>window.errors.push(error),onReference:value=>window.references.push(value),onGenerateNode:(...args)=>window.generated.push(args)});
+}}).mount('#app');window.ready=true;
+</script><style>html,body,#app{height:100%;margin:0}*{transition:none!important}</style></body></html>

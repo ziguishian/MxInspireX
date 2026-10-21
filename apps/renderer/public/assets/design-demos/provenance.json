@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "usage": "Explicit local demo playback; not live generation or verified production designs.",
+  "images": [
+    {
+      "key": "ref-1",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "a5caf0bdaa7d1e0d9dffde5e3a63c2e244160c83ae3d1ec66925f387e388e755",
+      "file": "ref-1.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-2",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "d3f112b8f7a66da8714eb7152f8cd87773ec3b3d12689ea5144329b3a0e3aaaf",
+      "file": "ref-2.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-7",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "bea49dc8b63c1b79f03bf363a109c7f1f49cbc19c0b80550761405dfb1aed7e7",
+      "file": "ref-7.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-8",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "d99484a847fbf792cbf956c9cbffe1e67d0e10f645cd0dfc6fb7ef6b2f496566",
+      "file": "ref-8.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-9",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "ee8ddc7845fb854bc06c4dd830a769ee154ee5ce47b59dcee13471bb5048fab5",
+      "file": "ref-9.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-10",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "f80c6795c354356f85856df2c642c452adb8dc7bbb163ac5e048687647799135",
+      "file": "ref-10.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-11",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "afab619bafaa1e6a5b419e525bb0c434aaed1dc94bee3bcedc123e0699dec5b6",
+      "file": "ref-11.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-12",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "4d17748d9d617d47bce0f80bb6c744e8e1ba1fef79d6317cd43a711ce78fd3f4",
+      "file": "ref-12.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-21",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "996548036bbf85e1f7e93163d8f53347b72a6e546bae061a83cca78aa941860b",
+      "file": "ref-21.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "ref-22",
+      "source": "user-supplied AI-edited reference",
+      "sourceSha256": "7a06190aef32ea507262070a7590cdde81eacf8868e484bdaacbacca05179b01",
+      "file": "ref-22.webp",
+      "size": [
+        1600,
+        900
+      ]
+    },
+    {
+      "key": "overview",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "838c280e19c8fe25722391411536e7258bfc5d931e0df72291f8dad639b37f78",
+      "file": "overview.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "pendant",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "862daeace635ed045bd2cdec9be4b75bffd00133d6a6c2090fd00473d34163f0",
+      "file": "pendant.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "packaging",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "6c1d7cdf8ee95a75b76b886f2f299884fd5d1e023ffcd6921838e2bf73a6f1bf",
+      "file": "packaging.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "pattern",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "9542ca952ac21830be500d132131381223a5411880216317de144973da7d9b86",
+      "file": "pattern.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "family",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "e864bfaa0fad640d82403e041578e7683930fc8f9a5dd43e62c2095a11374620",
+      "file": "family.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "campaign",
+      "source": "玉兰清和 project generated final image",
+      "sourceSha256": "ad881bde53e4bcb885fa44af0fd80e2f97ad8ff9983758a657ead61394073190",
+      "file": "campaign.webp",
+      "size": [
+        1280,
+        720
+      ]
+    },
+    {
+      "key": "engineering-tea",
+      "source": "Langju configured image-model generation",
+      "provider": "openai-compatible",
+      "model": "gpt-image-2.5-sunburst",
+      "sourceSha256": "8fa089196a459ea063f44da805b7a95291e0bbf25196ca7018787db36d50f355",
+      "file": "engineering-tea.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "key": "engineering-gift",
+      "source": "Langju configured image-model generation",
+      "provider": "openai-compatible",
+      "model": "gpt-image-2.5-sunburst",
+      "sourceSha256": "82dfa34332be3f40f1414db583efb821ef29bf42a108d2ca039be44e250f82d9",
+      "file": "engineering-gift.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "key": "engineering-pattern",
+      "source": "Langju configured image-model generation",
+      "provider": "openai-compatible",
+      "model": "gpt-image-2.5-sunburst",
+      "sourceSha256": "fce4bf67d4d8a672657d9bec9c447aeef3ab70cd7dafe166ff445ee30d02008b",
+      "file": "engineering-pattern.png",
+      "size": [
+        2048,
+        2048
+      ]
+    },
+    {
+      "key": "engineering-ip",
+      "source": "Langju configured image-model generation",
+      "provider": "openai-compatible",
+      "model": "gpt-image-2.5-sunburst",
+      "sourceSha256": "9888ba041caf97f80d0fa1eeab85e02a9878c21a6c182a2afbfe0929ee596e57",
+      "file": "engineering-ip.png",
+      "size": [
+        2048,
+        2048
+      ]
+    }
+  ],
+  "model": "Previously generated giftbox structure; three separated parts; production dimensions unconfirmed."
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "笔记本图像设计"
+  short_description: "用图像模型分别制作纸质笔记本封面、封底、约定内页和样机，逐张交付图片"
+  default_prompt: "用 $notebook-print-design 设计纸质笔记本，用图像模型分别生成独立封面、封底和样机图片，逐张交付图片并附制作说明。"

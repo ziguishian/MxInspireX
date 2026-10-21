@@ -1,0 +1,19 @@
+:root { --ui-motion-quick:140ms; --ui-motion-standard:220ms; --ui-motion-entrance:400ms; --ui-motion-ease:cubic-bezier(.22,.68,0,1); }
+.mx-animated-list { position:relative; }
+.task-queue-animated { display:grid; gap:6px; }
+.mx-list-enter-active,.mx-list-leave-active { transition:opacity var(--ui-motion-standard) ease,transform var(--ui-motion-standard) var(--ui-motion-ease); }
+.mx-list-move { transition:transform var(--ui-motion-standard) var(--ui-motion-ease); }
+.mx-list-enter-from { opacity:0; transform:translateY(8px); }
+.mx-list-leave-to { opacity:0; transform:translateY(-4px); }
+.mx-list-leave-active { position:absolute; pointer-events:none; }
+.task-queue-animated > .mx-list-leave-active { width:100%; }
+.mx-status-enter-active,.mx-status-leave-active { transition:opacity var(--ui-motion-quick) ease,translate var(--ui-motion-quick) var(--ui-motion-ease); }
+.mx-status-enter-from { opacity:0; translate:0 3px; }
+.mx-status-leave-to { opacity:0; translate:0 -3px; }
+.task-deliverables li > small { transition:color var(--ui-motion-quick) ease; }
+html[data-motion-paused=true] .mx-star-border i { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce) {
+  .mx-list-enter-active,.mx-list-leave-active,.mx-list-move,.mx-status-enter-active,.mx-status-leave-active { transition:none !important; }
+}
+html[data-reduce-animations=true] :is(.mx-list-enter-active,.mx-list-leave-active,.mx-list-move,.mx-status-enter-active,.mx-status-leave-active),
+html[data-motion-paused=true] :is(.mx-list-enter-active,.mx-list-leave-active,.mx-list-move,.mx-status-enter-active,.mx-status-leave-active) { transition:none !important; }
