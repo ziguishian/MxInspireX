@@ -4,7 +4,12 @@
 
 [简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-![同款产品主图、场景与局部编辑](docs/images/product-workflow.png)
+<img width="3840" height="1978" alt="image" src="https://github.com/user-attachments/assets/838a1600-51fa-4382-81ea-13d7e9d9834b" />
+<img width="3840" height="1978" alt="image" src="https://github.com/user-attachments/assets/a53fa767-5d18-4aa2-9ae0-758ecd35e7a2" />
+<img width="3840" height="1978" alt="image" src="https://github.com/user-attachments/assets/005e4846-60de-4e4f-bb43-4ee812f649b7" />
+
+
+
 
 ## 能做什么
 
