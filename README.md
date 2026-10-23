@@ -1,16 +1,35 @@
-# MxinspireX — 本地优先 AI 设计 Agent 与无限画布
+# MxinspireX
 
-**从一句需求，到一套设计。** 灵矩绘境出品的本地优先 AI 设计工作区，将对话、参考资料和无限画布连接起来。
+**本地优先 AI 设计 Agent 与无限画布 · 从一句需求，到一套设计。**
+
+[![最新版本](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
+[![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
+[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
+
+MxinspireX 是灵矩绘境出品的 **AI 设计工作区**，面向设计师、文创团队和产品创作者，用来把需求与参考资料变成可继续编辑、比较和导出的设计作品。
+
+你可以上传产品图、品牌资料或文档，用自然语言说明需求；Agent 结合上下文调用模型，将产品概念、包装、海报、IP 形象、场景图等结果放到同一个无限画布。后续可以继续对话修改，也可以连接节点，让上游文字或图片成为下一次生成的参考。
+
+> **描述需求 → 加入参考 → Agent 生成 → 画布比较与修改 → 导出作品**
+
+项目与文件保存在本机。使用云模型需配置自己的 API Key，模型调用按服务商计费；软件不附带免费额度。
 
 [简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-桌面更新：Windows 安装版支持 GitHub Releases 版本提示及用户确认后下载、重启安装。构建、签名与人工发布步骤见 [桌面更新发布说明](docs/desktop-updates.md)。
-
 [下载安装包](https://github.com/ziguishian/MxInspireX/releases) · [使用指南](docs/USER_GUIDE.md) · [产品事实与能力边界](docs/product-facts.md) · [问题反馈](https://github.com/ziguishian/MxInspireX/issues)
 
+## 工作区预览
+
 <img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例一" src="https://github.com/user-attachments/assets/838a1600-51fa-4382-81ea-13d7e9d9834b" />
+
+<details>
+<summary>展开更多画布与设计示例</summary>
+
 <img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例二" src="https://github.com/user-attachments/assets/a53fa767-5d18-4aa2-9ae0-758ecd35e7a2" />
 <img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例三" src="https://github.com/user-attachments/assets/005e4846-60de-4e4f-bb43-4ee812f649b7" />
+
+</details>
 
 ## 能做什么
 
@@ -26,6 +45,8 @@ Agent 按依赖组织任务：就绪的独立产物可并行，依赖新主图�
 ## 快速启动
 
 只使用软件可直接到 [GitHub Releases](https://github.com/ziguishian/MxInspireX/releases) 下载 Windows x64 安装包；以下是源码启动方式。
+
+Windows 安装版支持更新提示，仅在用户确认后下载、重启安装。构建与发布步骤见 [桌面更新发布说明](docs/desktop-updates.md)。
 
 准备 **Node.js 22 或 24**（含 npm）和 **uv**，然后：
 
@@ -91,6 +112,20 @@ npm run build            # 桌面前端及 Electron 编译
 **生成的包装能直接生产吗？** 概念图片不能替代结构校核、工艺参数与打样确认。
 
 面向搜索与 AI 阅读的资料索引见 [llms.txt](llms.txt)。独立公开介绍页构建与域名配置见 [SEO/GEO 说明](docs/search-discovery.md)。
+
+## Star History
+
+如果这个工作区对你有帮助，欢迎 Star，或通过 [Issues](https://github.com/ziguishian/MxInspireX/issues) 分享使用反馈。
+
+<a href="https://www.star-history.com/?repos=ziguishian%2FMxInspireX&type=date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ziguishian/MxInspireX&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ziguishian/MxInspireX&type=Date" />
+    <img width="800" alt="MxinspireX GitHub Star 增长历史" src="https://api.star-history.com/svg?repos=ziguishian/MxInspireX&type=Date" />
+  </picture>
+</a>
+
+[在 Star History 查看交互图表](https://www.star-history.com/?repos=ziguishian%2FMxInspireX&type=date)
 
 ## 许可与联系
 
