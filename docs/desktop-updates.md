@@ -1,8 +1,8 @@
 # 桌面版本检测与手动更新
 
-更新源：公开仓库 `ziguishian/MxInspireX` 的正式 GitHub Releases。应用 ID 沿用 `com.aicreativestudio.desktop`，当前版本读根 `package.json`，本次没有修改版本号，也没有发布。
+更新源：公开仓库 `ziguishian/MxInspireX` 的正式 GitHub Releases。应用 ID 沿用 `com.aicreativestudio.desktop`，当前版本读根 `package.json`。
 
-2026-10-22 核对：仓库公开，当前 Latest tag 为 `v0.2.0-20261022`，仅有源码归档与校验文件，没有 NSIS 安装器或更新 yml。需按本文发布首个带更新能力的安装版本；现有源码 Release 不能作为可安装更新。
+v0.2.1 已发布 Windows x64 NSIS 安装器与更新元数据，沿用历史 MIT 许可。v0.2.2 起安装向导显示根 `LICENSE` 的非商业许可，安装目录也携带同一正文；旧版本和已授予权利不追溯变更。版本说明见 `docs/releases/`，是否已发布及 Latest 状态以 GitHub Releases 为准。
 
 ## 用户操作与安全边界
 
@@ -61,4 +61,4 @@ npm run package:win
 
 自动化测试覆盖状态机、禁用条件、IPC 调用来源、并发去重、无更新、失败重试、进度和确认安装。UI 模拟测试不能替代签名包校验、真实下载、差分更新、UAC、覆盖安装与重启后的数据保留验证。不得把测试夹具安装包上传正式 Release。
 
-本次验证：状态机与现有运行依赖/打包保护测试通过，类型检查和前端/桌面编译通过；浏览器模拟验证了稍后操作不下载/安装、进度、失败重试和确认重启。electron-builder 配置通过其 schema 校验，运行依赖复制后可在独立目录解析。真实 NSIS 构建尚未完成：当前环境没有 Electron 二进制，官方分发下载持续无响应后停止；因此未验证安装器、真实 GitHub 更新、签名、差分、覆盖安装和重启。仓库没有 Lint 脚本，未声称执行 Lint。
+验证范围：状态机、运行依赖、打包保护、类型检查与编译有自动化覆盖；v0.2.1 已完成 NSIS 构建及隔离打包目录启动验证。每次发布仍需重新运行发布门禁并核对安装包、许可、版本和更新元数据。真实 GitHub 差分更新、UAC、覆盖安装和重启后的数据保留须在干净测试机验证，不能用构建成功代替。仓库没有 Lint 脚本，未声称执行 Lint。

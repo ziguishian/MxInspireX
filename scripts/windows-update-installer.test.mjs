@@ -23,6 +23,7 @@ describe('Windows update packaging', () => {
     expect(options.publish).toBe('never');
     expect(options.config.publish[0].channel).toBe(channel);
     expect(options.config.appId).toBe('com.aicreativestudio.desktop');
+    expect(options.config.nsis.license).toBe('LICENSE');
   });
   it('requires a publisher for signed builds and preserves signature identity', async () => {
     const options = input('full');
