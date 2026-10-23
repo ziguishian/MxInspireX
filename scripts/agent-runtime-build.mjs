@@ -57,12 +57,10 @@ export function verifyStandaloneWorker(workerPath) {
         if (url !== 'https://worker-smoke.invalid/v1/chat/completions') throw new Error('Unexpected smoke transport: ' + url);
         const request = JSON.parse(init?.body ?? await input.text());
         const identity = request.messages.filter(item => ['system', 'developer'].includes(item.role)).map(item => item.content).join(' ');
-        if (!identity.includes('你是独立审查者') && (!identity.includes('你叫小居') || !identity.includes('朗居文化科技研发') || identity.includes('你是朗居设计'))) {
+        if (!identity.includes('MxinspireX') || !identity.includes('灵矩绘境') || identity.includes('你叫小居')) {
           throw new Error('Packaged worker contains an outdated Agent identity');
         }
-        const content = request.model === 'worker-smoke-review'
-          ? JSON.stringify({ passed: true, issues: [], summary: 'packaged-review-ready' })
-          : 'packaged-agent-ready';
+        const content = 'packaged-agent-ready';
         const chunk = (delta, finish_reason) => 'data: ' + JSON.stringify({
           id: 'worker-smoke', object: 'chat.completion.chunk', created: 0, model: 'worker-smoke',
           choices: [{ index: 0, delta, finish_reason }]
@@ -78,16 +76,16 @@ export function verifyStandaloneWorker(workerPath) {
       env: { ...process.env, NODE_PATH: '', NODE_OPTIONS: '' },
       input: JSON.stringify({
         apiKey: 'worker-smoke-only', model: 'worker-smoke', baseUrl: 'https://worker-smoke.invalid/v1',
-        roleModels: { review: { apiKey: 'worker-smoke-only', model: 'worker-smoke-review', baseUrl: 'https://worker-smoke.invalid/v1', api: 'chat_completions' } },
-        context: { brief: '检查运行环境' },
+        context: { brief: '检查运行环境', constraints: { executionPolicyVersion: 2 } },
       }),
     });
     const events = (result.stdout || '').split('\n').filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
     const final = events.find((event) => event.type === 'result')?.result;
     if (result.error || result.status !== 0 || final?.status !== 'succeeded'
       || final?.structured_data?.answer !== 'packaged-agent-ready'
-      || final?.structured_data?.review?.passed !== true
-      || !['research', 'design', 'review'].every(stage => final?.provenance?.stages?.includes(stage))
+      || final?.structured_data?.review != null
+      || !final?.provenance?.stages?.includes('design')
+      || final?.provenance?.stages?.includes('review')
       || final?.provenance?.runtime !== 'openai-agents-sdk') {
       throw new Error(`Agent worker 独立运行检查失败：${result.error?.message || result.stderr || result.stdout}`);
     }

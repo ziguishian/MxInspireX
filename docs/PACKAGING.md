@@ -26,6 +26,7 @@ macOS 内置 PyInstaller 服务和打包后的 SDK worker。启动检查用独�
 验证：
 
 - `node scripts/smoke-packaged-macos.mjs /绝对路径/朗居设计Agent.app`
+- Windows 同一冒烟脚本也可接收 `windows-x64/LangjuAgent` 目录，验证内置 Electron/SDK、文件页面、preload、独立 API、空工作区创建与项目导航；`--cad` 额外验证本地 CAD。测试退出时关闭自己的进程树。
 - `services/api/.venv/bin/python scripts/verify-windows-package.py /绝对输出目录`
 - Windows 真机另需验证：首次启动、保存/读取/删除测试 Key、无真实费用的 Agent 模拟任务、时区计划、安装/卸载与关闭进程。结构检查不能替代真机测试。
 

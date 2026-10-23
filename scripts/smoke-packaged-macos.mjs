@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createServer } from 'node:net';
 
 const app = path.resolve(process.argv[2]);
-const executable = path.join(app, 'Contents/MacOS/LangjuAgent');
-const worker = path.join(app, 'Contents/Resources/app/services/api/app/openai_agent_worker.mjs');
+const windows = existsSync(path.join(app, 'LangjuAgent.exe'));
+const executable = path.join(app, windows ? 'LangjuAgent.exe' : 'Contents/MacOS/LangjuAgent');
+const worker = path.join(app, windows ? 'resources/app/services/api/app/openai_agent_worker.mjs' : 'Contents/Resources/app/services/api/app/openai_agent_worker.mjs');
 const temp = mkdtempSync(path.join(tmpdir(), 'langju-release-check-'));
 const env = { ...process.env, AICS_TEST_MODE: '1', AICS_WORKSPACE_ROOT: path.join(temp, 'workspace') };
 delete env.ELECTRON_RUN_AS_NODE;
@@ -19,7 +20,7 @@ const result = stdout.split('\n').filter(x => x.startsWith('{')).map(x => JSON.p
 assert.equal(result?.result.structured_data.answer, '发布包 Agent 正常');
 
 const port = await new Promise(resolve => { const server = createServer(); server.listen(0, '127.0.0.1', () => { const port = server.address().port; server.close(() => resolve(port)); }); });
-const child = spawn(executable, [`--user-data-dir=${path.join(temp, 'profile')}`, `--remote-debugging-port=${port}`], { env, cwd: temp, stdio: ['ignore', 'pipe', 'pipe'] });
+const child = spawn(executable, [`--user-data-dir=${path.join(temp, 'profile')}`, `--remote-debugging-port=${port}`], { env, cwd: temp, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
 let logs = ''; child.stdout.on('data', data => { logs += data; }); child.stderr.on('data', data => { logs += data; });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 let socket;
@@ -45,7 +46,7 @@ try {
     await sleep(200);
   }
   assert.ok(state.mounted && state.desktop, JSON.stringify(state));
-  assert.ok(state.title.endsWith(' · 小居'), 'Packaged renderer must display the current Agent name');
+  assert.ok(state.title.endsWith(' · MxinspireX'), 'Packaged renderer must display the current product name');
   let health;
   for (let i = 0; i < 120; i++) {
     health = await fetch(state.api + '/health').then(r => r.json()).catch(() => null);
@@ -108,8 +109,12 @@ try {
   writeFileSync(image, Buffer.from(screenshot.result.data, 'base64'));
   console.log(JSON.stringify({ passed: true, app, cad:process.argv.includes('--cad'), checks: ['bundled Electron Node + standalone SDK', 'file renderer', 'sandboxed preload', 'frozen local API', 'isolated project creation', 'project navigation'], screenshot: image, workspace: temp }));
 } finally {
+  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ id: 999999, method: 'Browser.close' }));
+  await new Promise(resolve => { if (child.exitCode !== null) resolve(); else { child.once('exit', resolve); setTimeout(resolve, 5000); } });
   socket?.close();
-  child.kill('SIGTERM');
-  await new Promise(resolve => { child.once('exit', resolve); setTimeout(resolve, 5000); });
+  if (child.exitCode === null) {
+    if (windows) { try { execFileSync('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true, stdio: 'ignore' }); } catch { /* Exited meanwhile. */ } }
+    else child.kill('SIGTERM');
+  }
   writeFileSync(path.join(temp, 'startup.log'), logs);
 }
