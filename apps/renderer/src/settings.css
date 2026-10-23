@@ -15,7 +15,7 @@ html .settings-open .support-fab { display: none; }
 .settings-nav-group button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; margin: 2px 0; border: 0; border-radius: 7px; background: transparent; color: var(--theme-text-muted); text-align: left; font-size: var(--ui-font-control); }
 .settings-nav-group button:is(:hover, .active) { background: var(--theme-surface-hover); color: var(--theme-text); }
 .settings-no-results { padding: 16px 8px; color: var(--theme-text-subtle); font-size: var(--ui-font-caption); }
-.settings-main { grid-column: 2; min-width: 0; padding: 66px 40px 80px; }
+.settings-main { grid-column: 2; min-width: 0; padding: 32px 40px 80px; }
 .settings-content { width: min(100%, 760px); margin: 0 auto; }
 .settings-content .help-page { padding:0; }
 .settings-page-heading { margin-bottom: 30px; }
@@ -35,7 +35,7 @@ html .settings-open .support-fab { display: none; }
 .settings-workspace-form .about-pane small { font-size: var(--ui-font-caption); }
 .settings-workspace-form .about-footer-meta { margin-top: 16px; }
 .desktop-shell .settings-navigation { top: 34px; }
-.desktop-shell .settings-page { min-height: calc(100dvh - 34px); padding-top: 34px; }
+.desktop-shell .settings-page { min-height: calc(100dvh - 34px); padding-top: 0; }
 
 /* Profile overview uses real workspace totals, projects and activity. */
 .account-overview { position: relative; color: var(--theme-text); }
@@ -163,7 +163,7 @@ html[data-theme="light"] .profile-summary-bars i { background: #527f9f; }
 
 @media (max-width: 1000px) {
   .settings-page { --settings-nav-width: 190px; }
-  .settings-main { padding: 48px 24px 64px; }
+  .settings-main { padding: 32px 24px 64px; }
   .account-activity { gap: 22px; }
 }
 @media (max-width: 720px) {
@@ -186,3 +186,7 @@ html[data-theme="light"] .profile-summary-bars i { background: #527f9f; }
   .desktop-shell .settings-navigation { top: 0; }
   .settings-workspace-form .provider-credential-row { grid-template-columns: 1fr; }
 }
+.provider-capabilities { display:grid; gap:10px; padding:14px; margin:12px 0; border:1px solid var(--theme-border); border-radius:var(--ui-radius-card); }
+.provider-capability-row { display:flex; justify-content:space-between; gap:16px; font-size:var(--ui-font-control); }
+.provider-capability-row span, .provider-capabilities > small, .provider-supplemental > small { color:var(--theme-text-muted); font-size:var(--ui-font-caption); }
+.provider-supplemental { display:grid; gap:6px; margin:14px 0; }

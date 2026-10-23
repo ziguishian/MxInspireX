@@ -1495,6 +1495,11 @@ class DesignToolRegistry:
         **_: Any,
     ) -> dict[str, Any]:
         data = {'draft': True}
+        if kind in {'palette', 'storyboard'}:
+            from .design_nodes import design_node_data
+            data = design_node_data(kind)
+            data['previewSize'] = {'width': 380, 'height': 420}
+            kind = 'text'
         if kind == 'drawing':
             from .drawing import empty_drawing
             kind = 'image'
@@ -1550,6 +1555,12 @@ class DesignToolRegistry:
         if not isinstance(patch, dict):
             raise DesignToolError("canvas_update_node.patch 必须是对象")
         self._validate_svg(task_id, 'canvas_update_node', patch)
+        if isinstance(patch.get('data'), dict):
+            current = next((n for n in self.canvas_store.load(project_id)['nodes'] if n['id'] == node_id), None)
+            editor = (current or {}).get('data', {}).get('editor')
+            if editor in {'palette', 'storyboard'}:
+                from .design_nodes import design_node_data
+                patch = {**patch, 'data': {**patch['data'], **design_node_data(editor, {**current['data'], **patch['data']})}}
         if task_id and isinstance(patch.get('data'), dict) and patch['data'].get('assetId') and self.asset_store:
             asset = self.asset_store.get_asset(project_id=project_id, asset_id=patch['data']['assetId'])
             if asset and (asset.get('mime') == 'image/svg+xml' or str(asset.get('pathRelative', '')).lower().endswith('.svg')):

@@ -77,7 +77,7 @@ def test_generate_preview_apply_reset_and_reload(service):
 def test_bundled_presets_switch_persist_and_do_not_generate(service):
     client = client_for(service)
     assert client.get('/api/mascot').json()['activePreset'] == 'robot'
-    for preset in ['cream-cat', 'cloud', 'sprout', 'robot']:
+    for preset in ['cream-cat', 'cloud', 'sprout', 'robot', 'moon-bunny', 'amber-fox', 'sea-otter', 'star-penguin']:
         response = client.put('/api/mascot', json={'presetId': preset})
         assert response.status_code == 200
         assert response.json() == {'active': None, 'activePreset': preset, 'latest': None}

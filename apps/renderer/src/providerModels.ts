@@ -65,6 +65,12 @@ export function selectAvailableModel(preferred: string, options: string[]): stri
   return options.includes(preferred) ? preferred : options[0] || '';
 }
 
+export type MediaCapability = 'image' | 'video' | 'audio';
+/** A failed/unsynced catalog is not evidence of missing capability. */
+export function useSupplementalProvider(status: string, primaryModels: string[], selectedProvider: string | undefined) {
+  return status === 'ready' && primaryModels.length === 0 && Boolean(selectedProvider);
+}
+
 /** Only IDs returned by this request may become selectable model options. */
 export function normalizeModelResponse(response: ModelCatalogResponse) {
   if (!Array.isArray(response.models)) throw new Error('模型接口未返回有效的模型列表');

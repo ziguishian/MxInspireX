@@ -1,9 +1,9 @@
 import type { RouteRecordRaw } from 'vue-router';
-export type WorkspaceView = 'intake' | 'design-agent' | 'asset-library' | 'knowledge-library' | 'projects-library' | 'user-center' | 'settings' | 'help' | 'schedules' | 'skills';
-export type SidebarSection = 'home' | 'new' | 'projects' | 'assets' | 'knowledge' | 'schedules' | 'skills';
+export type WorkspaceView = 'intake' | 'design-agent' | 'asset-library' | 'knowledge-library' | 'projects-library' | 'user-center' | 'settings' | 'help' | 'schedules' | 'skills' | 'workflows';
+export type SidebarSection = 'home' | 'new' | 'projects' | 'assets' | 'knowledge' | 'schedules' | 'skills' | 'workflows';
 export const pageLocations = {
   intake: '/', 'projects-library': '/projects', 'asset-library': '/assets',
-  'knowledge-library': '/references', skills: '/skills', schedules: '/schedules', 'user-center': '/settings/account', settings: '/settings/account', help: '/settings/help',
+  'knowledge-library': '/references', workflows: '/workflows', skills: '/skills', schedules: '/schedules', 'user-center': '/settings/account', settings: '/settings/account', help: '/settings/help',
 } as const;
 export function pathForWorkspace(view: WorkspaceView, projectId: string | null): string | null {
   if (view in pageLocations) return pageLocations[view as keyof typeof pageLocations];
@@ -12,12 +12,13 @@ export function pathForWorkspace(view: WorkspaceView, projectId: string | null):
   return base;
 }
 export function sectionForWorkspace(view: WorkspaceView): SidebarSection {
-  return view === 'skills' ? 'skills' : view === 'asset-library' ? 'assets' : view === 'knowledge-library' ? 'knowledge'
+  return view === 'workflows' ? 'workflows' : view === 'skills' ? 'skills' : view === 'asset-library' ? 'assets' : view === 'knowledge-library' ? 'knowledge'
     : view === 'schedules' ? 'schedules' : view === 'projects-library' || view === 'design-agent' ? 'projects' : 'home';
 }
 // Settings are addressable pages; old account links keep their destination.
 export const studioRoutes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: () => import('../../pages/HomePage.vue'), meta: { view: 'intake', title: '首页' } },
+  { path: '/workflows', name: 'workflows', component: () => import('../../pages/WorkflowsPage.vue'), meta: { view: 'workflows', title: '我的工作流' } },
   { path: '/projects', name: 'projects', component: () => import('../../pages/ProjectsPage.vue'), meta: { view: 'projects-library', title: '我的项目' } },
   { path: '/projects/:projectId', name: 'project', component: () => import('../../pages/ProjectWorkspacePage.vue'), meta: { view: 'design-agent', title: '设计工作区' } },
   { path: '/assets', name: 'assets', component: () => import('../../pages/AssetsPage.vue'), meta: { view: 'asset-library', title: '资产库' } },

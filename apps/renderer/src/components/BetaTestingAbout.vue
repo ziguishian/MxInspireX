@@ -26,9 +26,9 @@ async function exportLogs() {
 
 <template>
   <div class="beta-testing-about" @click.stop>
-    <strong><FlaskConical :size="15" />内部测试版 · Beta</strong>
-    <p>当前版本供团队试用，功能与生成效果仍在迭代。欢迎在生成结果下用 1–5 星告诉我们是否满意。</p>
-    <p>使用记录与评分保存在本机。导出日志包含近 30 天的对话文本、任务运行过程和评分，供团队测试复盘；会过滤常见密钥，不包含原始素材文件。</p>
+    <strong><FlaskConical :size="15" />测试版 · Beta</strong>
+    <p>功能与体验持续完善中，欢迎通过评分与反馈帮助我们改进。</p>
+    <p>使用记录与评分保存在本机。导出日志包含近 30 天的对话文本、任务运行过程和评分，用于问题排查；会过滤常见密钥，不包含原始素材文件。</p>
     <button type="button" class="beta-export-logs" :disabled="exporting" @click="exportLogs"><LoaderCircle v-if="exporting" :size="15" class="spin-icon" /><Download v-else :size="15" />{{ exporting ? '正在导出日志…' : '一键导出日志' }}</button>
     <p v-if="message" class="beta-export-result" :class="{ failed }" role="status">{{ message }}</p>
   </div>

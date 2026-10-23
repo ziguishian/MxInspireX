@@ -14,7 +14,7 @@ from .image_quality import decide_image_policy
 from .image_routing import build_image_route, dispatch_image_route
 from .model_router import RouteTrace
 
-MASCOT_PRESETS = frozenset({'robot', 'cream-cat', 'cloud', 'sprout'})
+MASCOT_PRESETS = frozenset({'robot', 'cream-cat', 'cloud', 'sprout', 'moon-bunny', 'amber-fox', 'sea-otter', 'star-penguin'})
 
 ATLAS_PROMPT = """Create ONE transparent PNG sprite atlas for a desktop app mascot.
 Exactly 3 columns × 2 rows of equal square cells, overall landscape aspect ratio 3:2.

@@ -1,10 +1,20 @@
 /* Composer-specific rules live with the editor rather than another page skin. */
+.composer-task-list .panel-heading { margin:0; padding:0 2px 8px; font-size:13px; }
+.composer-task-list .task-queue-section { margin:0; padding:0; border:0; gap:0; }
+.composer-task-list .task-queue-empty { padding:12px 2px 4px; color:var(--theme-text-muted); }
+.composer-task-list .task-queue-item { grid-template-columns:minmax(0, 1fr) auto; padding:10px 6px; }
+.composer-task-list .task-queue-item-copy { gap:5px; }
+.task-queue-progress { display:block; height:3px; overflow:hidden; border-radius:3px; background:var(--theme-border); }
+.task-queue-progress i { display:block; width:35%; height:100%; border-radius:inherit; background:var(--theme-accent-strong); animation:task-queue-indeterminate 1.8s ease-in-out infinite; }
+@keyframes task-queue-indeterminate { from { transform:translateX(-100%); } to { transform:translateX(386%); } }
+@media (prefers-reduced-motion:reduce) { .task-queue-progress i { animation:none; width:100%; opacity:.45; } }
+html[data-reduce-animations="true"] .task-queue-progress i { animation:none; width:100%; opacity:.45; }
 .composer-hero > .intake-file-list {
   gap: 8px; padding: 4px 2px; margin: 0;
 }
 .composer-message-queue {
   display:grid; gap:8px; max-height:220px; overflow:hidden;
-  margin:-2px 0 2px; padding:10px;
+  margin:0 0 8px; padding:10px;
   border:1px solid color-mix(in srgb, var(--theme-accent) 24%, var(--theme-border));
   border-radius:12px; background:color-mix(in srgb, var(--theme-accent-soft) 55%, transparent);
 }
@@ -39,7 +49,7 @@
 .queue-message-move { transition:transform .16s ease; }
 .composer-toolbar .composer-stop { background:var(--theme-danger); color:#fff; }
 .composer-toolbar .composer-stop:hover:not(:disabled) { background:color-mix(in srgb, var(--theme-danger) 82%, #000); color:#fff; }
-.composer-toolbar .composer-queue-submit { box-shadow:0 0 0 1px color-mix(in srgb, var(--theme-accent) 26%, transparent); }
+.design-supplements { display:flex; flex-direction:column; align-items:flex-end; gap:10px; margin-top:16px; }
 .composer-hero > .intake-file-list .intake-file-chip {
   display: grid; place-items: center; width: 58px; height: 58px; min-height: 58px;
   padding: 2px; gap: 0; border-radius: 10px; overflow: visible;

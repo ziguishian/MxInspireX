@@ -279,6 +279,10 @@ class CanvasStore:
             if not isinstance(merged.get("position"), dict):
                 raise ValueError("节点缺少位置")
             nodes[node["id"]] = merged
+            editor = merged.get('data', {}).get('editor')
+            if editor in {'palette', 'storyboard'}:
+                from .design_nodes import design_node_data
+                merged['data'] = {**merged['data'], **design_node_data(editor, merged['data'])}
             hidden.discard(merged.get("data", {}).get("assetId"))
         edges = {e["id"]: e for e in doc["edges"] if e["id"] not in remove_edges and e["source"] not in remove_nodes and e["target"] not in remove_nodes}
         for edge in changes.get("upsertEdges", []):

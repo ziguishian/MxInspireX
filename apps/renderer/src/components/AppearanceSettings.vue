@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import CanvasBackgroundSettings from './CanvasBackgroundSettings.vue';
 import { Check, RotateCcw } from 'lucide-vue-next';
 import { appearance, themePalettes, colorsFor, validHex, contrastRatio } from '../features/appearance';
 const mode = defineModel<'system' | 'light' | 'dark'>({ required: true });
@@ -39,4 +40,5 @@ function reset() { appearance.preset = 'neutral'; appearance.font = 'system'; er
     <footer><small>自定义颜色分别保存到深色和浅色模式，当前编辑{{ resolved === 'dark' ? '深色' : '浅色' }}。</small><button type="button" class="appearance-reset" @click="reset"><RotateCcw :size="14"/>恢复默认</button></footer>
     <p v-if="error" role="alert">{{ error }}</p><p v-if="lowContrast" role="status">文字与背景对比度较低，建议调整颜色以便阅读。</p>
   </section>
+  <CanvasBackgroundSettings />
 </template>

@@ -12,10 +12,14 @@ if(!process.versions.electron){
   })().catch(e=>{console.error(e);process.exitCode=1;});
 }else{
   const {app,BrowserWindow}=require('electron');
+  app.setPath('userData',path.join(root,'.tmp',`canvas-workspace-profile-${process.pid}`));
   app.whenReady().then(async()=>{
     app.dock?.hide();const win=new BrowserWindow({show:false,width:1500,height:1050,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
     win.webContents.session.webRequest.onBeforeRequest({urls:['http://fixture.invalid/*/content']},(_details,callback)=>callback({redirectURL:new URL('/assets/langju-agent-sprite.png',process.argv[2]).href}));
-    const js=code=>win.webContents.executeJavaScript(code).catch(error=>{throw new Error(code.slice(0,250)+': '+error.message);}),q=JSON.stringify;
+    const js=code=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error('Renderer timeout: '+code.slice(0,250))),15000);
+      win.webContents.executeJavaScript(code).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(new Error(code.slice(0,250)+': '+error.message));});
+    }),q=JSON.stringify;
     const click=selector=>js(`document.querySelector(${q(selector)}).click()`);
     const visible=selector=>js(`!!document.querySelector(${q(selector)})?.getClientRects().length`);
     const rect=selector=>js(`(()=>{const r=document.querySelector(${q(selector)}).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}})()`);
@@ -25,8 +29,10 @@ if(!process.versions.electron){
     win.webContents.debugger.attach('1.3');
     const mouse=(type,x,y,button='left',held=false,count=1)=>win.webContents.debugger.sendCommand('Input.dispatchMouseEvent',{type,x,y,button: type==='mouseMoved'&&!held?'none':button,buttons:type==='mousePressed'||held?(button==='middle'?4:1):0,clickCount:type==='mouseMoved'?0:count});
     const results=[];
+    results.push=(...items)=>{console.log('PASS:',...items);return Array.prototype.push.apply(results,items);};
     try{
       await win.loadURL(process.argv[2]);win.focus();win.webContents.focus();
+      await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
       for(let i=0;i<100&&!await js('!!window.ready');i++)await pause(100);
       await pause(300);
       // Keep the fixed gesture coordinates on the main canvas; overview
@@ -35,8 +41,9 @@ if(!process.versions.electron){
       if(!process.env.AICS_TEST_EDGES_ONLY){
       for(let i=0;i<3;i++){
         await click('[aria-label="收起对话"]');await pause(500);
+        for(let settled=0;settled<20&&await visible('.design-chat-scroll');settled++)await pause(100);
         assert.ok(!await visible('[aria-label="对话输入框"]'));assert.ok(!await visible('.design-chat-scroll'));
-        assert.ok(await visible('.canvas-agent-toggle .agent-avatar-sprite'));assert.ok(await visible('.canvas-compact-tools'));
+        assert.ok(await visible('.canvas-agent-toggle [role="img"]'));assert.ok(await visible('.canvas-compact-tools'));
         const dock=await rect('.canvas-compact-dock');assert.ok(dock.width<=60,'collapsed chat only occupies the tool rail');
         const home=await rect('.canvas-compact-dock .canvas-home-button'),tools=await rect('.canvas-compact-tools'),avatar=await rect('.canvas-agent-toggle'),help=await rect('.support-fab');
         assert.ok(Math.abs(home.y-dock.y)<1,'home stays at the top');
@@ -46,10 +53,13 @@ if(!process.versions.electron){
         await click('[aria-label="展开对话"]');await pause(500);
         assert.ok(await visible('[aria-label="对话输入框"]'));assert.equal(await js('document.querySelector("[aria-label=对话输入框]").value'),'保留输入中的设计需求');
       }results.push('collapse shows avatar and vertical tools; expand preserves mounted composer and draft');
+      await pause(1000); // Allow chat expansion's viewport framing to finish before testing double-click zoom.
       const before=await js('flow.viewport.value.zoom');
       await mouse('mousePressed',1350,800);await mouse('mouseReleased',1350,800);await mouse('mousePressed',1350,800,'left',false,2);await mouse('mouseReleased',1350,800,'left',false,2);await pause(150);
-      assert.ok(await visible('.canvas-action-menu'));assert.equal(await js('flow.viewport.value.zoom'),before);assert.equal(await js('document.querySelectorAll(".canvas-action-menu button").length'),8);
-      await click('.canvas-action-menu button');await pause(200);assert.equal(await js('state.board.nodes.length'),3);results.push('double-click adds a node without zooming');
+      assert.ok(await visible('.canvas-action-menu'));assert.equal(await js('flow.viewport.value.zoom'),before);
+      await field('[aria-label="搜索节点"]','text');
+      assert.equal(await js('document.querySelectorAll(".canvas-action-menu button").length'),1);
+      await click('.canvas-action-menu button');await pause(200);assert.equal(await js('state.board.nodes.length'),3);results.push('double-click searches and adds a node without zooming');
       for(const kind of ['image','video','audio','text','upload','html']){
         // Let initial framing and HTML preview measurement settle before
         // deliberately positioning the editor at extreme zoom levels.

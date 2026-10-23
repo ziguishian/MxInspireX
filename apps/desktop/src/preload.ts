@@ -7,6 +7,7 @@ const apiPort = Number.isInteger(port) && port > 0 && port <= 65535 ? port : 876
 contextBridge.exposeInMainWorld('studio', {
   apiBaseUrl: `http://127.0.0.1:${apiPort}`,
   isDesktop: true,
+  showAppMenu: (menu: string) => ipcRenderer.invoke('window:app-menu', menu) as Promise<string | null>,
   updates: {
     state: () => ipcRenderer.invoke('app-update:state'),
     check: () => ipcRenderer.invoke('app-update:check'),
@@ -31,6 +32,6 @@ contextBridge.exposeInMainWorld('studio', {
   chooseWorkspaceFolder: () => ipcRenderer.invoke('workspace:choose-folder') as Promise<string | null>,
   runtimeComponents: () => ipcRenderer.invoke('runtime-components:status') as Promise<Array<{ id: string; label: string; description: string; installed: boolean; available: boolean; bytes: number; source: 'download' | 'file' }>>,
   installRuntimeComponent: (id: string) => ipcRenderer.invoke('runtime-components:install', id) as Promise<{ cancelled: boolean; components: Array<{ id: string; label: string; description: string; installed: boolean; available: boolean; bytes: number; source: 'download' | 'file' }> }>,
-  setTitleBarTheme: (theme: 'dark' | 'light') => ipcRenderer.invoke('window:set-titlebar-theme', theme) as Promise<void>,
+  setTitleBarTheme: (theme: { background: string; foreground: string }) => ipcRenderer.invoke('window:set-titlebar-theme', theme) as Promise<void>,
   setAppIconAppearance: (preference: 'system' | 'dark' | 'light') => ipcRenderer.invoke('app:set-icon-appearance', preference) as Promise<void>,
 });

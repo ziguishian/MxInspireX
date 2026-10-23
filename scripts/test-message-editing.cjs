@@ -76,6 +76,13 @@ if (!process.versions.electron) {
       await wait("document.querySelectorAll('.design-message.user').length===3", 'restored conversation');
       assert.equal(await js("(()=>{const bubble=document.querySelector('.design-message.user .user-message-bubble'),surface=bubble?.querySelector('.user-message-surface'),actions=bubble?.querySelector('.user-message-actions');return !!surface&&surface.nextElementSibling===actions&&!surface.contains(actions)})()"), true, 'user actions sit below the bubble surface');
       assert.equal(await js("!!document.querySelector('.design-message.assistant [aria-label=\"复制回复\"]')"), true, 'assistant replies expose a copy action');
+      assert.equal(await js("document.querySelectorAll('.design-message time').length"), 6, 'both roles show persisted timestamps');
+      assert.equal(await js("!!document.querySelector('.design-message-agent .assistant-message-actions')"), false, 'copy moved out of avatar header');
+      await js("Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{cancel(){window.__speechCancelled=true},speak(value){window.__spoken=value.text}}});document.querySelector('.design-message.assistant [aria-label=朗读回复]').click()");
+      await pause(50);
+      assert.ok(await js('window.__spoken'), 'read aloud receives reply content');
+      await js("document.querySelector('.design-message.assistant [aria-label=停止朗读]').click()");
+      assert.equal(await js('window.__speechCancelled'), true, 'read aloud can stop');
       await js("(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__copiedReply=value}}});document.querySelector('.design-message.assistant[data-task-id=before] [aria-label=\"复制回复\"]').click()})()");
       await wait("window.__copiedReply==='之前的回复'", 'assistant reply copied');
       await js("(()=>{const composer=document.querySelector('.intake-composer'),transfer=new DataTransfer();transfer.items.add(new File(['drag fixture'],'拖拽测试.txt',{type:'text/plain'}));window.__composerFileTransfer=transfer;composer.dispatchEvent(new DragEvent('dragenter',{bubbles:true,cancelable:true,dataTransfer:transfer}))})()");

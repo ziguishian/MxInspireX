@@ -7,11 +7,10 @@ const open = defineModel<boolean>('open', { required: true });
 const props = defineProps<{ selected: string }>();
 const emit = defineEmits<{ select: [style: string] }>();
 // Resolve against the document, never the bundled stylesheet's assets directory.
-const spriteUrl = new URL(`${import.meta.env.BASE_URL}assets/style-presets-v1.png`, document.baseURI).href;
 const dialog = ref<HTMLDialogElement | null>(null);
 const previewStates = ref<Record<string, 'loaded' | 'error'>>({});
 const attempt = ref(0);
-const previewUrl = computed(() => attempt.value ? `${spriteUrl}?retry=${attempt.value}` : spriteUrl);
+const previewUrl = (image: string) => new URL(`${import.meta.env.BASE_URL}assets/style-references/${image}.png?retry=${attempt.value}`, document.baseURI).href;
 const hasPreviewError = computed(() => Object.values(previewStates.value).includes('error'));
 const selectedLabel = computed(() => stylePresets.find(preset => preset.key === props.selected)?.label);
 
@@ -45,7 +44,7 @@ function handleClose() {
         <div>
           <span class="style-picker-eyebrow">VISUAL DIRECTION</span>
           <h2 id="style-picker-title">选择你喜欢的视觉风格</h2>
-          <p id="style-picker-description">同一组器物，六种视觉表达。点击参考图，为接下来的创作选择方向。</p>
+          <p id="style-picker-description">从器物、插画到平面设计，选择适合这次创作的视觉方向。</p>
         </div>
         <button type="button" class="style-picker-close" aria-label="关闭风格选择" @click="open = false"><X :size="20" /></button>
       </header>
@@ -54,9 +53,8 @@ function handleClose() {
         <button v-for="preset in stylePresets" :key="preset.key" type="button" class="style-preview-card"
           :class="{ selected: selected === preset.key }" :aria-pressed="selected === preset.key" @click="select(preset.key)">
           <span class="style-preview-image" :class="{ 'is-loading': !previewStates[preset.key] }" :aria-busy="!previewStates[preset.key]">
-            <img :key="attempt" :src="previewUrl" :alt="`${preset.label}风格参考图`" draggable="false" decoding="async"
+            <img :key="attempt" :src="previewUrl(preset.image)" :alt="`${preset.label}风格参考图`" draggable="false" decoding="async"
               :class="{ 'is-loaded': previewStates[preset.key] === 'loaded' }"
-              :style="{ left: `${-preset.column * 100}%`, top: `${-preset.row * 100}%` }"
               @load="previewStates[preset.key] = 'loaded'" @error="previewStates[preset.key] = 'error'" />
             <span v-if="previewStates[preset.key] === 'error'" class="style-preview-placeholder"><ImageOff :size="26" /><span>参考图加载失败</span></span>
             <span v-else-if="!previewStates[preset.key]" class="style-preview-placeholder">正在加载参考图…</span>
@@ -89,8 +87,8 @@ header p, footer { color:var(--theme-text-muted); font-size:var(--ui-font-captio
 .style-preview-card:hover { transform:translateY(-2px); border-color:var(--theme-border-strong); background:var(--theme-surface-hover); }
 .style-preview-card.selected { border-color:var(--theme-accent-strong); background:var(--theme-accent-soft); }
 .style-preview-card:focus-visible { outline:2px solid var(--theme-accent-strong); outline-offset:3px; }
-.style-preview-image { position:relative; isolation:isolate; display:block; width:100%; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--theme-surface-hover); }
-.style-preview-image img { position:absolute; display:block; width:300%; height:200%; max-width:none; max-height:none; object-fit:fill; opacity:0; transition:opacity .2s; pointer-events:none; user-select:none; }
+.style-preview-image { position:relative; isolation:isolate; display:block; width:100%; aspect-ratio:16 / 9; border-radius:12px; overflow:hidden; background:var(--theme-surface-hover); }
+.style-preview-image img { position:absolute; display:block; width:100%; height:100%; max-width:none; max-height:none; object-fit:cover; opacity:0; transition:opacity .2s; pointer-events:none; user-select:none; }
 .style-preview-image img.is-loaded { opacity:1; }
 .style-preview-placeholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; font-size:var(--ui-font-caption); color:var(--theme-text-subtle); }
 .style-preview-image.is-loading::before { content:""; position:absolute; inset:0; background:linear-gradient(100deg,transparent 20%,var(--theme-accent-soft) 50%,transparent 80%); animation:style-preview-loading 1.6s ease-in-out infinite; }

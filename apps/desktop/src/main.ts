@@ -11,8 +11,11 @@ import { RuntimeComponentManager } from './runtimeComponents.js';
 import { copyWorkspace, validateWorkspaceDestination, type WorkspaceChangeMode } from './workspaceStorage.js';
 import updaterPackage from 'electron-updater';
 import { AppUpdates, updateDisabledReason, trustedUpdateSender } from './appUpdates.js';
+import { titleBarColors } from './windowAppearance.js';
+import { registerAppMenu } from './appMenu.js';
 
 registerHtmlExport();
+registerAppMenu(event => event.senderFrame === event.sender.mainFrame && visibleWindows().some(window => window.webContents === event.sender));
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 // The macOS development launcher runs from a copied Electron.app shell. That
@@ -111,8 +114,8 @@ function appIconPath(appearance: AppAppearance = currentAppAppearance()) {
   const candidates = app.isPackaged
     ? [path.join(process.resourcesPath, variant)]
     : [
-        path.join(projectRoot, 'apps', 'renderer', 'public', 'assets', 'mxinspirex-robot.png'),
         path.join(projectRoot, 'apps', 'desktop', 'assets', variant),
+        path.join(projectRoot, 'apps', 'renderer', 'public', 'assets', 'mxinspirex-app-icon.png'),
       ];
   return candidates.find((candidate) => existsSync(candidate)) ?? candidates[candidates.length - 1];
 }
@@ -296,7 +299,7 @@ function createWindow() {
     minWidth: 720,
     minHeight: 560,
     title: APP_NAME,
-    backgroundColor: '#0d0f10',
+    backgroundColor: '#181818',
     icon: appIconPath(),
     ...(process.platform === 'darwin'
       ? {
@@ -306,8 +309,8 @@ function createWindow() {
       : {
           titleBarStyle: 'hidden' as const,
           titleBarOverlay: {
-            color: '#0d0f10',
-            symbolColor: '#d6ff4b',
+            color: '#181818',
+            symbolColor: '#dddddd',
             height: 34,
           },
         }),
@@ -365,14 +368,12 @@ function createDeliveryWindow() {
   else void window.loadFile(path.join(projectRoot, 'dist/renderer/index.html'), { query: { deliveryWorker: '1' } });
 }
 
-ipcMain.handle('window:set-titlebar-theme', (event, theme: 'dark' | 'light') => {
+ipcMain.handle('window:set-titlebar-theme', (event, theme: unknown) => {
   if (process.platform === 'darwin') return;
+  const colors = titleBarColors(theme);
+  if (!colors || event.senderFrame !== event.sender.mainFrame) return;
   const target = BrowserWindow.fromWebContents(event.sender);
-  target?.setTitleBarOverlay({
-    color: theme === 'light' ? '#eef1ec' : '#0d0f10',
-    symbolColor: theme === 'light' ? '#38523d' : '#d6ff4b',
-    height: 34,
-  });
+  if (target && visibleWindows().includes(target)) target.setTitleBarOverlay(colors);
 });
 
 ipcMain.handle('app:set-icon-appearance', (_event, preference: unknown) => {

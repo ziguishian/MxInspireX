@@ -80,7 +80,7 @@ export const scheduleServices = context<{
   options: Value<ScheduleOptions>; openProject: (id: string) => void;
   openSettings: () => void; changed: () => void;
 }>('schedules');
-export type CanvasOptions = { demoMode?: boolean; messageEditRequest?: { taskId: string; requestId: number }; resendMessage: (submission: MessageResubmission) => Promise<boolean>; taskFocus?: { taskId: string; nodeId?: string; requestId: number }; messages: ConversationMessage[]; busy: boolean; progress: string; error: string; apiBaseUrl: string; projectId: string; canvasDocument: CanvasDocument; modelOptions: string[]; textModelOptions: string[]; audioModelOptions: string[]; videoModelOptions: string[] };
+export type CanvasOptions = { runWorkflowNode?: (kind: any, prompt: string, position: {x:number;y:number}, params: Record<string, any>) => Promise<boolean | undefined>; demoMode?: boolean; messageEditRequest?: { taskId: string; requestId: number }; resendMessage: (submission: MessageResubmission) => Promise<boolean>; taskFocus?: { taskId: string; nodeId?: string; requestId: number }; messages: ConversationMessage[]; busy: boolean; progress: string; error: string; apiBaseUrl: string; projectId: string; canvasDocument: CanvasDocument; modelOptions: string[]; textModelOptions: string[]; audioModelOptions: string[]; videoModelOptions: string[] };
 export const projectWorkspaceServices = context<{
   isLoading: Value<boolean>; errorMessage: Value<string>;
   options: Value<CanvasOptions | null>; designCanvasVisible: Ref<boolean>;

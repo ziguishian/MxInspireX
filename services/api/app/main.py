@@ -184,6 +184,12 @@ app.include_router(testing_router)
 app.include_router(skills_router)
 app.include_router(reference_router)
 app.include_router(drawing_router)
+from .vectorize import router as vectorize_router
+app.include_router(vectorize_router)
+from .workflow_routes import router as workflow_router
+app.include_router(workflow_router)
+from .voice_input import router as voice_input_router
+app.include_router(voice_input_router)
 app.include_router(mascot_router)
 app.include_router(storage_management_router)
 

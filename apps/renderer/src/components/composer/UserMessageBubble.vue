@@ -2,10 +2,11 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { Check, Copy, Pencil } from 'lucide-vue-next';
 import UserMessageContent from './UserMessageContent.vue';
+import MessageTimestamp from './MessageTimestamp.vue';
 import type { ConversationMessage, MessageResubmission } from '../../features/pageServices';
 import { readableReferences, referenceSegments } from '../../features/composer/references';
 import { recordBetaUsage } from '../../features/betaTesting';
-const props = defineProps<{ message: ConversationMessage; busy: boolean; editRequest?: number; resend: (submission: MessageResubmission) => Promise<boolean> }>();
+const props = defineProps<{ message: ConversationMessage; timestamp?: string; busy: boolean; editRequest?: number; resend: (submission: MessageResubmission) => Promise<boolean> }>();
 const editing = ref(false), submitting = ref(false), copied = ref(false), error = ref(''), text = ref('');
 const editor = ref<HTMLTextAreaElement | null>(null);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -21,6 +22,7 @@ async function copyMessage() {
   } catch { error.value = '复制失败，请重试。'; }
 }
 async function editMessage() {
+  if (props.busy || submitting.value) return;
   recordBetaUsage('message_edit', { taskId: props.message.taskId });
   // Use readable names only when they resolve unambiguously back to the
   // original reference. Duplicate filenames retain their stable tokens.
@@ -55,7 +57,8 @@ watch(() => props.editRequest, request => { if (request && !submitting.value) vo
       <UserMessageContent v-else :content="message.content" :references="references" />
     </div>
     <div v-if="!editing" class="user-message-actions" role="group" aria-label="消息操作">
-      <button v-if="message.taskId" type="button" aria-label="编辑并重新提交" title="编辑并重新提交" @click.stop="editMessage"><Pencil :size="14" :stroke-width="1.7" /></button>
+      <MessageTimestamp :value="timestamp" />
+      <button v-if="message.taskId && !busy" type="button" aria-label="编辑并重新提交" title="编辑并重新提交" @click.stop="editMessage"><Pencil :size="14" :stroke-width="1.7" /></button>
       <button type="button" :aria-label="copied ? '已复制' : '复制消息'" :title="copied ? '已复制' : '复制消息'" @click.stop="copyMessage"><Check v-if="copied" :size="14" /><Copy v-else :size="14" :stroke-width="1.7" /></button>
     </div>
     <span v-if="error" class="user-message-action-error" role="status">{{ error }}</span>
@@ -66,8 +69,8 @@ watch(() => props.editRequest, request => { if (request && !submitting.value) vo
 <style scoped>
 .user-message-bubble{position:relative;display:grid;justify-items:end;min-width:0}
 .user-message-surface{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid var(--theme-border);border-radius:16px 16px 4px 16px;background:var(--theme-surface-subtle);padding:12px 15px}
-.user-message-actions{position:absolute;top:100%;right:0;z-index:1;display:flex;justify-content:flex-end;gap:2px;min-height:27px;margin-top:2px;opacity:0;pointer-events:none;transition:opacity .12s ease}
-:global(.design-message.user:hover) .user-message-actions,.user-message-bubble:focus-within .user-message-actions{opacity:1;pointer-events:auto}
+.user-message-actions{display:flex;justify-content:flex-end;gap:2px;min-height:27px;margin-top:6px;opacity:0;pointer-events:none}
+.user-message-bubble:hover .user-message-actions,.user-message-bubble:focus-within .user-message-actions{opacity:1;pointer-events:auto}
 .user-message-actions button{display:grid;place-items:center;width:27px;height:27px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--theme-text-muted);cursor:var(--cursor-pointer)}
 .user-message-actions button:hover{background:var(--theme-surface-hover);color:var(--theme-text)}
 .user-message-actions button:focus-visible{outline:1px solid var(--theme-accent-strong);outline-offset:1px}

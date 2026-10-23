@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { FileCode2, ImageOff, LoaderCircle, Play } from 'lucide-vue-next';
+import { AudioLines, FileCode2, ImageOff, LoaderCircle, Play } from 'lucide-vue-next';
 import type { LibraryAsset } from '../../features/pageServices';
-import { assetPreviewKind, libraryAssetKey, libraryAssetUrl, loadAssetHtml, videoDuration } from '../../features/assetPreview';
+import { assetModelFormat, assetPreviewKind, libraryAssetKey, libraryAssetUrl, loadAssetHtml, videoDuration } from '../../features/assetPreview';
 import { htmlPreviewDocument, HTML_PREVIEW_SANDBOX, type HtmlPreviewSize } from '../../htmlPreview';
 
 const props = defineProps<{ asset: LibraryAsset; apiBaseUrl: string; paused?: boolean; pageSize?: HtmlPreviewSize; fit?: 'cover' | 'contain'; natural?: boolean }>();
@@ -11,7 +11,7 @@ const host = ref<HTMLElement | null>(null), video = ref<HTMLVideoElement | null>
 const visible = ref(false), loading = ref(true), failed = ref(false), html = ref(''), width = ref(300), duration = ref('');
 const imageAttempt = ref(0);
 const kind = computed(() => assetPreviewKind(props.asset));
-const modelFormat = computed(() => String(props.asset.pathRelative || '').split('.').pop()?.toLowerCase() || 'glb');
+const modelFormat = computed(() => assetModelFormat(props.asset));
 const cadThumbnail = ref('');
 const url = computed(() => kind.value === 'cad' ? cadThumbnail.value : libraryAssetUrl(props.apiBaseUrl, props.asset));
 const imageUrl = computed(() => {
@@ -133,17 +133,19 @@ onBeforeUnmount(() => { imageLoadToken += 1; request?.abort(); clearImageTimers(
   <div ref="host" class="library-media-thumbnail" :class="{ 'is-natural': natural, 'is-loading': loading, 'is-failed': failed }" :data-kind="kind" :aria-busy="loading" @pointerenter="hover(true)" @pointerleave="hover(false)">
     <template v-if="!failed">
       <img v-if="(kind === 'image' || kind === 'cad') && imageUrl" :key="`${libraryAssetKey(asset)}/${imageAttempt}`" :src="imageUrl" :style="{ objectFit: fit || 'cover' }" alt="" loading="eager" decoding="async" @load="imageDecoded" @error="retryImage" />
+      <div v-else-if="kind === 'audio'" class="library-audio-cover"><AudioLines :size="44" :stroke-width="1.3" /><span>点击播放音频</span></div>
       <video v-else-if="kind === 'video' && visible" :key="libraryAssetKey(asset)" ref="video" :src="url" :style="{ objectFit: fit || 'cover' }" muted loop playsinline preload="metadata" tabindex="-1" aria-hidden="true" @loadedmetadata="metadataLoaded" @loadeddata="mediaLoaded" @error="fail" />
       <iframe v-else-if="kind === 'html' && visible && html" :srcdoc="document" :sandbox="HTML_PREVIEW_SANDBOX" :style="frameStyle" title="HTML 页面缩略图" tabindex="-1" aria-hidden="true" @load="mediaLoaded" />
       <ModelViewer v-else-if="kind === '3d' && visible && url" :asset-url="url" :asset-format="modelFormat" :label="asset.pathRelative || '3D 模型缩略图'" @loaded="mediaLoaded" @error="fail" />
     </template>
     <div v-if="failed" class="library-thumbnail-status"><ImageOff v-if="kind !== 'html'" :size="22" /><FileCode2 v-else :size="22" /><span>暂时无法预览</span></div>
-    <div v-else-if="loading" class="library-thumbnail-status library-thumbnail-loading" aria-hidden="true"><span class="library-thumbnail-loading-label"><LoaderCircle :size="19" class="spin-icon" /><span>正在加载预览</span></span></div>
+    <div v-else-if="loading && kind !== 'audio'" class="library-thumbnail-status library-thumbnail-loading" aria-hidden="true"><span class="library-thumbnail-loading-label"><LoaderCircle :size="19" class="spin-icon" /><span>正在加载预览</span></span></div>
     <template v-if="!failed && kind === 'video'"><span class="library-video-play" aria-hidden="true"><Play :size="19" fill="currentColor" /></span><span v-if="duration" class="library-video-duration" aria-hidden="true">{{ duration }}</span></template>
     <span v-if="kind === 'html' && !failed" class="library-html-badge" aria-hidden="true"><FileCode2 :size="12" />HTML</span>
   </div>
 </template>
 <style scoped>
+.library-audio-cover { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; width:100%; height:100%; background:var(--theme-surface); color:var(--theme-text-muted); font-size:12px; }
 .library-media-thumbnail { position: absolute; inset: 0; overflow: hidden; isolation: isolate; border-radius: inherit; background: var(--theme-bg); }
 .library-media-thumbnail > img, .library-media-thumbnail > video { position: relative; z-index: 0; display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 1; transition: opacity .22s ease; }
 .library-media-thumbnail > iframe { opacity: 1; transition: opacity .22s ease; }

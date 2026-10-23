@@ -1,9 +1,15 @@
 import type { LibraryAsset } from './pageServices';
 
-export function assetPreviewKind(asset: LibraryAsset): 'image' | 'video' | 'html' | '3d' | 'cad' | null {
+export function assetModelFormat(asset: LibraryAsset): string {
+  const extension = asset.pathRelative.split('.').pop()?.toLowerCase() || '';
+  if (['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(extension)) return extension;
+  return ({ 'model/gltf-binary': 'glb', 'model/gltf+json': 'gltf', 'model/obj': 'obj', 'model/stl': 'stl', 'application/sla': 'stl' } as Record<string, string>)[(asset.mime || '').split(';')[0]] || 'glb';
+}
+export function assetPreviewKind(asset: LibraryAsset): 'image' | 'video' | 'audio' | 'html' | '3d' | 'cad' | null {
   if (!asset.projectId) return null;
   if (asset.kind === 'cad' && asset.pathRelative.endsWith('.cad.json')) return 'cad';
-  if (asset.kind === '3d' || /\.(glb|gltf|obj|fbx|stl)$/i.test(asset.pathRelative)) return '3d';
+  if (asset.kind === '3d' || /^model\//i.test(asset.mime || '') || /\.(glb|gltf|obj|fbx|stl)$/i.test(asset.pathRelative)) return '3d';
+  if (asset.kind === 'audio' || asset.mime?.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac|opus)$/i.test(asset.pathRelative)) return 'audio';
   if (asset.htmlNodeId || asset.kind === 'html' || /^(text\/html|application\/xhtml\+xml)(;|$)/i.test(asset.mime || '') || /\.html?$/i.test(asset.pathRelative)) return 'html';
   if (asset.kind === 'video' || asset.mime?.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv)$/i.test(asset.pathRelative)) return 'video';
   if (asset.kind === 'image' || asset.mime?.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif|svg|bmp)$/i.test(asset.pathRelative)) return 'image';

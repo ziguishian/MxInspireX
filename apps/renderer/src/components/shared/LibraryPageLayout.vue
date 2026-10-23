@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
 /* All three libraries share the reference library's width and gutters. */
 .collection-page {
   width: 100%; max-width: 1600px; min-width: 0; margin: 0 auto;
-  padding: 34px clamp(20px, 4vw, 64px); color: var(--theme-text);
+  padding: 16px clamp(20px, 4vw, 64px) 34px; color: var(--theme-text);
   --library-preview-ratio: 16 / 9;
 }
 .collection-page :deep(.page-heading) { margin-bottom: 24px; }
@@ -97,8 +97,8 @@ onBeforeUnmount(() => {
 }
 .collection-page :deep(.library-grid) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .library-back-to-top {
-  position: fixed; right: 20px; bottom: 74px; z-index: 70;
-  display: grid; place-items: center; width: 42px; height: 42px; padding: 0;
+  position: fixed; right: var(--page-floating-action-right, 28px); bottom: 74px; z-index: 70;
+  display: grid; place-items: center; width: var(--corner-button-size, 42px); height: var(--corner-button-size, 42px); padding: 0;
   border: 1px solid color-mix(in srgb, var(--theme-accent-strong) 38%, var(--theme-border));
   border-radius: 50%; background: color-mix(in srgb, var(--theme-surface) 90%, transparent);
   color: var(--theme-accent-strong); box-shadow: 0 10px 28px #0007;
@@ -122,7 +122,6 @@ onBeforeUnmount(() => {
   .collection-page :deep(.page-heading .muted) { min-height: 40px; }
   .collection-filters :deep(select) { min-width: 120px; height: var(--ui-control-height); border-radius: var(--ui-radius-control); }
   .collection-page :deep(.library-grid) { grid-template-columns: minmax(0, 1fr); }
-  .library-back-to-top { right: 14px; bottom: 68px; width: 40px; height: 40px; }
 }
 @media (prefers-reduced-motion: reduce) { .library-back-to-top { transition: none; } }
 </style>

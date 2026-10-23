@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { generalDefaults, readGeneralSettings, shouldSendMessage } from './generalSettings';
 
 describe('general preferences', () => {
+  it('defaults to Enter sending while preserving an existing shortcut preference', () => {
+    expect(readGeneralSettings({ getItem: () => null }).sendWithEnter).toBe(true);
+    expect(readGeneralSettings({ getItem: () => '{"sendWithEnter":false}' }).sendWithEnter).toBe(false);
+  });
   it('restores only known boolean preferences and tolerates damaged storage', () => {
     expect(readGeneralSettings({ getItem: () => '{' })).toEqual(generalDefaults);
     expect(readGeneralSettings({ getItem: () => { throw Error('denied'); } })).toEqual(generalDefaults);

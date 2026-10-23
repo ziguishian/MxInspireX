@@ -53,6 +53,7 @@ const args = [
   '--add-data', `${pdfiumLicenses}${path.delimiter}PDFIUM-LICENSES`,
   '--collect-submodules', 'app',
   '--collect-all', 'pypdfium2',
+  '--collect-all', 'vtracer',
   '--collect-all', 'pypdfium2_raw',
   '--collect-submodules', 'uvicorn',
   '--collect-submodules', 'fastapi',

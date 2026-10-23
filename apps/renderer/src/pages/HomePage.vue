@@ -155,8 +155,9 @@ onUnmounted(() => {
 
 <div ref="page" class="intake-page home-intake">
   <div class="intake-hero">
-    <div class="intake-heading"><div><p class="eyebrow">你的 AI 设计 Agent</p><BlurText as="h2" text="从一句需求，到一套设计。" once-key="home-heading" /><p>MxinspireX 理解需求与参考资料，生成设计方案，并在画布中持续迭代。</p></div></div>
-    <div class="home-composer-stage">
+    <div class="intake-heading"><div><BlurText as="h2" text="从一句需求，到一套设计。" once-key="home-heading" /><p>MxinspireX 理解需求与参考资料，生成设计方案，并在画布中持续迭代。</p></div></div>
+    <div class="home-composer-stage" :class="{ 'is-file-dragging': isDraggingFiles }">
+      <div v-if="isDraggingFiles" class="home-composer-drop-hint" role="status">松开鼠标，添加为附件</div>
       <div id="intake-composer-host" />
       <button class="home-composer-lumo" :class="{ 'is-custom': hasMascotColor }" type="button" aria-label="和MxinspireX打个招呼" @click="talkToLumo">
         <span class="home-composer-lumo-sprite" :style="customMascotStyle" :class="isSubmitting ? 'is-thinking' : lumoReaction ? `is-${lumoReaction}` : undefined" aria-hidden="true" />
@@ -165,7 +166,6 @@ onUnmounted(() => {
         </Transition>
       </button>
     </div>
-    <p class="home-upload-hint">可将图片、文档或 CSV 表格拖到此页，添加为附件</p>
     <p v-if="errorMessage" class="error-message intake-error-message" role="alert">{{ errorMessage }}</p>
   </div>
   <section class="home-examples" aria-label="精选项目">
@@ -173,16 +173,7 @@ onUnmounted(() => {
   </section>
 </div>
 <Teleport to="body"><footer class="home-footer"><p class="intake-safety-note">AI 生成内容，请仔细甄别</p></footer></Teleport>
-<Teleport to="body">
-  <div v-if="isDraggingFiles" class="home-file-drop-overlay" role="status" aria-live="polite">
-    <div class="home-file-drop-card">
-      <Upload :size="32" :stroke-width="1.6" aria-hidden="true" />
-      <strong>{{ isSubmitting ? '正在上传资料，请稍候' : '松开鼠标，添加为附件' }}</strong>
-      <span>支持一次拖入多个图片、文档或 CSV 表格</span>
-      <small>添加后可预览、移除，点击发送时上传</small>
-    </div>
-  </div>
-</Teleport>
+
 </template>
 
 <style scoped>

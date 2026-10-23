@@ -21,7 +21,7 @@ class MascotGenerate(BaseModel):
 class MascotApply(BaseModel):
     model_config = ConfigDict(extra='forbid')
     generationId: UUID | None = None
-    presetId: Literal['robot', 'cream-cat', 'cloud', 'sprout'] | None = None
+    presetId: Literal['robot', 'cream-cat', 'cloud', 'sprout', 'moon-bunny', 'amber-fox', 'sea-otter', 'star-penguin'] | None = None
 
 
 @router.get('')

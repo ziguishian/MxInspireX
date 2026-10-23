@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ArrowUpRight, Box, Download, FileCode2, ImageOff, LoaderCircle, Star, Trash2, X } from 'lucide-vue-next';
+import { ArrowUpRight, AudioLines, Box, Download, FileCode2, ImageOff, LoaderCircle, Star, Trash2, X } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import LibraryPageLayout from '../components/shared/LibraryPageLayout.vue';
 import EmptyState from '../components/shared/EmptyState.vue';
+import BrandLoading from '../components/BrandLoading.vue';
 import InfiniteScrollStatus from '../components/shared/InfiniteScrollStatus.vue';
 import MasonryGrid from '../components/shared/MasonryGrid.vue';
 import { assetLibraryServices, type LibraryAsset } from '../features/pageServices';
 import CadPanel from '../components/CadPanel.vue';
 import LibraryAssetThumbnail from '../components/assets/LibraryAssetThumbnail.vue';
-import { assetPreviewKind, libraryAssetKey, libraryAssetUrl, loadAssetHtml, videoDuration } from '../features/assetPreview';
+import { assetModelFormat, assetPreviewKind, libraryAssetKey, libraryAssetUrl, loadAssetHtml, videoDuration } from '../features/assetPreview';
 import { htmlPreviewDocument, HTML_PREVIEW_SANDBOX } from '../htmlPreview';
 import { exportNode, nodeSaveLabel } from '../nodeExport';
 const { loadState, globalAssets, apiBaseUrl, assetDisplayName, requestDeleteAsset, openProject } = assetLibraryServices.use();
@@ -99,10 +100,11 @@ const previewDialog = ref<HTMLDialogElement | null>(null);
 const previewLoading = ref(false);
 const previewFailed = ref(false);
 const previewDimensions = ref('');
+const previewAudio = ref<HTMLAudioElement | null>(null);
 const previewVideo = ref<HTMLVideoElement | null>(null), previewHtml = ref('');
 const previewKind = computed(() => previewAsset.value ? assetPreviewKind(previewAsset.value) : null);
-const previewLabel = computed(() => previewKind.value === 'video' ? '视频' : previewKind.value === 'html' ? 'HTML' : previewKind.value === '3d' ? '3D 模型' : previewKind.value === 'cad' ? 'CAD 模型' : '图像');
-const previewModelFormat = computed(() => String(previewAsset.value?.pathRelative || '').split('.').pop()?.toLowerCase() || 'glb');
+const previewLabel = computed(() => previewKind.value === 'audio' ? '音频' : previewKind.value === 'video' ? '视频' : previewKind.value === 'html' ? 'HTML' : previewKind.value === '3d' ? '3D 模型' : previewKind.value === 'cad' ? 'CAD 模型' : '图像');
+const previewModelFormat = computed(() => previewAsset.value ? assetModelFormat(previewAsset.value) : 'glb');
 const previewFrame = ref<HTMLIFrameElement | null>(null);
 const htmlDocument = computed(() => htmlPreviewDocument(previewHtml.value, {}, true));
 const saveMenu = ref<{ asset: LibraryAsset; x: number; y: number } | null>(null);
@@ -142,7 +144,7 @@ const assetUrl = (asset: LibraryAsset) => libraryAssetUrl(apiBaseUrl, asset);
 async function openPreview(asset: LibraryAsset) {
   if (assetPreviewKind(asset) === 'cad') { cadAsset.value = asset; return; }
   saveMenu.value = null;
-  previewController?.abort(); downloadController?.abort(); previewVideo.value?.pause(); downloading.value = false;
+  previewController?.abort(); downloadController?.abort(); previewVideo.value?.pause(); previewAudio.value?.pause(); downloading.value = false;
   const controller = new AbortController(); previewController = controller;
   previewAsset.value = asset;
   previewLoading.value = true;
@@ -161,7 +163,7 @@ async function openPreview(asset: LibraryAsset) {
 function closePreview() {
   saveMenu.value = null;
   previewController?.abort(); previewController = undefined;
-  previewVideo.value?.pause(); previewHtml.value = '';
+  previewVideo.value?.pause(); previewAudio.value?.pause(); previewHtml.value = '';
   downloadController?.abort();
   downloadController = undefined;
   downloading.value = false;
@@ -220,18 +222,18 @@ async function exportPdf(asset: LibraryAsset) {
   } catch (error) { if (!controller.signal.aborted) downloadError.value = error instanceof Error ? error.message : 'PDF 导出失败，请重试。'; }
   finally { if (downloadController === controller) { downloading.value = false; downloadController = undefined; } }
 }
-onBeforeUnmount(() => { previewVideo.value?.pause(); previewController?.abort(); downloadController?.abort(); htmlCatalogController?.abort(); });
+onBeforeUnmount(() => { previewVideo.value?.pause(); previewAudio.value?.pause(); previewController?.abort(); downloadController?.abort(); htmlCatalogController?.abort(); });
 </script>
 
 <template>
   <LibraryPageLayout v-model:search="assetSearch" class="library-page" eyebrow="ASSETS / LOCAL LIBRARY" title="资产库" description="集中预览和管理项目产物，回到对话中可用 @ 引用。" search-label="搜索资产名称或项目">
     <template #actions><RouterLink class="ghost-button" to="/projects"><ArrowUpRight :size="16" />查看项目</RouterLink></template>
     <template #meta>共 {{ filteredGlobalAssets.length }} 个资产</template>
-    <template #filters><select v-model="assetTypeFilter" aria-label="资产类型"><option value="all">全部类型</option><option value="image">图像</option><option value="video">视频</option><option value="html">HTML 网页</option><option value="3d">3D 模型</option><option value="document">文档</option><option value="cad">CAD</option></select></template>
+    <template #filters><select v-model="assetTypeFilter" aria-label="资产类型"><option value="all">全部类型</option><option value="image">图像</option><option value="video">视频</option><option value="audio">音频</option><option value="html">HTML 网页</option><option value="3d">3D 模型</option><option value="document">文档</option><option value="cad">CAD</option></select></template>
     <p v-if="referenceNotice" class="library-notice" role="status">{{ referenceNotice }}</p>
           <p v-if="htmlError" class="library-preview-error" role="status">{{ htmlError }}<button type="button" @click="loadHtmlLibrary">重试</button></p>
           <p v-if="downloadError && !previewAsset" class="library-preview-error" role="alert">{{ downloadError }}</p>
-          <EmptyState v-if="(loadState.loading.value || htmlLoading) && !filteredGlobalAssets.length">正在读取资料…</EmptyState>
+          <BrandLoading v-if="(loadState.loading.value || htmlLoading) && !filteredGlobalAssets.length" label="正在读取资料…" />
           <EmptyState v-else-if="loadState.error.value">{{ loadState.error.value }}<template #action><button class="ghost-button" :disabled="loadState.loading.value" @click="loadState.retry">重新加载</button></template></EmptyState>
           <EmptyState v-else-if="!filteredGlobalAssets.length" :icon="ImageOff" title="这里将收集你的设计资产">先在首页上传图片或资料，或运行一个任务生成资产；也可以调整当前筛选。</EmptyState>
           <div v-if="filteredGlobalAssets.length" class="asset-timeline" aria-label="资产时间轴">
@@ -266,6 +268,7 @@ onBeforeUnmount(() => { previewVideo.value?.pause(); previewController?.abort();
           <template v-if="!previewFailed">
             <img v-if="previewKind === 'image'" :key="libraryAssetKey(previewAsset)" :src="assetUrl(previewAsset)" :alt="assetDisplayName(previewAsset)" @load="imageLoaded" @error="previewLoading = false; previewFailed = true" />
             <video v-else-if="previewKind === 'video'" ref="previewVideo" :key="libraryAssetKey(previewAsset)" :src="assetUrl(previewAsset)" controls playsinline preload="auto" :aria-label="assetDisplayName(previewAsset)" @loadedmetadata="videoLoaded" @loadeddata="previewLoading = false" @error="previewLoading = false; previewFailed = true" />
+            <div v-else-if="previewKind === 'audio'" class="asset-audio-preview"><AudioLines :size="64" :stroke-width="1.2" aria-hidden="true" /><audio ref="previewAudio" :key="libraryAssetKey(previewAsset)" :src="assetUrl(previewAsset)" controls preload="metadata" :aria-label="assetDisplayName(previewAsset)" @loadedmetadata="previewLoading = false; previewDimensions = videoDuration(($event.target as HTMLAudioElement).duration)" @error="previewLoading = false; previewFailed = true" /></div>
             <iframe ref="previewFrame" v-else-if="previewKind === 'html' && previewHtml" :key="libraryAssetKey(previewAsset)" :srcdoc="htmlDocument" :sandbox="HTML_PREVIEW_SANDBOX" :title="assetDisplayName(previewAsset)" @load="previewLoading = false" />
             <ModelViewer v-else-if="previewKind === '3d'" :key="libraryAssetKey(previewAsset)" :asset-url="assetUrl(previewAsset)" :asset-format="previewModelFormat" :label="assetDisplayName(previewAsset)" @loaded="previewLoading = false" @error="previewLoading = false; previewFailed = true" />
           </template>
@@ -274,7 +277,7 @@ onBeforeUnmount(() => { previewVideo.value?.pause(); previewController?.abort();
         </div>
         <footer class="asset-preview-footer">
           <div class="asset-preview-meta"><span>{{ previewAsset.projectName || '本地项目' }}</span><small>{{ previewDimensions }}{{ previewDimensions ? ' · ' : '' }}{{ Math.max(1, Math.round(previewAsset.byteSize / 1024)) }} KB</small><small v-if="downloadError" class="asset-download-error" role="alert">{{ downloadError }}</small></div>
-          <button type="button" class="asset-download-button" :disabled="downloading" @click="downloadOriginal()"><LoaderCircle v-if="downloading" :size="16" class="spin-icon" /><Download v-else :size="16" />{{ downloading ? '正在下载…' : previewKind === 'video' ? '下载视频' : previewKind === 'html' ? '导出 HTML' : previewKind === '3d' ? '下载 3D 模型' : '下载原图' }}</button>
+          <button type="button" class="asset-download-button" :disabled="downloading" @click="downloadOriginal()"><LoaderCircle v-if="downloading" :size="16" class="spin-icon" /><Download v-else :size="16" />{{ downloading ? '正在下载…' : previewKind === 'audio' ? '下载音频' : previewKind === 'video' ? '下载视频' : previewKind === 'html' ? '导出 HTML' : previewKind === '3d' ? '下载 3D 模型' : '下载原图' }}</button>
           <button v-if="previewKind === 'html'" type="button" class="asset-download-button asset-pdf-button" :disabled="downloading || !previewHtml" @click="exportPdf(previewAsset)"><Download :size="16" />导出 PDF</button>
         </footer>
       </template>
@@ -293,6 +296,8 @@ onBeforeUnmount(() => { previewVideo.value?.pause(); previewController?.abort();
 </template>
 
 <style scoped>
+.asset-audio-preview { display:grid; justify-items:center; gap:28px; width:min(520px, 90%); color:var(--theme-accent-strong); }
+.asset-audio-preview audio { width:100%; }
 .asset-save-menu { z-index: 1000; }
 .asset-preview-footer { flex-wrap: wrap; }
 .asset-preview-meta { flex: 1 1 160px; }

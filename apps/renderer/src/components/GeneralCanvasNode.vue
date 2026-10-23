@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FolderInputNode from './FolderInputNode.vue';
 import { generationFailureText } from '../features/generationErrors';
 import { nodeDeliveryFindings } from '../features/deliveryFindings';
 import DeliveryFindings from './DeliveryFindings.vue';
@@ -8,6 +9,7 @@ import { canExportNode, nodeMediaUrl, type NodeExportFormat } from '../nodeExpor
 import { canvasNodeKind, nodePreviewSize, type NodePreviewSize } from '../nodeSizing';
 import CanvasMarkdown from './CanvasMarkdown.vue';
 import CanvasDrawingPad from './CanvasDrawingPad.vue';
+import DesignNodeEditor from './DesignNodeEditor.vue';
 import { Handle, Position, useVueFlow } from '@vue-flow/core';
 import { CircleAlert, Box, FileText, Images, Music2, Video, Image, SquarePlay, AudioLines, Type, Upload, Pencil, Download, Minus, Plus, Check, X, SlidersHorizontal, Expand } from 'lucide-vue-next';
 const CadPanel = defineAsyncComponent(() => import('./CadPanel.vue'));
@@ -27,7 +29,7 @@ const { viewport } = useVueFlow('design-canvas');
 const selected = computed(() => props.selected ?? props.data.selected);
 const busy = computed(() => props.busy ?? props.data.busy);
 const uploading = computed(() => props.uploading ?? props.data.uploading);
-const emit = defineEmits<{ 'cad-updated': []; 'drawing-saved': [result: { projectId: string; node: Record<string, any> }]; 'drawing-dirty': [value: boolean]; reference: []; upload: [file: File]; update: [patch: Record<string, any>]; export: [format: NodeExportFormat]; cancel: [taskId: string]; 'context-menu': [position: { x: number; y: number }]; 'dismiss-menu': []; 'resize-start': []; resize: [size: NodePreviewSize]; 'resize-end': []; 'media-ratio': [media: { url: string; ratio: number }] }>();
+const emit = defineEmits<{ 'folder-upload': [files: File[]]; 'cad-updated': []; 'drawing-saved': [result: { projectId: string; node: Record<string, any> }]; 'drawing-dirty': [value: boolean]; reference: []; upload: [file: File]; update: [patch: Record<string, any>]; export: [format: NodeExportFormat]; cancel: [taskId: string]; 'context-menu': [position: { x: number; y: number }]; 'dismiss-menu': []; 'resize-start': []; resize: [size: NodePreviewSize]; 'resize-end': []; 'media-ratio': [media: { url: string; ratio: number }] }>();
 const uploadInput = ref<HTMLInputElement | null>(null);
 const editing = ref(false);
 const textDraft = ref('');
@@ -39,6 +41,7 @@ const mediaUrl = computed(() => nodeMediaUrl(props.data));
 const format = computed(() => props.data.kind === 'cad' ? 'glb' : String(asset.value.pathRelative || '').split('.').pop()?.toLowerCase() || '');
 const kind = computed(() => canvasNodeKind(props.data));
 const isDrawing = computed(() => props.data.editor === 'drawing');
+const isDesignEditor = computed(() => ['palette', 'storyboard'].includes(props.data.editor));
 const failed = ref(false);
 const mediaPending = ref(false);
 const naturalRatio = ref<number | null>(null);
@@ -62,6 +65,12 @@ onUnmounted(() => window.removeEventListener('message', htmlContextMenu));
 const previewSize = computed(() => nodePreviewSize(props.data, naturalRatio.value));
 const contentSizedText = computed(() => kind.value === 'text' && Boolean(content.value) && !editing.value && !loading.value);
 const surfaceStyle = computed(() => contentSizedText.value ? undefined : { height: `${previewSize.value.height}px` });
+const transparencyBorderStyle = computed(() => {
+  const zoom = Math.max(.05, props.canvasZoom || viewport.value.zoom || 1);
+  // Compensate for the canvas transform, with a slightly stronger outline when zoomed out.
+  const screenWidth = Math.max(1.25, Math.min(3, 2 / Math.sqrt(zoom)));
+  return { '--transparent-border-width': `${screenWidth / zoom}px` };
+});
 const loadingScale = computed(() => Math.max(.6, Math.min(4, Math.max(1, 1 / (props.canvasZoom || viewport.value.zoom || 1)), previewSize.value.width / 220, previewSize.value.height / 180)));
 const loadingColumns = computed(() => Math.max(6, Math.min(52, Math.ceil(previewSize.value.width / 28))));
 const recommendedSize = computed(() => nodePreviewSize({ ...props.data, previewSizingVersion: 2, previewSize: undefined }, naturalRatio.value));
@@ -170,7 +179,7 @@ function saveText() { emit('update', { [kind.value === 'html' ? 'html' : 'text']
 function resizeText(delta: number) { emit('update', { textStyle: { ...props.data.textStyle, fontSize: Math.max(12, Math.min(28, textSize.value + delta)) } }); }
 </script>
 <template>
-  <article class="design-asset-node is-preview" :class="{ 'is-empty': empty }" :data-kind="kind" :data-selected="selected ? 'true' : 'false'" :aria-busy="loading">
+  <article class="design-asset-node is-preview" :style="transparencyBorderStyle" :class="{ 'is-empty': empty, 'is-transparent-image': kind === 'image' && imageOutput.hasTransparency === true, 'is-vector': asset.mime === 'image/svg+xml' || format === 'svg' || !!data.vectorSource, 'has-image': kind === 'image' && !!mediaUrl && !failed && !isDrawing }" :data-kind="kind" :data-selected="selected ? 'true' : 'false'" :aria-busy="loading">
     <header>
       <Pencil v-if="isDrawing" :size="15" /><Images v-else-if="kind === 'image'" :size="15" /><Video v-else-if="kind === 'video'" :size="15" /><Music2 v-else-if="kind === 'audio'" :size="15" /><Box v-else-if="['3d', 'cad'].includes(kind)" :size="15" /><FileText v-else :size="15" /><strong :title="title">{{ title }}</strong><small v-if="data.adopted" class="adopted-version-badge">已采用</small>
       <button v-if="kind === 'cad' && data.assetId" class="design-cad-action nodrag nowheel nopan" type="button" title="打开模型参数与导出" @pointerdown.stop @click.stop="cadPanelOpen = true"><SlidersHorizontal :size="13" />参数与导出</button>
@@ -182,7 +191,7 @@ function resizeText(delta: number) { emit('update', { textStyle: { ...props.data
       <button type="button" title="导出 HTML" :disabled="exportDisabled" @click="emit('export', 'html')"><Download :size="14" />导出 HTML</button>
       <button type="button" title="导出 PDF" :disabled="exportDisabled" @click="emit('export', 'pdf')"><Download :size="14" />导出 PDF</button>
     </div>
-    <div v-if="kind === 'text' && selected && !loading" class="design-text-tools nodrag nowheel" aria-label="文本工具" @click.stop>
+    <div v-if="kind === 'text' && !isDesignEditor && selected && !loading" class="design-text-tools nodrag nowheel" aria-label="文本工具" @click.stop>
       <button type="button" aria-label="编辑文本" title="编辑文本" @click="editText"><Pencil :size="14" /></button>
       <button type="button" aria-label="缩小文字" :disabled="textSize <= 12" @click="resizeText(-1)"><Minus :size="14" /></button>
       <span>{{ textSize }}</span><button type="button" aria-label="放大文字" :disabled="textSize >= 28" @click="resizeText(1)"><Plus :size="14" /></button>
@@ -192,7 +201,9 @@ function resizeText(delta: number) { emit('update', { textStyle: { ...props.data
     <div class="design-node-frame">
       <Handle id="input" type="target" :position="Position.Left" />
       <div class="design-node-surface" :class="{ 'is-loading': loading, 'has-error': errorMessage, 'is-placeholder': empty, 'is-text': kind === 'text', 'nodrag nowheel nopan': kind === 'html' }" :style="surfaceStyle">
-        <CanvasDrawingPad v-if="isDrawing && data.drawing" :drawing="data.drawing" :api-base-url="data.apiBaseUrl" :project-id="data.projectId" :node-id="nodeId!" :disabled="busy" :delete-node="deleteDrawing" @saved="emit('drawing-saved', $event)" @dirty="emit('drawing-dirty', $event)" @reference="emit('reference')" />
+        <DesignNodeEditor v-if="isDesignEditor" :data="data" :busy="busy" @update="emit('update', $event)" />
+        <FolderInputNode v-if="data.workflowFolder" :entries="data.folderEntries || []" :busy="busy" @upload="emit('folder-upload', $event)" />
+        <CanvasDrawingPad v-else-if="isDrawing && data.drawing" :drawing="data.drawing" :api-base-url="data.apiBaseUrl" :project-id="data.projectId" :node-id="nodeId!" :disabled="busy" :delete-node="deleteDrawing" @saved="emit('drawing-saved', $event)" @dirty="emit('drawing-dirty', $event)" @reference="emit('reference')" />
         <div v-else-if="editing" class="design-text-editor nodrag nowheel" @click.stop>
           <textarea v-model="textDraft" aria-label="编辑节点文本" :style="{ fontSize: `${textSize}px` }" @keydown.meta.enter.prevent="saveText" @keydown.ctrl.enter.prevent="saveText" />
           <div><button type="button" @click="editing = false"><X :size="13" />取消</button><button type="button" @click="saveText"><Check :size="13" />保存</button></div>
@@ -211,7 +222,7 @@ function resizeText(delta: number) { emit('update', { textStyle: { ...props.data
           <div v-else-if="['3d', 'cad'].includes(kind)" class="design-model-preview nodrag nowheel"><ModelViewer :key="mediaUrl" :asset-url="mediaUrl" :asset-format="format" :label="title" /></div>
           <a v-else :href="mediaUrl" target="_blank" rel="noopener" @click.stop>打开文档</a>
         </template>
-        <CanvasMarkdown v-if="kind === 'text' && !editing && content" class="design-asset-caption nodrag nowheel nopan" :content="content" :font-size="textSize" />
+        <CanvasMarkdown v-if="kind === 'text' && !isDesignEditor && !editing && content" class="design-asset-caption nodrag nowheel nopan" :content="content" :font-size="textSize" />
         <div v-if="loading" class="design-media-loading" :style="{ '--loading-scale': loadingScale }" role="status" aria-live="polite">
           <span class="design-loading-grid" aria-hidden="true"><i v-for="column in loadingColumns" :key="column" :style="{ '--wave-delay': `${column * -.14}s` }" /></span>
           <span class="design-media-loading-copy"><span class="design-media-dots" aria-hidden="true"><i /><i /></span><span>{{ loadingLabel }}</span></span>

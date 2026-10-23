@@ -51,6 +51,7 @@ export function paletteVariables(colors: ThemeColors) {
 }
 export function applyAppearance(mode: 'dark' | 'light') {
   const root = document.documentElement;
+  root.style.setProperty('--desktop-titlebar-height', window.studio?.isDesktop ? '34px' : '0px');
   const variables = paletteVariables(colorsFor(mode));
   for (const [key, value] of Object.entries(variables)) {
     if (appearance.preset === 'neutral') root.style.removeProperty(key);
@@ -58,6 +59,8 @@ export function applyAppearance(mode: 'dark' | 'light') {
   }
   root.style.setProperty('--app-font', appearance.font === 'serif' ? 'Georgia, "Noto Serif SC", "Songti SC", SimSun, serif' : appearance.font === 'mono' ? 'Consolas, "SFMono-Regular", "Microsoft YaHei", monospace' : 'Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif');
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colorsFor(mode).background);
+  const { background, foreground } = colorsFor(mode);
+  void window.studio?.setTitleBarTheme?.({ background, foreground });
 }
 watch(appearance, () => {
   try { localStorage.setItem('aics.appearance', JSON.stringify(appearance)); } catch { /* Keep current session settings. */ }

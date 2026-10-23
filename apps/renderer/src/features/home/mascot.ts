@@ -9,6 +9,10 @@ export const mascotPresets = [
   { id:'cream-cat', name:'奶油猫', description:'陪灵感慢慢长大', image:'mascots/cream-cat.png', positions:['3.857421875% -0.5859375%','50.244140625% -0.390625%','96.142578125% -0.5859375%','3.857421875% 93.9453125%','50.146484375% 93.9453125%','96.630859375% 93.9453125%'] },
   { id:'cloud', name:'云朵', description:'让想法轻盈一点', image:'mascots/cloud.png', positions:['0.9765625% -1.3671875%','50.048828125% -1.3671875%','98.095703125% -1.3671875%','0.9765625% 92.7734375%','50.048828125% 92.7734375%','98.095703125% 92.7734375%'] },
   { id:'sprout', name:'小芽', description:'每个念头都有新生', image:'mascots/sprout.png', positions:['1.904296875% 1.171875%','50.29296875% 1.3671875%','100.048828125% 1.3671875%','1.904296875% 100.1953125%','50.146484375% 100.1953125%','100.1953125% 100.390625%'] },
+  { id:'moon-bunny', name:'月团', description:'把温柔装进灵感', image:'mascots/moon-bunny.png', positions:['0% 0%','50% 0%','100% 0%','0% 100%','50% 100%','100% 100%'] },
+  { id:'amber-fox', name:'暖栗', description:'为每个点子添点暖意', image:'mascots/amber-fox.png', positions:['0% 0%','50% 0%','100% 0%','0% 100%','50% 100%','100% 100%'] },
+  { id:'sea-otter', name:'汐团', description:'拾起灵感的小贝壳', image:'mascots/sea-otter.png', positions:['0% 0%','50% 0%','100% 0%','0% 100%','50% 100%','100% 100%'] },
+  { id:'star-penguin', name:'星眠', description:'陪你收藏闪亮想法', image:'mascots/star-penguin.png', positions:['0% 0%','50% 0%','100% 0%','0% 100%','50% 100%','100% 100%'] },
 ] as const;
 export type MascotPresetId = typeof mascotPresets[number]['id'];
 export function mascotPresetImageUrl(id: MascotPresetId) {

@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.canvas-image-preview { position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; background:var(--theme-bg, #111512); color:var(--theme-text); overflow:hidden; }
+.canvas-image-preview { position:fixed; inset:var(--desktop-titlebar-height, 0px) 0 0; width:100vw; height:calc(100dvh - var(--desktop-titlebar-height, 0px)); max-width:none; max-height:none; margin:0; padding:0; border:0; background:var(--theme-bg, #111512); color:var(--theme-text); overflow:hidden; }
 .canvas-image-preview[open] { display:flex; flex-direction:column; }
 .canvas-image-preview::backdrop { background:#000b; }
 .canvas-image-preview > header { position:relative; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:14px 20px; border-bottom:1px solid var(--theme-border); background:var(--theme-surface-raised); }

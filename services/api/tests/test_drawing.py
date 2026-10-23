@@ -100,7 +100,7 @@ def test_drawing_reaches_image_provider_as_layout_without_overwriting_board(boar
         reference_analysis={'images':[{'asset_id':source, 'mode':'inspiration','visual_prompt':'红线标示左上区域和右侧边界',
             'use':'按草图布局制作正式展厅','avoid':'不保留草稿红色笔触'}], 'synthesis':'保留草图的主体位置，制作真实空间效果'})
     assert calls[0]['source_asset_path'] == assets.get_asset(project_id=project, asset_id=source)['absolutePath']
-    assert '结构布局草稿' in calls[0]['prompt'] and '不要把草稿笔触' in calls[0]['prompt']
+    assert '主体位置、相对大小' in calls[0]['prompt'] and '不含草稿笔触和辅助线' in calls[0]['prompt']
     assert result['node']['id'] != node['id']
     original = next(n for n in canvas.load(project)['nodes'] if n['id']==node['id'])
     assert original['data']['drawing'] == saved['data']['drawing'] and original['data']['assetId'] == source

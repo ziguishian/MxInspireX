@@ -4,6 +4,7 @@ import { ArrowUpRight, ImagePlus, Link, Plus, X, Trash2, RefreshCw, Check } from
 import { RouterLink } from 'vue-router';
 import LibraryPageLayout from '../components/shared/LibraryPageLayout.vue';
 import EmptyState from '../components/shared/EmptyState.vue';
+import BrandLoading from '../components/BrandLoading.vue';
 import InfiniteScrollStatus from '../components/shared/InfiniteScrollStatus.vue';
 import MasonryGrid from '../components/shared/MasonryGrid.vue';
 import { assetLibraryServices } from '../features/pageServices';
@@ -149,7 +150,7 @@ onBeforeUnmount(() => { clearInterval(timer); clearTimeout(debounce); loadVersio
       <div><h2>工作区设计经验</h2><p>只沉淀用户已确认的策略与避坑提示；不会保存项目素材、客户信息或原始提示词。</p></div>
       <ul><li v-for="lesson in lessons" :key="lesson.id"><span><strong>{{ lesson.strategy }}</strong><small v-if="lesson.avoid.length">避坑：{{ lesson.avoid.join('；') }}</small><em>{{ lesson.tags.join(' · ') || lesson.mediaKind }}</em></span><button type="button" :disabled="busy" @click="deleteLesson(lesson)">删除</button></li></ul>
     </section>
-    <EmptyState v-if="loading">正在读取本地参考…</EmptyState>
+    <BrandLoading v-if="loading" label="正在读取本地参考…" />
     <EmptyState v-else-if="!items.length" :icon="ImagePlus" :title="query || industry || designType ? '没有找到匹配参考' : '从一张喜欢的图片开始'">上传设计案例、包装或灵感图片，整理为可随时取用的视觉参考。<template #action><button class="ghost-button" @click="fileInput?.click()">添加参考图</button></template></EmptyState>
     <MasonryGrid v-else class="reference-grid">
       <article v-for="item in items" :key="item.id" class="reference-tile">

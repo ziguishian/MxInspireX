@@ -24,9 +24,10 @@ html[data-theme="light"] { color-scheme: light; }
 html .shell { background: var(--theme-bg); color: var(--theme-text); }
 html body { font-family: var(--app-font, Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif); }
 html .shell > .workspace-grid { margin-left: var(--mx-rail); width: calc(100% - var(--mx-rail)); }
-html .shell > .workspace-grid > .canvas-panel { padding: 126px 36px 60px; }
-/* Keep scrolling library/help/schedule content below the fixed brand header. */
-html .shell > .workspace-grid > .canvas-panel:has(.collection-page, .schedule-panel) { margin-top: 104px; height: calc(100% - 104px); padding-top: 22px; }
+html .shell > .workspace-grid > .canvas-panel { padding: 40px 36px 60px; }
+/* Only reserve a compact control row; the old page-level brand was removed. */
+html .shell > .workspace-grid > .canvas-panel:has(.collection-page, .schedule-panel) { margin-top: 16px; height: calc(100% - 16px); padding-top: 8px; }
+html .shell .schedule-panel { padding-top:16px; }
 html .shell-general-chat > .workspace-grid > .canvas-panel { padding: 0; }
 html .shell-general-chat { --corner-button-gap: 24px; --corner-button-size: 42px; --canvas-edge-inset: 20px; }
 html .shell.shell-general-chat > .workspace-grid { margin-left: 0; width: 100%; }
@@ -104,18 +105,19 @@ html .avatar-option > svg { top: 5px; right: 5px; padding: 2px; width: 16px; hei
 .mx-theme-switch button { display: grid; place-items: center; width: 36px; height: 32px; padding: 0; border: 0; border-radius: 16px; color: var(--theme-text-muted); background: transparent; cursor: pointer; }
 .mx-theme-switch button:hover, .mx-theme-switch button[aria-pressed="true"] { background: var(--theme-surface-hover); color: var(--theme-text); }
 html .assistant-fab { top: 28px; right: 166px; width: 38px; height: 38px; border-color: var(--theme-border); box-shadow: none; }
-html .support-fab { right: 28px; bottom: 24px; background: var(--theme-surface); border-color: var(--theme-border); box-shadow: none; }
+html { --page-floating-action-right: 28px; }
+html .support-fab { right: var(--page-floating-action-right); bottom: 24px; background: var(--theme-surface); border-color: var(--theme-border); box-shadow: none; }
 html .shell-general-chat .support-fab { right: var(--corner-button-gap); bottom: max(var(--corner-button-gap), env(safe-area-inset-bottom)); width: var(--corner-button-size); height: var(--corner-button-size); min-width: var(--corner-button-size); min-height: var(--corner-button-size); }
 html .task-queue-card { top: 76px; }
 
 /* Homepage composition follows the approved preview; controls remain live DOM. */
-html .shell .canvas-panel:has(> .home-intake) { display: flex; align-items: center; justify-content: center; padding: 86px 64px 174px; }
+html .shell .canvas-panel:has(> .home-intake) { display: flex; align-items: flex-start; justify-content: center; padding: clamp(56px, calc(44dvh - 200px), 320px) 64px 100px; }
 html .shell .canvas-panel:has(> .home-intake)::before {
   --workspace-grid-color: color-mix(in srgb, var(--theme-text) 10%, transparent);
   display: block; inset: auto 0 0; height: min(320px, 42dvh); opacity: 1;
   mask-image: linear-gradient(to bottom, transparent, #000 72%);
 }
-html .shell .canvas-panel > .home-intake { width: min(100%, 900px); max-width: 900px; padding: 0; margin: 0 auto; flex: 0 0 auto; }
+html .shell .canvas-panel > .home-intake { width: min(100%, 900px); max-width: 900px; min-height:0; justify-content:flex-start; padding: 0; margin: 0 auto; flex: 0 0 auto; }
 html .home-intake .intake-hero { min-height: 0; display: block; padding: 0; }
 html .home-intake .intake-heading { display: block; text-align: center; margin: 0 0 70px; }
 html .home-intake .intake-heading .eyebrow { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 20px; color: var(--theme-text-subtle); font-size: 11px; letter-spacing: .16em; }
@@ -198,7 +200,7 @@ html :is(.modal, .delete-modal, .reference-delete-dialog, .schedule-edit-card) h
 html .delete-modal p:not(.eyebrow) { font-size: var(--ui-font-body); line-height: var(--ui-line-body); }
 html .delete-modal > strong { font-size: var(--ui-font-control); overflow-wrap: anywhere; }
 html .danger-button { min-height: var(--ui-control-height); border-radius: var(--ui-radius-control); padding: 8px 14px; font-size: var(--ui-font-control); line-height: 20px; }
-html .about-logo { filter: grayscale(1); object-fit: contain; }
+html .about-logo { filter: none; object-fit: contain; }
 html .design-workspace, html .design-canvas-area, html .general-canvas-view { background: var(--theme-bg); }
 html .shell-general-chat .general-canvas-view { background: var(--theme-bg); }
 html .design-chat-panel, html .design-asset-node, html .general-canvas-dialog { border-color: var(--theme-border); }
@@ -311,7 +313,7 @@ html[data-theme] :is(.token-heatmap-large, .heatmap-legend) .level-4 { backgroun
 html[data-theme] .weekly-bar-track i { background: var(--theme-accent); }
 
 @media (max-width: 1000px) {
-  html .shell .canvas-panel:has(> .home-intake) { padding: 126px 32px 124px; }
+  html .shell .canvas-panel:has(> .home-intake) { padding: clamp(56px, calc(44dvh - 200px), 320px) 32px 100px; }
   html .home-intake .intake-heading { margin-bottom: 90px; }
 }
 @media (max-width: 600px) {
@@ -330,9 +332,9 @@ html[data-theme] .weekly-bar-track i { background: var(--theme-accent); }
   .mx-app-heading:has(> .home-usage) > .mx-theme-switch { position: static; }
   .mx-theme-switch button { width: 29px; height: 27px; }
   html .assistant-fab { right: 18px; top: 24px; width: 33px; height: 33px; }
-  html .shell .canvas-panel:has(> .home-intake) { align-items: flex-start; padding: 172px 18px 134px; }
-  html .shell > .workspace-grid > .canvas-panel { padding: 140px 14px 50px; }
-  html .shell > .workspace-grid > .canvas-panel:has(.collection-page, .schedule-panel) { margin-top: 124px; height: calc(100% - 124px); padding-top: 16px; }
+  html .shell .canvas-panel:has(> .home-intake) { align-items: flex-start; padding: 72px 18px 100px; }
+  html .shell > .workspace-grid > .canvas-panel { padding: 40px 14px 50px; }
+  html .shell > .workspace-grid > .canvas-panel:has(.collection-page, .schedule-panel) { margin-top: 16px; height: calc(100% - 16px); padding-top: 8px; }
   html .shell-general-chat > .workspace-grid > .canvas-panel { padding: 0; }
   html .home-intake .intake-heading { text-align: left; margin-bottom: 88px; }
   html .home-intake .intake-heading .eyebrow { justify-content: flex-start; font-size: 9px; gap: 8px; }
@@ -347,17 +349,18 @@ html[data-theme] .weekly-bar-track i { background: var(--theme-accent); }
   html .home-intake .composer-caption { font-size: var(--ui-font-caption); flex-wrap: wrap; gap: 2px; left: 4px; right: 4px; }
   html .home-intake .home-upload-hint { margin-top: 55px; font-size: var(--ui-font-caption); }
   html .home-footer { position: static; margin-left: var(--mx-rail); padding: 12px 24px 18px; }
-  html .support-fab { width: 30px; height: 30px; right: 16px; bottom: 18px; }
+  html { --page-floating-action-right: 16px; }
+  html .support-fab { width: 30px; height: 30px; right: var(--page-floating-action-right); bottom: 18px; }
 }
 @media (max-height: 680px) and (min-width: 601px) {
-  html .shell .canvas-panel:has(> .home-intake) { align-items: flex-start; padding-top: 88px; }
+  html .shell .canvas-panel:has(> .home-intake) { align-items: flex-start; padding-top: clamp(56px, calc(44dvh - 200px), 320px); }
   html .home-intake .intake-heading { margin-bottom: 70px; }
   html .home-footer { position: static; margin-left: var(--mx-rail); padding: 12px 24px; }
   html .shell > .workspace-grid > .top-left-nav-card { gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) { .mx-theme-switch *, .mx-wordmark *, .top-left-nav-card * { transition: none !important; } }
 @media (max-height: 680px) and (min-width: 601px) and (max-width: 1100px) {
-  html .shell .canvas-panel:has(> .home-intake) { padding-top: 154px; }
+  html .shell .canvas-panel:has(> .home-intake) { padding-top: clamp(56px, calc(44dvh - 200px), 320px); }
 }
 
 /* Native customizable selects retain keyboard/type-ahead/form behavior. */
@@ -460,3 +463,26 @@ html .agent-model-list .model-option { grid-template-columns: 20px minmax(0, 1fr
 html .agent-model-list .model-option-copy strong { font-weight: 500; }
 html .agent-model-list { max-height: min(360px, 50vh); }
 html .routing-choices { border-bottom: 1px solid var(--theme-border); padding-bottom: 6px; margin-bottom: 4px; }
+
+/* Desktop workspace chrome: one continuous surface and safe native controls. */
+html .desktop-shell .window-chrome.desktop-toolbar { display:grid; background:var(--theme-bg); }
+html .desktop-shell > .workspace-grid > .top-left-nav-card { background:var(--theme-bg); border-right:0; -webkit-app-region:drag; }
+html .desktop-shell .top-left-nav-card button, html .desktop-shell .top-left-profile-wrap, html .desktop-shell .top-task-wrap { -webkit-app-region:no-drag; }
+html .shell .top-task-wrap { position:fixed; top:18px; right:22px; left:auto; bottom:auto; z-index:205; width:40px; height:40px; }
+html .desktop-shell .top-task-wrap { top:calc(34px + 18px); }
+html .shell .top-task-wrap > button { position:relative; display:grid; place-items:center; width:40px; height:40px; padding:0; margin:0; border:1px solid var(--theme-border); border-radius:10px; background:var(--theme-surface); color:var(--theme-text-muted); cursor:pointer; transform:none; }
+html .top-task-wrap > button strong { display:none; }
+html .top-task-wrap .nav-icon { border:0; background:transparent; box-shadow:none; }
+html .top-task-wrap .composer-task-count { position:absolute; right:-4px; top:-4px; }
+html .top-left-profile-wrap > .mx-theme-switch { position:fixed; left:calc((var(--mx-rail,72px) - 40px)/2); right:auto; top:auto; bottom:76px; width:40px; height:40px; padding:0; border:0; background:transparent; }
+html .top-left-profile-wrap > .mx-theme-switch button { width:40px; height:40px; border-radius:10px; border:1px solid var(--theme-border); }
+/* Fixed controls sit outside the avatar wrapper's native hit-test rectangle. */
+html .desktop-shell .top-left-profile-wrap :is(.mx-theme-switch, .mx-theme-switch button, .app-update-entry) { -webkit-app-region:no-drag; app-region:no-drag; pointer-events:auto; }
+html .home-usage .tokens dd { color:#719ac9; }
+html .home-usage .cost dd { color:#63a48a; }
+html[data-theme="light"] .home-usage .tokens dd { color:#245d91; }
+html[data-theme="light"] .home-usage .cost dd { color:#267352; }
+html .composer-tool.file-tool, html .composer-tool.file-tool input { cursor:pointer; }
+html .home-composer-stage.is-file-dragging .intake-composer { outline:2px solid var(--theme-accent); outline-offset:4px; background:var(--theme-accent-soft); }
+.home-composer-drop-hint { position:absolute; z-index:20; inset:0; display:grid; place-items:center; border-radius:20px; background:color-mix(in srgb,var(--theme-input) 92%,transparent); color:var(--theme-text); pointer-events:none; }
+html .desktop-shell .canvas-panel { border-top-left-radius:16px; }

@@ -33,7 +33,7 @@ onUnmounted(() => unsubscribe?.());
 
 <template>
   <template v-if="api">
-    <button class="app-update-entry" :class="{ 'has-update': highlighted }" :title="title" :aria-label="title" @click="dialog?.showModal()"><Download :size="19" /></button>
+    <button v-if="highlighted" class="app-update-entry" :class="{ 'has-update': highlighted }" :title="title" :aria-label="title" @click="dialog?.showModal()"><Download :size="19" /></button>
     <Teleport to="body">
       <dialog ref="dialog" class="app-update-dialog" aria-labelledby="app-update-title">
         <header><h2 id="app-update-title">{{ title }}</h2><button aria-label="关闭" @click="dialog?.close()"><X :size="18" /></button></header>
@@ -58,7 +58,7 @@ onUnmounted(() => unsubscribe?.());
 </template>
 
 <style scoped>
-.app-update-entry { position: fixed; left: calc((var(--mx-rail, 72px) - 40px) / 2); bottom: 76px; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 1px solid var(--theme-border); border-radius: 10px; background: var(--theme-surface); color: var(--theme-text); }
+.app-update-entry { position: fixed; left: calc((var(--mx-rail, 72px) - 40px) / 2); bottom: 122px; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 1px solid var(--theme-border); border-radius: 10px; background: var(--theme-surface); color: var(--theme-text); }
 .app-update-entry.has-update, .update-primary { background: #3478db; color: #fff; border-color: #3478db; }
 .app-update-dialog { width: min(480px, calc(100vw - 40px)); box-sizing: border-box; padding: 24px; border: 1px solid var(--theme-border); border-radius: 20px; background: var(--theme-surface-floating); color: var(--theme-text); }
 .app-update-dialog::backdrop { background: #0008; }

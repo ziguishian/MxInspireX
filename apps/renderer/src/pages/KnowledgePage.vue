@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { ChevronDown, Images, Trash2, BookOpen } from 'lucide-vue-next';
 import PageHeader from '../components/shared/PageHeader.vue';
 import EmptyState from '../components/shared/EmptyState.vue';
+import BrandLoading from '../components/BrandLoading.vue';
 import { knowledgeLibraryServices, type KnowledgeDocument } from '../features/pageServices';
 
 type KnowledgePart = {
@@ -83,7 +84,7 @@ async function toggleDocument(document: KnowledgeDocument) {
     <p class="knowledge-scope-note">
       首页上传的资料只归当前项目使用；本页文档通过 @知识文档 显式引用。图片先作为隐藏子资源保存，实际用于创作时才进入项目资产库。
     </p>
-    <EmptyState v-if="loadState.loading.value && !globalKnowledgeDocs.length">正在读取资料…</EmptyState>
+    <BrandLoading v-if="loadState.loading.value && !globalKnowledgeDocs.length" label="正在读取资料…" />
     <EmptyState v-else-if="loadState.error.value">
       {{ loadState.error.value }}
       <template #action><button class="ghost-button" :disabled="loadState.loading.value" @click="loadState.retry">重新加载</button></template>

@@ -35,7 +35,7 @@ describe('shared Agent mascot', () => {
     expect(controller.activePreset.value).toBe('sprout');
     expect(controller.error.value).toContain('连接中断');
     expect(mascotPresetImageUrl('unknown' as 'robot')).toBe('');
-    expect(mascotPresets.map(preset => preset.id)).toEqual(['robot','cream-cat','cloud','sprout']);
+    expect(mascotPresets.map(preset => preset.id)).toEqual(['robot','cream-cat','cloud','sprout','moon-bunny','amber-fox','sea-otter','star-penguin']);
     controller.dispose();
   });
   it('keeps a new result in preview until explicitly applied; reset restores bundled artwork', async () => {

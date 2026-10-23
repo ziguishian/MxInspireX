@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { assetPreviewKind, libraryAssetUrl, videoDuration } from './assetPreview';
+import { assetModelFormat, assetPreviewKind, libraryAssetUrl, videoDuration } from './assetPreview';
 const asset = { id: 'a', projectId: 'p', pathRelative: 'file', kind: 'document', byteSize: 1 };
 describe('library previews', () => {
+  it('recognizes audio and resolves 3D format from extension or MIME', () => {
+    for (const extension of ['MP3', 'wav', 'm4a', 'aac', 'ogg', 'flac', 'opus']) expect(assetPreviewKind({ ...asset, pathRelative: `sound.${extension}` })).toBe('audio');
+    expect(assetPreviewKind({ ...asset, mime: 'audio/webm' })).toBe('audio');
+    expect(assetPreviewKind({ ...asset, kind: 'audio' })).toBe('audio');
+    expect(assetPreviewKind({ ...asset, mime: 'model/gltf-binary' })).toBe('3d');
+    expect(assetModelFormat({ ...asset, mime: 'model/gltf+json' })).toBe('gltf');
+    expect(assetModelFormat({ ...asset, pathRelative: 'model.STL' })).toBe('stl');
+    expect(assetModelFormat({ ...asset, mime: 'model/obj' })).toBe('obj');
+  });
   it('recognizes generated pages, uploaded HTML, videos and images', () => {
     expect(assetPreviewKind({ ...asset, htmlNodeId: 'page' })).toBe('html');
     expect(assetPreviewKind({ ...asset, mime: 'text/html;charset=utf-8' })).toBe('html');

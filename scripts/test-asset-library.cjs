@@ -8,8 +8,11 @@ const webpage = `<meta name="viewport" content="width=device-width,initial-scale
 if (!process.versions.electron) {
   (async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aics-asset-library-'));
-    const ffmpeg = execFileSync(path.join(root, 'services/api/.venv/bin/python'), ['-c', 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())'], { encoding: 'utf8' }).trim();
+    const ffmpeg = execFileSync(path.join(root, process.platform === 'win32' ? 'services/api/.venv/Scripts/python.exe' : 'services/api/.venv/bin/python'), ['-c', 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())'], { encoding: 'utf8' }).trim();
     execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=24', '-t', '3', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(dir, 'video.mp4')]);
+    execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=3', path.join(dir, 'audio.wav')]);
+    const audio = fs.readFileSync(path.join(dir, 'audio.wav'));
+    const model = Buffer.from('v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n');
     const video = fs.readFileSync(path.join(dir, 'video.mp4'));
     const image = fs.readFileSync(path.join(root, 'apps/renderer/public/assets/home-design-examples-v1.png'));
     const base = { projectId: 'fixture', projectName: '预览验证', byteSize: 1024, createdAt: '2026-09-14' };
@@ -18,6 +21,8 @@ if (!process.versions.electron) {
       { ...base, id: 'retry', kind: 'image', mime: 'image/png', pathRelative: '重试图片.png', byteSize: image.length },
       { ...base, id: 'video', kind: 'video', mime: 'video/mp4', pathRelative: '空间 漫游.mp4', byteSize: video.length },
       { ...base, id: 'upload', kind: 'document', mime: 'text/html', pathRelative: '上传网页.html', byteSize: Buffer.byteLength(webpage) },
+      { ...base, id: 'audio', kind: 'audio', mime: 'audio/wav', pathRelative: '录音.wav' },
+      { ...base, id: 'model', kind: '3d', mime: 'model/obj', pathRelative: '模型.obj' },
     ];
     let revision = '1', failDocument = false, retryImageRequests = 0;
     const api = require('node:http').createServer((req, res) => {
@@ -46,9 +51,9 @@ if (!process.versions.electron) {
           res.end(image);
         }, 1_500);
       }
-      const bytes = id === 'video' ? video : ['image', 'retry'].includes(id) ? image : id === 'upload' ? Buffer.from(webpage) : null;
+      const bytes = id === 'audio' ? audio : id === 'model' ? model : id === 'video' ? video : ['image', 'retry'].includes(id) ? image : id === 'upload' ? Buffer.from(webpage) : null;
       if (!bytes) { res.statusCode = 404; return json({}); }
-      res.setHeader('Content-Type', id === 'video' ? 'video/mp4' : ['image', 'retry'].includes(id) ? 'image/png' : 'text/html');
+      res.setHeader('Content-Type', id === 'audio' ? 'audio/wav' : id === 'model' ? 'model/obj' : id === 'video' ? 'video/mp4' : ['image', 'retry'].includes(id) ? 'image/png' : 'text/html');
       res.setHeader('Accept-Ranges', 'bytes');
       const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/);
       if (range) {
@@ -103,7 +108,7 @@ if (!process.versions.electron) {
     };
     try {
       await win.loadURL(pageUrl); win.focus(); win.webContents.focus(); await wait('window.ready', 'mount');
-      await wait(`document.querySelectorAll('.asset-preview-trigger').length===5`, 'all media cards');
+      await wait(`document.querySelectorAll('.asset-preview-trigger').length===7`, 'all media cards');
       await wait(`!!document.querySelector('[aria-label="放大预览 重试图片.png"] .library-thumbnail-loading')`, 'image loading skeleton');
       assert.equal(await js(`document.querySelector('[aria-label="放大预览 重试图片.png"] .library-thumbnail-loading').textContent.includes('正在加载预览')`), true);
       assert.ok((await js(`getComputedStyle(document.querySelector('[aria-label="放大预览 重试图片.png"] .library-thumbnail-loading'),'::before').animationName`)).includes('library-thumbnail-shimmer'));
@@ -156,6 +161,17 @@ if (!process.versions.electron) {
       assert.deepEqual(await download('空间 漫游.mp4'), fs.readFileSync(path.join(process.argv[2], 'video.mp4')));
       await click('.asset-preview-close'); assert.equal(await js('window.oldPlayer.paused'), true);
       assert.equal(await js(`!!document.querySelector('.asset-preview-stage video')`), false);
+      await open('录音.wav');
+      await wait("document.querySelector('.asset-preview-stage audio')?.readyState >= 1", 'audio metadata');
+      await js("window.testAudio=document.querySelector('.asset-preview-stage audio');window.testAudio.play()");
+      assert.equal(await js('window.testAudio.paused'), false);
+      await download('录音.wav');
+      await click('.asset-preview-close');
+      assert.equal(await js('window.testAudio.paused'), true, 'closing stops audio');
+      await open('模型.obj');
+      await wait("!!document.querySelector('.asset-preview-stage canvas') && document.querySelector('.asset-preview-stage').getAttribute('aria-busy')==='false'", '3D model rendered');
+      await download('模型.obj');
+      await click('.asset-preview-close');
       await open('自然空间.html'); await wait(`!!document.querySelector('.asset-preview-stage iframe') && document.querySelector('.asset-preview-stage').getAttribute('aria-busy')==='false'`, 'canvas HTML modal');
       assert.equal(await frame().executeJavaScript(`document.querySelector('h1').textContent`), '让自然，走进日常。');
       assert.equal(await js(`document.querySelector('.asset-preview-stage iframe').getAttribute('sandbox')`), 'allow-scripts');

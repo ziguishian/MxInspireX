@@ -3,7 +3,6 @@
 > 最后核对：2026-10-21。适用于整个项目。先读本文，再按任务查看对应模块和测试，不必通读源码。
 > 这里记录项目地图与开发约定；详细设计放在 `docs/`。若与实现不一致，核对对应代码与测试，并更新本文。
 
-## 1. 一分钟了解项目
 
 - **许可**：当前源码采用根 `LICENSE` 的 MxinspireX 非商业许可 1.0；商业使用需事先书面授权，不能再将当前版本标为 MIT 或 OSI 开源。此前 v0.2.1 和截至 `1222db5` 的 MIT 版本及其授权不变；第三方许可保留。后续打包携带当前许可和 `docs/licenses/`，新发版本不能覆盖旧 Release 来追溯变更许可，详见 `docs/licenses/README.md`。
 - **产品**：本地优先的 AI 设计工作区，面向文旅、文创及船舶等设计场景。用户通过对话、参考资料与无限画布完成设计和交付。
@@ -21,6 +20,8 @@
 - **用户资料编辑**：用户中心点击昵称或简介文字即可原位编辑，保持原字体、居中与内容高度，不显示大输入框及保存/取消按钮；失去焦点自动保存，Esc 取消并恢复原文，空昵称保留原值。使用独立草稿，未修改时不重复保存；昵称支持 Enter 保存，简介支持 Ctrl/⌘ + Enter 保存并保留普通 Enter 换行。头像仍在 hover 或键盘聚焦时显示编辑图标（触屏始终可见），继续使用原生选择对话框。不要恢复统一的“编辑资料”表单入口。
 
 ## 2. 开始任务时怎么读
+
+桌面标题栏左侧仅显示 MxInspireX 文字，不显示文件、编辑、视图、帮助菜单；中央显示累计 Token 和确认扣费，页面内不重复显示桌面用量。标题栏和侧栏空白支持拖动窗口。主题切换位于左下角，更新按钮仅有新版本时显示，两者在画布页隐藏；任务入口移至右上角，只列运行中任务。外观设置支持方格/点状/空白及本地图片画布背景，见 docs/desktop-ui-20261023.md。原生窗口按钮颜色通过 `windowAppearance.ts` 校验后，跟随 `appearance.ts` 的背景/前景色（含自定义配色）；不恢复旧荧光绿。应用图标母版为 `scripts/brand-assets/mxinspirex-app-icon-{dark,light}.png`，由 `export-app-icon.py` 转换为 ICO/ICNS/PNG，Agent 吉祥物独立保留。桌面外观验证：构建后执行 `node node_modules/electron/cli.js scripts/test-window-chrome.cjs`。
 
 模型选择菜单（首页、项目对话及画布生成面板）只显示厂商图标和模型名，保留精简自动路由选项；不展示本地目录统计、能力长说明或价格。厂商识别复用 `features/modelBrand.ts`，本地矢量图集为 `assets/model-brands.svg`，由 `ModelBrandIcon.vue` 内联所选图形以兼容 Electron file URL。价格统一在设置「用量和计费」的 `CreditPricing.vue` 展示；加载/连接失败仍需显示真实状态。
 
@@ -76,6 +77,14 @@
 | 桌面启动、发布包 | 桌面 `main.ts`、`preload.ts`、`runtimeComponents.ts`；脚本 `scripts/dev-api.mjs`、`scripts/launch-dev-macos.mjs`、`scripts/build-sidecar.mjs`、`scripts/build-runtime-components.mjs`、`scripts/agent-runtime-build.mjs`、`scripts/package-distributions.mjs`、`scripts/package-lite-distributions.mjs`。 |
 
 ## 4. 一次请求如何流转
+
+模型与连接显示按能力分类的目录状态；普通中转站只有在目录同步成功、对应图像/视频/音频列表确为空且用户显式选择补充服务商时才跨服务调用。补充选择按主服务商和 URL 保存，候选来自已配置且有本地目录的其他服务商，`effectiveMediaOptions` 与 `taskMediaProvider` 共用来源；未同步/失败不视为缺失，不静默切换。Ollama 保留原远程媒体回退。3D 目录存在不代表协议已接入，仍要求独立服务配置；对应测试 `providerModels.test.ts`。
+
+首页与项目对话共用 `components/composer/VoiceInput.vue`：录音最长两分钟，结束后由 `voice_input.py` 的 `/api/voice-input` 调用当前服务商目录中的转写模型，文字仅追加草稿，不自动发任务；密钥留在后端，记录计费，不自动重试，页面切换释放麦克风。不支持的模型目录需先配置转写服务。右上角任务列表仅展示运行任务，细循环条表示运行活动，不表示真实百分比。
+
+待发送清单直接排列在项目输入框外侧上方，运行时工具栏只保留停止按钮；Ctrl/⌘ + Enter 按常规设置加入队列或补充当前任务。补充成功后从持久化 task.updates 显示对话气泡（待应用/已补充），不再显示成功 Toast；失败仍保留错误及幂等重试机制。
+
+画布设计扩展：图片右键可本地转矢量（`vectorize.py`，VTracer，只允许路径 SVG，保留原图、重复转换复用结果）或使用 GPT Image 2.5 新节点透明抠图。色板与视频分镜使用 text 节点的 `editor=palette/storyboard` 子类型，结构化数据由 `design_nodes.py` 校验，前端 `DesignNodeEditor.vue` 编辑、`designNodes.ts` 与 `canvasReferences.ts` 实时构建引用。分镜连接视频后总时长只读，一次生成一条视频，不自动拆镜头付费生成。详见 `docs/canvas-design-nodes.md`；UI 回归入口 `node scripts/test-design-nodes.cjs`。
 
 - 公开产品 SEO/GEO：`npm run build:site` 生成独立 `dist/site`；只有设置真实 `PUBLIC_SITE_URL` 才开启索引并生成 canonical/sitemap。工作区 HTML 始终 noindex。公开事实集中在 `docs/product-facts.md`、README 与可选 `llms.txt`，不暴露私人项目；见 `docs/search-discovery.md`。
 
@@ -262,3 +271,7 @@ EvoLink 文件与媒体传输使用真实应用 User-Agent；下载不带 Key。
 - 新功能优先放入对应页面、组件或业务模块；复用现有 `pageServices`、任务运行时、Provider 适配器和存储边界，避免继续把独立逻辑堆进入口文件。
 - 新增模块、调整接口/存储/路由、改变生成策略或发布流程时，更新相关定位行及核对日期；详细说明放到 `docs/` 后从这里链接。
 - 已有旧文档与当前行为冲突时，明确标记失效部分；模型 ID、供应商参数与精确限制以当前配置、适配器及测试为准，避免在多份文档中重复维护。
+
+新增内置吉祥物：月团（moon-bunny）、暖栗（amber-fox）、汐团（sea-otter）、星眠（star-penguin），共八个预设；新增资源为透明 3×2 六表情图集，前端 mascot.ts、后端 mascot.py 和 mascot_routes.py 必须同步注册。生成提示词见 docs/design/mascots-20261023.json。
+
+工作流 v1：独立 /workflows 模板库由 workflow_routes.py 管理，素材独立复制；打开创建工作副本。文件夹由节点搜索添加，FolderInputNode.vue 在一个节点内上传和展示文件列表，运行时逐项展开引用。WorkflowControls.vue 提供可编辑的整个流程重复次数、右侧上下箭头和绿色运行图标；workflow.ts 校验 DAG 并复制输出。GeneralCanvas 顺序等待原节点任务结果，失败/未知停止，退出画布停止追加，不自动恢复收费请求。内置空白图片节点右键可设转矢量/抠图步骤。扩展契约 capability_contracts.py 仅接受宿主显式注册的受信任处理器，不支持任意脚本热安装。规范 docs/workflows-and-extensions.md；验证 scripts/test-workflows.cjs、workflow.test.ts、test_workflows.py。

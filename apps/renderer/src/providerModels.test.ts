@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createProviderModelCatalog, normalizeModelResponse, selectAvailableModel, type ModelCatalogResponse } from './providerModels';
+import { useSupplementalProvider, createProviderModelCatalog, normalizeModelResponse, selectAvailableModel, type ModelCatalogResponse } from './providerModels';
 
 const source = { provider: 'openai-compatible', baseUrl: 'https://relay.test/v1' };
 
 describe('API model catalog', () => {
+  it('uses supplemental providers only after confirmed missing capability and explicit selection', () => {
+    expect(useSupplementalProvider('ready', [], 'evolink')).toBe(true);
+    expect(useSupplementalProvider('ready', ['primary-image'], 'evolink')).toBe(false);
+    expect(useSupplementalProvider('ready', [], '')).toBe(false);
+    for (const status of ['loading', 'idle', 'error']) expect(useSupplementalProvider(status, [], 'evolink')).toBe(false);
+  });
   it('keeps only returned IDs and respects empty capability lists', () => {
     const catalog = normalizeModelResponse({
       models: ['relay-chat', 'relay-image', 'relay-chat', 'relay-video', 'relay-3d', 'future-kind'],

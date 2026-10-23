@@ -16,6 +16,7 @@ export function canExportNode(data: NodeData): boolean {
 }
 
 export function nodeSaveLabel(data: NodeData): string {
+  if (data.asset?.mime === 'image/svg+xml' || data.vectorSource) return '下载矢量 SVG';
   return ({ image: '保存图像', video: '保存视频', audio: '保存音频', text: data.downloadable ? '保存文件' : '保存文本', '3d': '保存 3D 模型', cad: '导出 CAD 文件组' } as Record<string, string>)[canvasNodeKind(data)] || '保存素材';
 }
 

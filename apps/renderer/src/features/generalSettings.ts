@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue';
 
 export const generalDefaults = {
-  notifications: true, sendWithEnter: false, restoreProject: true,
+  notifications: true, sendWithEnter: true, restoreProject: true,
   focusNewOutputs: true, confirmProjectDelete: true, confirmAssetDelete: true,
   confirmNodeDelete: true,
 };

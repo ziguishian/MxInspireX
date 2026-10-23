@@ -1,0 +1,26 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "prompts": [
+    {
+      "id": "moon-bunny",
+      "name": "月团",
+      "prompt": "Create a production-ready transparent PNG mascot sprite sheet, landscape 3:2 aspect ratio, exactly 3 columns x 2 rows of equal square cells. SAME single character repeated SIX times with identical scale, centered in each cell, same foot baseline, generous 12% clear margin in every cell. Full body seated cute premium soft plush toy, round chubby proportions, tactile short velvety fur, gentle studio lighting, simple glossy black eyes, restrained pastel palette. No background, no floor, no cast shadows, no lettering, no cell borders. Expressions row-major: neutral friendly idle; thoughtful with one paw near cheek; happy smiling; winking; calm patiently waiting; sleepy eyes closed. Keep entire ears, feet, tail within each cell. Character: ivory white lop-eared moon rabbit with a tiny muted gold crescent forehead marking, dusty lavender inner ears"
+    },
+    {
+      "id": "amber-fox",
+      "name": "暖栗",
+      "prompt": "Create a production-ready transparent PNG mascot sprite sheet, landscape 3:2 aspect ratio, exactly 3 columns x 2 rows of equal square cells. SAME single character repeated SIX times with identical scale, centered in each cell, same foot baseline, generous 12% clear margin in every cell. Full body seated cute premium soft plush toy, round chubby proportions, tactile short velvety fur, gentle studio lighting, simple glossy black eyes, restrained pastel palette. No background, no floor, no cast shadows, no lettering, no cell borders. Expressions row-major: neutral friendly idle; thoughtful with one paw near cheek; happy smiling; winking; calm patiently waiting; sleepy eyes closed. Keep entire ears, feet, tail within each cell. Character: warm apricot orange baby fox with cream muzzle and belly, rounded ears and fluffy curled tail"
+    },
+    {
+      "id": "sea-otter",
+      "name": "汐团",
+      "prompt": "Create a production-ready transparent PNG mascot sprite sheet, landscape 3:2 aspect ratio, exactly 3 columns x 2 rows of equal square cells. SAME single character repeated SIX times with identical scale, centered in each cell, same foot baseline, generous 12% clear margin in every cell. Full body seated cute premium soft plush toy, round chubby proportions, tactile short velvety fur, gentle studio lighting, simple glossy black eyes, restrained pastel palette. No background, no floor, no cast shadows, no lettering, no cell borders. Expressions row-major: neutral friendly idle; thoughtful with one paw near cheek; happy smiling; winking; calm patiently waiting; sleepy eyes closed. Keep entire ears, feet, tail within each cell. Character: misty blue-grey baby sea otter with cream cheeks and belly holding a small pastel seafoam shell"
+    },
+    {
+      "id": "star-penguin",
+      "name": "星眠",
+      "prompt": "Create a production-ready transparent PNG mascot sprite sheet, landscape 3:2 aspect ratio, exactly 3 columns x 2 rows of equal square cells. SAME single character repeated SIX times with identical scale, centered in each cell, same foot baseline, generous 12% clear margin in every cell. Full body seated cute premium soft plush toy, round chubby proportions, tactile short velvety fur, gentle studio lighting, simple glossy black eyes, restrained pastel palette. No background, no floor, no cast shadows, no lettering, no cell borders. Expressions row-major: neutral friendly idle; thoughtful with one paw near cheek; happy smiling; winking; calm patiently waiting; sleepy eyes closed. Keep entire ears, feet, tail within each cell. Character: dusty periwinkle baby penguin with cream face and belly, small peach feet, tiny soft gold star on chest"
+    }
+  ]
+}

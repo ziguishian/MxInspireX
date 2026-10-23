@@ -16,7 +16,7 @@ const metrics = computed(() => {
 <template>
   <section class="home-usage" aria-label="工作区累计用量" :title="creditUsageNote">
     <dl>
-      <div v-for="metric in metrics" :key="metric.id">
+      <div v-for="metric in metrics" :key="metric.id" :class="metric.id">
         <dt>{{ metric.label }}</dt>
         <dd><CountUp v-if="metric.text !== '—' && metric.value !== undefined" :to="metric.value" :format="metric.format" :duration="800" /><span v-else>—</span></dd>
       </div>

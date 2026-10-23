@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { workflowOperations, cloneWorkflowStep } from '../features/workflow';
+import WorkflowControls from './WorkflowControls.vue';
+import { cutoutModel } from '../features/designNodes';
 import { generalSettings } from '../features/generalSettings';
 import { publicAssistantMessage } from '../features/generationErrors';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { VueFlow, useVueFlow, useKeyPress, getRectOfNodes, ConnectionLineType, SelectionMode, type Connection, type Edge, type Node } from '@vue-flow/core';
 import { Background, BackgroundVariant } from '@vue-flow/background';
+import { canvasBackground } from '../features/canvasBackground';
 import { alignBoardNodes, boardChanges, cleanBoard, savedBoardEdit, type Board } from '../canvasEditing';
 import { canvasEditHistory } from '../features/canvasHistory';
 import { snapRect, arrangeRects, nearestOpenPosition, type Guide, type LayoutRect, type Alignment } from '../canvasLayout';
-import { House, Pencil, ArrowDown, ArrowUpRight, Circle, CircleX, Download, FileImage, FileText, Images, LoaderCircle, Map as MapIcon, Maximize2, Minimize2, MousePointer2, Hand, Music2, Minus, Keyboard, Copy, Trash2, Undo2, Redo2, Plus, Upload, Video, X } from 'lucide-vue-next';
+import { Save, House, Pencil, ArrowDown, ArrowUpRight, Circle, CircleX, Download, FileImage, FileText, Images, LoaderCircle, Map as MapIcon, Maximize2, Minimize2, MousePointer2, Hand, Music2, Minus, Keyboard, Copy, Trash2, Undo2, Redo2, Plus, Upload, Video, X } from 'lucide-vue-next';
 import { Columns2, Layers, AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween } from 'lucide-vue-next';
 import GeneralCanvasNode from './GeneralCanvasNode.vue';
 import GeneralCanvasEdge from './GeneralCanvasEdge.vue';
@@ -39,10 +43,10 @@ import type { TaskIssue } from '../features/taskErrors';
 import { canvasReply, type DesignStep } from '../designPresentation';
 
 type CanvasKind = 'image' | 'video' | 'audio' | 'text' | 'html' | 'cad' | 'upload';
-type CanvasCreationKind = CanvasKind | 'drawing';
+type CanvasCreationKind = CanvasKind | 'drawing' | 'palette' | 'storyboard' | 'folder';
 type MenuPosition = { x: number; y: number };
 type DeleteTarget = { projectId: string; nodeIds: string[]; edgeIds: string[]; label: string };
-const props = defineProps<{ demoMode?: boolean; messageEditRequest?: { taskId: string; requestId: number }; resendMessage?: (submission: MessageResubmission) => Promise<boolean>; taskFocus?: { taskId: string; nodeId?: string; requestId: number }; messages: ConversationMessage[]; busy: boolean; progress?: string; error?: string; apiBaseUrl: string; projectId: string; canvasDocument?: { lockedNodeIds?: string[]; nodes?: Record<string, any>[]; edges?: Record<string, any>[] }; modelOptions?: string[]; videoModelOptions?: string[]; textModelOptions?: string[]; audioModelOptions?: string[] }>();
+const props = defineProps<{ runWorkflowNode?: (kind: any, prompt: string, position: {x:number;y:number}, params: Record<string, any>) => Promise<boolean | undefined>; demoMode?: boolean; messageEditRequest?: { taskId: string; requestId: number }; resendMessage?: (submission: MessageResubmission) => Promise<boolean>; taskFocus?: { taskId: string; nodeId?: string; requestId: number }; messages: ConversationMessage[]; busy: boolean; progress?: string; error?: string; apiBaseUrl: string; projectId: string; canvasDocument?: { lockedNodeIds?: string[]; nodes?: Record<string, any>[]; edges?: Record<string, any>[] }; modelOptions?: string[]; videoModelOptions?: string[]; textModelOptions?: string[]; audioModelOptions?: string[] }>();
 const emit = defineEmits<{ 'return-home': []; 'select-reference': [submission: ReferenceSubmission]; 'task-action': [taskId: string, action: TaskIssue['action']]; reference: [value: string, tentative?: boolean]; 'cancel-canvas-reference': []; 'move-node': [id: string, position: { x: number; y: number }]; 'generate-node': [kind: CanvasKind, prompt: string, position: { x: number; y: number }, params: Record<string, any>]; 'cancel-node-task': [nodeId: string, taskId: string]; 'canvas-error': [message: string]; 'canvas-change': [document: Board]; 'composer-ready': []; clarify: [submission: ClarificationSubmission] }>();
 type CanvasNode = Node & { selected?: boolean };
 const mascot = useMascotSettings();
@@ -71,6 +75,8 @@ const spacePanning = useKeyPress('Space', { actInsideInputWithModifier: false })
 const canvasArea = ref<HTMLElement | null>(null);
 // Update one inherited CSS variable instead of making every node's render
 // depend on the live zoom. Panning does not touch the controls' dimensions.
+let lastZoomChangeAt = 0;
+watch(() => viewport.value.zoom, () => { lastZoomChangeAt = performance.now(); }, { flush: 'sync' });
 watch([canvasArea, () => viewport.value.zoom], ([area, zoom]) => {
   area?.style.setProperty('--canvas-control-scale', String(1 / zoom));
 }, { flush: 'sync' });
@@ -181,6 +187,37 @@ function returnToBottom() {
   scrollArea.value?.scrollTo({ top: scrollArea.value.scrollHeight, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
 const createMenu = ref<MenuPosition | null>(null);
+const nodeSearch = ref('');
+const nodeSearchInput = ref<HTMLInputElement | null>(null);
+const nodeSearchIndex = ref(0);
+const nodeSearchAliases: Record<CanvasCreationKind, string> = {
+  folder: 'folder directory 文件夹 批量', palette: 'palette color 颜色 配色', storyboard: 'storyboard 分镜', drawing: 'drawing sketch 涂鸦',
+  image: 'image picture 图片', video: 'video 视频', audio: 'audio music 声音 音乐',
+  text: 'text markdown 文字', html: 'html web 网站', cad: 'cad 3d 建模', upload: 'upload 文件 上传',
+};
+const matchingNodeKinds = computed(() => (Object.keys(nodeSearchAliases) as CanvasCreationKind[])
+  .filter(kind => `${kindLabels[kind]} ${nodeSearchAliases[kind]}`.toLowerCase().includes(nodeSearch.value.trim().toLowerCase())));
+watch(createMenu, async value => {
+  if (!value) return;
+  nodeSearch.value = ''; nodeSearchIndex.value = 0;
+  await nextTick(); nodeSearchInput.value?.focus();
+});
+watch(nodeSearch, () => { nodeSearchIndex.value = 0; });
+function searchNodeKeydown(event: KeyboardEvent) {
+  event.stopPropagation();
+  if (event.isComposing) return;
+  if (event.key === 'Escape') { event.preventDefault(); closeMenus(); canvasArea.value?.focus(); }
+  else if (event.key === 'Enter') {
+    event.preventDefault();
+    const kind = matchingNodeKinds.value[nodeSearchIndex.value];
+    if (kind) void chooseNode(kind);
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const count = matchingNodeKinds.value.length;
+    if (count) nodeSearchIndex.value = (nodeSearchIndex.value + (event.key === 'ArrowDown' ? 1 : count - 1)) % count;
+    void nextTick(() => document.getElementById(`node-search-${nodeSearchIndex.value}`)?.scrollIntoView({ block: 'nearest' }));
+  }
+}
 const contextMenu = ref<(MenuPosition & { nodeId?: string }) | null>(null);
 const contextMenuElement = ref<HTMLElement | null>(null);
 const contextNode = computed(() => nodes.value.find(node => node.id === contextMenu.value?.nodeId));
@@ -346,7 +383,9 @@ function scheduleAutomaticLayoutRepair() {
 }
 const nodeSizeObserver = new ResizeObserver(entries => {
   if (autoFraming && entries.some(entry => autoFocusNodeIds.has(entry.target.closest('.vue-flow__node')?.getAttribute('data-id') || ''))) scheduleAutoFocus();
-  else if (entries.some(entry => entry.target.closest('.vue-flow__node')?.getAttribute('data-id') === selectedNodeId.value)) void revealSelectedEditor();
+  // Screen-sized composer layout changes during zoom must not immediately fit
+  // the selected node again and overwrite the user's requested zoom level.
+  else if (performance.now() - lastZoomChangeAt > 200 && entries.some(entry => entry.target.closest('.vue-flow__node')?.getAttribute('data-id') === selectedNodeId.value)) void revealSelectedEditor();
   if (entries.some(entry => automaticallyPositioned(nodes.value.find(node => node.id === entry.target.closest('.vue-flow__node')?.getAttribute('data-id'))))) scheduleAutomaticLayoutRepair();
 });
 let viewportTimer: ReturnType<typeof setTimeout> | undefined;
@@ -459,13 +498,17 @@ onMounted(() => { window.addEventListener('blur', releaseLostDrag); window.addEv
 onUnmounted(() => { window.removeEventListener('blur', releaseLostDrag); window.removeEventListener('pointercancel', releaseLostDrag); window.removeEventListener('mouseup', releaseArmedInteraction, true); });
 const avatarState = (message?: ConversationMessage) => props.demoMode ? props.busy ? 'generating' : message?.status === 'succeeded' ? 'completed' : 'idle' : xiaojuState(message);
 const progressLabel = computed(() => publicAssistantMessage(props.progress || '正在分析你的设计需求…'));
-const kindLabels: Record<CanvasCreationKind, string> = { drawing: '画板', image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '上传图像' };
+const kindLabels: Record<CanvasCreationKind, string> = { folder: '文件夹', palette: '色板', storyboard: '视频分镜', drawing: '画板', image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '上传图像' };
 const stepStatusLabels = { running: '进行中', completed: '已完成', failed: '失败', cancelled: '已停止', adjusted: '调整' };
 const executionTitles: Record<string, string> = { succeeded: '执行完成', failed: '执行中断', cancelled: '已停止' };
 const visibleMessages = computed(() => props.messages.map((message) => {
   const outputs = message.taskId ? nodes.value.filter((node) => (node as any).meta?.taskId === message.taskId || node.data?.asset?.metadata?.taskId === message.taskId) : [];
   return { ...message, sources: (message.sources || []).filter((source) => { try { const url = new URL(source.url); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password; } catch { return false; } }), outputs, displayContent: message.role === 'assistant' ? canvasReply(message.content, outputs.length > 0) : message.content };
 }));
+function messageTime(message: (typeof visibleMessages.value)[number]) {
+  const execution = message.execution || props.messages.find(item => item.role === 'assistant' && item.taskId === message.taskId)?.execution;
+  return message.role === 'user' ? execution?.createdAt : execution?.updatedAt || execution?.createdAt;
+}
 function assistantCopyContent(message: (typeof visibleMessages.value)[number]) {
   if (message.role !== 'assistant') return '';
   if (message.clarification?.questions.length && message.status !== 'failed' && message.status !== 'cancelled') {
@@ -657,7 +700,171 @@ async function saveNode(nodeId: string, format: NodeExportFormat) {
   catch (error) { if (props.projectId === projectId) emit('canvas-error', error instanceof Error ? error.message : '素材保存失败，请重试。'); }
   finally { exportingNodes.value.delete(nodeId); }
 }
-function menuPosition(x: number, y: number) { return { x: Math.max(10, Math.min(x, window.innerWidth - 190)), y: Math.max(10, Math.min(y, window.innerHeight - 290)) }; }
+function workflowSnapshot(): Board {
+  const board=snapshot();
+  for(const node of board.nodes) {
+    try {
+      const draft=JSON.parse(localStorage.getItem(`langjuart.nodeDraft.${props.projectId}.${node.id}`)||'null');
+      if(draft && typeof draft.prompt==='string' && !node.data.workflowRunId) {
+        node.data.prompt=draft.prompt;
+        const params={...node.data.params};
+        for(const key of ['model','style','quality','background','duration','camera','voice','speed']) if(draft[key]!==undefined) params[key]=draft[key];
+        if(draft.aspect) params.aspectRatio=draft.aspect;
+        if(draft.resolution && draft.resolution!=='auto') params.resolution=draft.resolution;
+        if(draft.outputFormat) params.output_format=draft.outputFormat;
+        if(draft.referenceAssetId) params.source_asset_id=draft.referenceAssetId;
+        node.data.params=params;
+      }
+    } catch { /* Existing persisted parameters remain usable. */ }
+  }
+  return board;
+}
+async function prepareWorkflowSave() {
+  if(workflowRunning.value || savingEdit.value) return;
+  const before=snapshot(), after=workflowSnapshot();
+  if(JSON.stringify(before)!==JSON.stringify(after) && !await persistEdit(before,after)) return;
+  workflowControls.value?.openSave();
+}
+const workflowControls = ref<InstanceType<typeof WorkflowControls> | null>(null);
+const workflowRunning = ref(false), workflowProgress = ref('');
+let stopWorkflow: boolean = false;
+function requestWorkflowStop() { stopWorkflow = true; workflowProgress.value = '当前步骤结束后停止'; }
+onUnmounted(() => { stopWorkflow = true; });
+async function uploadFolder(nodeId:string, files: File[]) {
+  if (workflowRunning.value || savingEdit.value || props.busy) return;
+  if (!files.length || files.length > 100) { emit('canvas-error', '每批请选择 1–100 个文件'); return; }
+  if (files.some(file => !file.type.startsWith('image/') && !/\.(txt|md|html)$/i.test(file.name))) { emit('canvas-error', '文件夹支持图片、TXT、Markdown 和 HTML'); return; }
+  const projectId=props.projectId, entries:Record<string,any>[]=[];
+  workflowRunning.value=true;
+  try {
+    for (const [index,file] of files.entries()) {
+      if (props.projectId!==projectId) return;
+      workflowProgress.value=`上传 ${index+1}/${files.length}`;
+      const kind=file.type.startsWith('image/')?'image':/\.html$/i.test(file.name)?'html':'text';
+      const data:Record<string,any>={kind,title:file.webkitRelativePath || file.name,draft:false,previewSizingVersion:2};
+      if(kind==='image') {
+        const form=new FormData();form.append('file',file,file.name);form.append('kind','image');
+        const response=await fetch(`${props.apiBaseUrl}/api/projects/${projectId}/assets/upload`,{method:'POST',body:form});
+        if(!response.ok)throw Error(`上传失败：${file.name}`);
+        data.asset=await response.json();data.assetId=data.asset.id;
+      } else data[kind==='html'?'html':'text']=await file.text();
+      entries.push(data);
+    }
+    if(props.projectId!==projectId)return;
+    const before=snapshot(),after=cleanBoard(before),node=after.nodes.find(n=>n.id===nodeId);
+    if(!node)throw Error('文件夹节点已被删除');
+    node.data={...node.data,folderEntries:entries,title:files[0].webkitRelativePath.split('/')[0] || '文件夹'};
+    if(!await persistEdit(before,after))throw Error('文件夹保存失败');
+    workflowProgress.value=`文件夹已就绪 · ${entries.length} 个文件`;
+  }catch(e){emit('canvas-error',(e as Error).message);}finally{workflowRunning.value=false;}
+}
+async function runWorkflow(count:number) {
+  if(workflowRunning.value || savingEdit.value || props.busy || !props.runWorkflowNode || props.demoMode) return;
+  const template = workflowSnapshot(), projectId=props.projectId;
+  try {
+    for(const folder of [...template.nodes].filter(n=>n.data.workflowFolder)) {
+      if(template.edges.some(e=>e.target===folder.id)) throw Error('文件夹是输入节点，不能接收上游连线');
+      if(!template.edges.some(e=>e.source===folder.id)) { template.nodes=template.nodes.filter(n=>n.id!==folder.id); continue; }
+      if(!folder.data.folderEntries?.length) throw Error('请先为文件夹节点上传文件');
+      const entries=folder.data.folderEntries.map((data:Record<string,any>,index:number)=>({id:`${folder.id}-item-${index}`,type:'creative',position:{...folder.position},data:{...data,workflowBatchGroup:folder.id}}));
+      template.nodes=template.nodes.filter(n=>n.id!==folder.id).concat(entries);
+      template.edges=template.edges.flatMap(e=>e.source===folder.id?entries.map((entry:any)=>({...e,id:`${e.id}-${entry.id}`,source:entry.id})): [e]);
+    }
+    const operations=workflowOperations(template.nodes,template.edges);
+    if(template.nodes.some(n=>nodeLocked(n.id))) throw Error('请等待当前节点任务结束后运行工作流');
+    const inputs=template.nodes.filter(n=>!n.data.workflowRunId && !operations.some(o=>o.id===n.id));
+    const groups=[...new Set(inputs.filter(n=>n.data.workflowBatchGroup && template.edges.some(e=>e.source===n.id)).map(n=>n.data.workflowBatchGroup))];
+    if(groups.length>1) throw Error('一次工作流只接受一个文件夹批次，其余输入请作为普通共用参考');
+    const batch=groups.length ? inputs.filter(n=>n.data.workflowBatchGroup===groups[0]) : [null];
+    if(count*batch.length*operations.length>200) throw Error('本次超过 200 个执行步骤，请减少运行次数或文件');
+    for(const node of operations) if(!node.data.prompt?.trim() && !node.data.workflowOperation) throw Error('请填写操作节点提示词');
+    workflowRunning.value=true; stopWorkflow=false;
+    const runId=crypto.randomUUID(); let completed=0;
+    const width=Math.max(...template.nodes.map(n=>n.position.x+previewSizeFor(n.data).width))-Math.min(...template.nodes.map(n=>n.position.x))+160;
+    for(let round=1; round<=count; round++) for(const [batchIndex, item] of batch.entries()) {
+      if(stopWorkflow || props.projectId!==projectId) return;
+      const offset=width*((round-1)*batch.length+batchIndex+1), mapping=new Map<string,string>();
+      let before=snapshot(), after=cleanBoard(before);
+      for(const input of inputs.filter(n=>!groups.length || n.data.workflowBatchGroup!==groups[0] || n.id===item?.id)) {
+        const copy=JSON.parse(JSON.stringify(input)); copy.id=crypto.randomUUID(); copy.position.x+=offset; copy.data.workflowRunId=runId;
+        mapping.set(input.id,copy.id); after.nodes.push(copy);
+      }
+      if(item) for(const input of inputs.filter(n=>n.data.workflowBatchGroup===groups[0])) mapping.set(input.id,mapping.get(item.id)!);
+      for(const operation of operations) { const copy=cloneWorkflowStep(operation,runId,round,offset); mapping.set(operation.id,copy.id); after.nodes.push(copy); }
+      for(const edge of template.edges) if(mapping.has(edge.source)&&mapping.has(edge.target)) {
+        const source=mapping.get(edge.source)!,target=mapping.get(edge.target)!;
+        if(!after.edges.some(e=>e.source===source&&e.target===target)) after.edges.push({...edge,id:crypto.randomUUID(),source,target});
+      }
+      if(!await persistEdit(before,after)) throw Error('工作流副本保存失败');
+      await nextTick();
+      for(const operation of operations) {
+        if(stopWorkflow || props.projectId!==projectId) return;
+        const id=mapping.get(operation.id)!, node=nodes.value.find(n=>n.id===id)!;
+        workflowProgress.value=`第 ${round}/${count} 次 · ${completed}/${count*batch.length*operations.length} 步`;
+        const refs=connectedReferences(id,nodes.value,edges.value,props.apiBaseUrl,projectId);
+        if(operation.data.workflowOperation === 'vectorize') {
+          const input=refs.filter(r=>r.kind==='image' && r.assetId);
+          if(input.length!==1) throw Error('转矢量步骤需要一张上游图片');
+          const response=await fetch(`${props.apiBaseUrl}/api/projects/${projectId}/canvas/${input[0].nodeId}/vectorize`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetNodeId:id})});
+          if(!response.ok) throw Error('转矢量步骤失败，后续已暂停');
+          const result=await response.json(); emit('canvas-change',result.canvas); completed++; await nextTick(); continue;
+        }
+        const stepParams={...operation.data.params};
+        if(operation.data.workflowOperation === 'cutout') {
+          const model=cutoutModel(props.modelOptions||[]); if(!model) throw Error('请先配置 GPT Image 2.5 Flare');
+          const input=refs.filter(r=>r.kind==='image' && r.assetId); if(input.length!==1) throw Error('抠图步骤需要一张上游图片');
+          const upstream=nodes.value.find(n=>n.id===input[0].nodeId)!;const size=previewSizeFor(upstream.data);
+          Object.assign(stepParams,{model,background:'transparent',output_format:'png',aspectRatio:`${size.width}:${size.height}`});
+        }
+        const params=canvasReferenceParams(refs,stepParams,id,operation.data.kind);
+        const context=refs.filter(r=>r.text).map(r=>`【${r.title}】\n${r.text}`).join('\n');
+        const ok=await props.runWorkflowNode(operation.data.kind,`${operation.data.workflowOperation==='cutout' ? '图像编辑任务：移除上游图片背景，保留主体细节和构图，输出真实 alpha 透明 PNG，不绘制棋盘格。' : operation.data.prompt || ''}\n${context}`,node.position,{...params,canvasProjectId:projectId});
+        if(!ok) throw Error('工作流已暂停：当前步骤未确认成功，已完成结果保留，请核对原任务后继续');
+        completed++;
+        await nextTick();
+      }
+    }
+    workflowProgress.value=`已完成 ${completed} 步`;
+  } catch(e) { workflowProgress.value='运行已暂停'; emit('canvas-error',(e as Error).message); }
+  finally {workflowRunning.value=false;}
+}
+const imageActions = ref(new Set<string>());
+async function imageAction(id: string, action: 'vectorize' | 'cutout') {
+  const source = nodes.value.find(n => n.id === id), projectId = props.projectId;
+  if (!source || props.demoMode || nodeLocked(id) || savingEdit.value || imageActions.value.has(id)) return;
+  const model = cutoutModel(props.modelOptions || []);
+  if (action === 'cutout' && !model) { emit('canvas-error', '请先在模型与连接中同步并启用 GPT Image 2.5，抠图不会自动更换模型。'); return; }
+  imageActions.value.add(id); closeMenus();
+  const before = snapshot();
+  try {
+    if (action === 'vectorize') {
+      const response = await fetch(`${props.apiBaseUrl}/api/projects/${encodeURIComponent(projectId)}/canvas/${encodeURIComponent(id)}/vectorize`, {method:'POST'});
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(response.status === 404 && error.detail === 'Not Found' ? '当前后端尚未加载转矢量接口，请重启桌面端后重试。' : typeof error.detail === 'string' ? error.detail : '转矢量失败，请稍后重试。');
+      }
+      const result = await response.json();
+      if (props.projectId !== projectId) return;
+      remember(before, savedBoardEdit(before, result.canvas, result.canvas));
+      emit('canvas-change', result.canvas);
+    } else {
+      const after = snapshot(), targetId = crypto.randomUUID();
+      const position = {x:source.position.x + previewSizeFor(source.data).width + 80, y:source.position.y};
+      const metadata = source.data.asset?.metadata || {};
+      const output = metadata.imageOutput || metadata;
+      const size = previewSizeFor(source.data);
+      const ratio = mediaRatios.value[nodeMediaUrl(source.data)] || (output.width > 0 && output.height > 0 ? output.width / output.height : size.width / size.height);
+      const aspectRatio = `${ratio}:1`;
+      after.nodes.push({id:targetId, type:'creative', position, data:{kind:'image', title:'透明抠图', draft:true, previewSizingVersion:2, params:{aspectRatio}, previewSize:size}});
+      after.edges.push({id:crypto.randomUUID(), source:id, target:targetId});
+      if (!await persistEdit(before, after) || props.projectId !== projectId) return;
+      await nextTick();
+      await generateFromNode(targetId, '图像编辑任务：仅移除参考图背景，完整保留主体的造型、颜色、材质和细节。输出带真实 alpha 透明通道的 PNG；不要绘制棋盘格或白色底色。只生成一张图。', 'image', {model, aspectRatio, background:'transparent', output_format:'png'});
+    }
+  } catch (error) { if (props.projectId === projectId) emit('canvas-error', (error as Error).message); }
+  finally { imageActions.value.delete(id); }
+}
+function menuPosition(x: number, y: number) { return { x: Math.max(10, Math.min(x, window.innerWidth - 260)), y: Math.max(10, Math.min(y, window.innerHeight - 380)) }; }
 function createAtCenter() { const bounds = canvasArea.value?.getBoundingClientRect(); if (!bounds) return; const x = bounds.left + bounds.width * .65, y = bounds.top + bounds.height * .4; createPosition.value = screenToFlowCoordinate({ x, y }); createMenu.value = menuPosition(x, y); showShortcuts.value = false; }
 function createFromDock(event: MouseEvent) {
   if (createMenu.value) { closeMenus(); return; }
@@ -698,6 +905,11 @@ async function chooseNode(kind: CanvasCreationKind) {
   const projectId = props.projectId;
   const position = { ...createPosition.value }; closeMenus();
   if (kind === 'upload') { uploadInput.value?.click(); return; }
+  if (kind === 'folder') {
+    const after = cleanBoard(before);
+    after.nodes.push({id:crypto.randomUUID(),type:'creative',position,data:{kind:'upload',title:'文件夹',workflowFolder:true,folderEntries:[],previewSize:{width:420,height:360},previewSizingVersion:2}});
+    await persistEdit(before,after); return;
+  }
   savingEdit.value = true;
   try {
     const response = await fetch(`${props.apiBaseUrl}/api/projects/${encodeURIComponent(projectId)}/agent-tools/canvas_create_node`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, title: `新建${kindLabels[kind]}节点`, x: position.x, y: position.y }) });
@@ -720,6 +932,9 @@ async function generateFromNode(nodeId: string, prompt: string, kind: CanvasKind
   if (props.demoMode) { emit('canvas-error', '当前方案正在按阶段整理，请完成后再发起新的画布请求。'); return; }
   const node = nodes.value.find((item) => item.id === nodeId);
   if (!node || !prompt.trim() || node.data.generating || savingEdit.value || nodeLocked(nodeId) || submittingGenerations.has(nodeId)) return;
+  if (edges.value.some(edge => edge.target === nodeId && nodes.value.find(source => source.id === edge.source)?.data.workflowFolder)) {
+    emit('canvas-error', '该节点连接了文件夹批量输入，请使用右上角运行按钮执行工作流'); return;
+  }
   if (nodeHasContent(node.data)) { emit('canvas-error', '已有内容的节点不能作为输出目标。请新建空白节点，将当前节点连线到新节点后生成。'); return; }
   if (kind === 'upload') kind = 'image';
   const references = nodeReferences.value[nodeId] || [];
@@ -801,6 +1016,14 @@ function finishDisconnectGesture(event?: MouseEvent | TouchEvent) {
   const target = document.elementFromPoint(point.x, point.y);
   if (target?.closest('.vue-flow__pane') && canvasArea.value?.contains(target)) void deleteEdge(gesture.edgeId);
 }
+const connectedNodeIds = ref<string[]>([]);
+let connectionFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+function showConnectionFeedback(source: string, target: string) {
+  clearTimeout(connectionFeedbackTimer);
+  connectedNodeIds.value = [source, target];
+  connectionFeedbackTimer = setTimeout(() => { connectedNodeIds.value = []; }, 480);
+}
+onUnmounted(() => clearTimeout(connectionFeedbackTimer));
 async function connectNodes(connection: Connection) {
   disconnectGesture = null;
   if (!connection.source || !connection.target || connection.source === connection.target || nodeLocked(connection.source) || nodeLocked(connection.target)) return;
@@ -815,6 +1038,7 @@ async function connectNodes(connection: Connection) {
     if (result.edge) edges.value = edges.value.map(item => item.id === edge.id ? { ...result.edge, type: 'canvas-bezier' } : item);
     remember(before, snapshot());
     if (result.canvas) emit('canvas-change', result.canvas);
+    showConnectionFeedback(edge.source, edge.target);
   } catch (error) {
     edges.value = edges.value.filter((item) => item.id !== edge.id);
     emit('canvas-error', error instanceof Error ? error.message : '节点连接保存失败');
@@ -825,7 +1049,7 @@ async function reconnectEdge({ edge, connection }: { edge: Edge; connection: Con
   if (edges.value.some(item => item.id !== edge.id && item.source === connection.source && item.target === connection.target)) return;
   const before = snapshot(), after = cleanBoard(before);
   const updated = after.edges.find(item => item.id === edge.id);
-  if (updated) { Object.assign(updated, connection); await persistEdit(before, after); }
+  if (updated) { Object.assign(updated, connection); if (await persistEdit(before, after)) showConnectionFeedback(connection.source, connection.target); }
 }
 async function handleUpload(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]; if (!file) return;
@@ -1086,6 +1310,7 @@ async function alignSelection(mode: Alignment) {
 function canvasKeydown(event: KeyboardEvent) {
   if (event.defaultPrevented || event.isComposing || pendingDelete.value) return;
   const target = event.target instanceof Element ? event.target : null;
+  if (target?.closest('.canvas-node-search')) return;
   if (target?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], .canvas-markdown, .canvas-drawing-pad, .canvas-overview, .design-chat-panel, dialog, [role="dialog"], [role="alertdialog"]')) return;
   if (target && target !== document.body && target !== document.documentElement && !canvasArea.value?.contains(target) && !compactDock.value?.contains(target)) return;
   const mod = event.metaKey || event.ctrlKey;
@@ -1118,16 +1343,17 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
 <template>
   <CanvasVersionCompare v-if="comparingVersions" :nodes="comparableNodes" :initial-ids="comparisonInitialIds" :busy="savingEdit" :locked-ids="nodes.filter(node => nodeLocked(node.id)).map(node => node.id)" @close="comparingVersions = false" @adopt="adoptVersion" @continue="continueVersion" />
   <section class="design-workspace" :class="{ 'chat-minimized': isChatMinimized, 'canvas-pan-tool': canvasTool === 'pan', 'is-interacting-with-node': interactingWithNode, 'is-navigating-viewport': navigatingViewport, 'has-multiple-selection': getSelectedNodes.length > 1 }" :style="{ '--design-chat-width': `${chatWidth}px`, '--design-chat-min-width': `${minChatWidth}px`, '--design-composer-height': `${composerHeight}px` }" aria-label="设计 Agent 工作区" @click="closeMenus">
-    <div ref="canvasArea" class="design-canvas-area" aria-label="无限画布" tabindex="-1" @contextmenu="openContextMenu" @keydown.capture="canvasKeydown" @pointerdown.capture="rememberSelection" @mousedown.capture="rememberSelection" @dblclick.capture="openCreateMenu">
-      <VueFlow id="design-canvas" v-model:nodes="nodes" v-model:edges="edges" class="design-flow" :nodes-connectable="true" :elements-selectable="true" :select-nodes-on-drag="false" :node-drag-threshold="5" :selection-key-code="canvasTool === 'select'" :selection-mode="SelectionMode.Partial" :multi-selection-key-code="['Shift', 'Meta', 'Control']" :pan-activation-key-code="'Space'" :delete-key-code="null" :edges-updatable="true" :connection-line-type="ConnectionLineType.Bezier" :zoom-on-double-click="false" :pan-on-drag="spacePanning || canvasTool === 'pan' ? true : [1]" :min-zoom="minCanvasZoom" @move-start="canvasMoveStarted" @move-end="canvasMoveEnded" :max-zoom="MAX_CANVAS_ZOOM" :default-viewport="{ x: 24, y: 68, zoom: 0.85 }" @connect="connectNodes" @connect-start="startDisconnectGesture" @connect-end="finishDisconnectGesture" @edge-update="reconnectEdge" @node-click="({ node, event }) => selectNode(node, event)" @edge-click="({ edge, event }) => selectEdge(edge, event)" @pane-click="clickCanvasPane" @selection-start="startSelection" @selection-end="finishSelection" @node-drag-start="startNodeDrag" @node-drag="dragWithSnap" @node-drag-stop="finishDrag">
-        <Background :variant="BackgroundVariant.Lines" pattern-color="var(--workspace-grid-color)" :gap="28" :line-width="1" />
+    <WorkflowControls ref="workflowControls" v-if="!demoMode" :api-base-url="apiBaseUrl" :project-id="projectId" :running="workflowRunning" :progress="workflowProgress" @run="runWorkflow" @stop="requestWorkflowStop"  />
+    <div ref="canvasArea" class="design-canvas-area" :style="{ backgroundImage: canvasBackground.image ? `url(${canvasBackground.image})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }" aria-label="无限画布" tabindex="-1" @contextmenu="openContextMenu" @keydown.capture="canvasKeydown" @pointerdown.capture="rememberSelection" @mousedown.capture="rememberSelection" @dblclick.capture="openCreateMenu">
+      <VueFlow id="design-canvas" v-model:nodes="nodes" v-model:edges="edges" class="design-flow" :nodes-connectable="true" :connection-radius="28" :elements-selectable="true" :select-nodes-on-drag="false" :node-drag-threshold="5" :selection-key-code="canvasTool === 'select'" :selection-mode="SelectionMode.Partial" :multi-selection-key-code="['Shift', 'Meta', 'Control']" :pan-activation-key-code="'Space'" :delete-key-code="null" :edges-updatable="true" :connection-line-type="ConnectionLineType.Bezier" :zoom-on-double-click="false" :pan-on-drag="spacePanning || canvasTool === 'pan' ? true : [1]" :min-zoom="minCanvasZoom" @move-start="canvasMoveStarted" @move-end="canvasMoveEnded" :max-zoom="MAX_CANVAS_ZOOM" :default-viewport="{ x: 24, y: 68, zoom: 0.85 }" @connect="connectNodes" @connect-start="startDisconnectGesture" @connect-end="finishDisconnectGesture" @edge-update="reconnectEdge" @node-click="({ node, event }) => selectNode(node, event)" @edge-click="({ edge, event }) => selectEdge(edge, event)" @pane-click="clickCanvasPane" @selection-start="startSelection" @selection-end="finishSelection" @node-drag-start="startNodeDrag" @node-drag="dragWithSnap" @node-drag-stop="finishDrag">
+        <Background v-if="canvasBackground.pattern !== 'none'" :variant="canvasBackground.pattern === 'dots' ? BackgroundVariant.Dots : BackgroundVariant.Lines" pattern-color="var(--workspace-grid-color)" :gap="28" :line-width="1" />
         <template #edge-canvas-bezier="edgeProps">
           <GeneralCanvasEdge v-bind="edgeProps" :disabled="edgeLocked(edgeProps.id) || savingEdit" @delete="deleteEdge" />
         </template>
         <template #node-creative="nodeProps">
           <div class="canvas-node-stack" :class="{ 'has-html': nodeProps.data.kind === 'html' }" :style="{ '--canvas-node-width': `${previewSizeFor(nodeProps.data).width}px` }">
-            <GeneralCanvasNode :node-id="nodeProps.id" :delete-drawing="() => deleteDrawing(nodeProps.id)" @drawing-saved="drawingSaved" @drawing-dirty="drawingDirty(nodeProps.id, $event)" @reference="referenceNode(nodeProps)" @cad-updated="refreshCadBoard" :data="nodeProps.data" :selected="nodeProps.selected" :exporting="exportingNodes.has(nodeProps.id)" :uploading="uploadingNodes.has(nodeProps.id)" :busy="nodeLocked(nodeProps.id) || savingEdit || uploadingNodes.has(nodeProps.id)" @export="saveNode(nodeProps.id, $event)" @cancel="emit('cancel-node-task', nodeProps.id, $event)" @context-menu="showContextMenu($event, nodeProps.id)" @dismiss-menu="closeMenus" @resize-start="startNodeResize" @resize="resizeNode(nodeProps.id, $event)" @resize-end="finishNodeResize" @upload="uploadIntoNode(nodeProps.id, $event)" @update="updateNodeData(nodeProps.id, $event)" @media-ratio="mediaRatios[$event.url] = $event.ratio" />
-            <CanvasPromptPanel v-if="!nodeHasContent(nodeProps.data)" v-show="!selectingNodes && getSelectedNodes.length === 1 && selectedNodeId === nodeProps.id && nodeProps.data.editor !== 'drawing'"
+            <GeneralCanvasNode :class="{ 'connection-settled': connectedNodeIds.includes(nodeProps.id) }" :node-id="nodeProps.id" :delete-drawing="() => deleteDrawing(nodeProps.id)" @drawing-saved="drawingSaved" @drawing-dirty="drawingDirty(nodeProps.id, $event)" @reference="referenceNode(nodeProps)" @cad-updated="refreshCadBoard" :data="nodeProps.data" :selected="nodeProps.selected" :exporting="exportingNodes.has(nodeProps.id)" :uploading="uploadingNodes.has(nodeProps.id)" :busy="nodeLocked(nodeProps.id) || savingEdit || uploadingNodes.has(nodeProps.id)" @export="saveNode(nodeProps.id, $event)" @cancel="emit('cancel-node-task', nodeProps.id, $event)" @context-menu="showContextMenu($event, nodeProps.id)" @dismiss-menu="closeMenus" @resize-start="startNodeResize" @resize="resizeNode(nodeProps.id, $event)" @resize-end="finishNodeResize" @folder-upload="uploadFolder(nodeProps.id, $event)" @upload="uploadIntoNode(nodeProps.id, $event)" @update="updateNodeData(nodeProps.id, $event)" @media-ratio="mediaRatios[$event.url] = $event.ratio" />
+            <CanvasPromptPanel v-if="!nodeHasContent(nodeProps.data) && !nodeProps.data.workflowFolder" v-show="!selectingNodes && getSelectedNodes.length === 1 && selectedNodeId === nodeProps.id && nodeProps.data.editor !== 'drawing'"
               :kind="canvasNodeKind(nodeProps.data)"
               :api-base-url="apiBaseUrl" :project-id="projectId" :node-id="nodeProps.id"
               :model-options="modelOptions" :video-model-options="videoModelOptions" :text-model-options="textModelOptions" :audio-model-options="audioModelOptions"
@@ -1144,12 +1370,25 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
       <div v-if="!nodes.length" class="design-canvas-empty-region">
         <div class="design-canvas-empty"><Images :size="32" :stroke-width="1.3" /><h3>让设计在这里呈现</h3><p>右键或双击画布新增画板、图像、视频、文本等节点。</p><small>中键拖动 · 右键操作</small></div>
       </div>
-      <div v-if="createMenu" class="canvas-action-menu" :style="{ left: `${createMenu.x}px`, top: `${createMenu.y}px` }" @click.stop>
-        <strong>新增节点</strong>
-        <button type="button" @click="chooseNode('drawing')"><Pencil :size="15" />画板</button>
-        <button type="button" @click="chooseNode('cad')"><Plus :size="15" />CAD 模型</button><button type="button" @click="chooseNode('image')"><FileImage :size="15" />图像</button><button type="button" @click="chooseNode('video')"><Video :size="15" />视频</button><button type="button" @click="chooseNode('audio')"><Music2 :size="15" />音频</button><button type="button" @click="chooseNode('text')"><FileText :size="15" />文本</button><button type="button" @click="chooseNode('html')"><FileText :size="15" />网页 HTML</button><button type="button" @click="chooseNode('upload')"><Upload :size="15" />上传图像</button>
+      <div v-if="createMenu" class="canvas-action-menu canvas-node-search" :style="{ left: `${createMenu.x}px`, top: `${createMenu.y}px` }" @click.stop @pointerdown.stop @keydown.stop>
+        <input ref="nodeSearchInput" v-model="nodeSearch" aria-label="搜索节点" placeholder="搜索节点…" role="combobox" aria-expanded="true" aria-controls="canvas-node-search-results" :aria-activedescendant="matchingNodeKinds.length ? `node-search-${nodeSearchIndex}` : undefined" @keydown="searchNodeKeydown" />
+        <div id="canvas-node-search-results" class="canvas-node-search-results" role="listbox" aria-label="可添加的节点">
+          <button v-for="(kind, index) in matchingNodeKinds" :id="`node-search-${index}`" :key="kind" type="button" role="option" :aria-selected="index === nodeSearchIndex" :class="{ active: index === nodeSearchIndex }" @mouseenter="nodeSearchIndex = index" @click="chooseNode(kind)">
+            <component :is="({ folder: Upload, palette: Circle, storyboard: Video, drawing: Pencil, cad: Plus, image: FileImage, video: Video, audio: Music2, text: FileText, html: FileText, upload: Upload })[kind]" :size="16" />{{ kindLabels[kind] }}
+          </button>
+          <p v-if="!matchingNodeKinds.length">没有匹配的节点</p>
+        </div>
       </div>
       <div v-if="contextMenu" ref="contextMenuElement" class="canvas-context-menu" :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }" @click.stop>
+        <template v-if="contextNode && canvasNodeKind(contextNode.data) === 'image' && !nodeHasContent(contextNode.data)">
+          <button @click="updateNodeData(contextNode.id,{workflowOperation:'vectorize',title:'转矢量步骤'});closeMenus()">设为转矢量步骤</button>
+          <button @click="updateNodeData(contextNode.id,{workflowOperation:'cutout',title:'抠图步骤'});closeMenus()">设为抠图步骤</button>
+          <button v-if="contextNode.data.workflowOperation" @click="updateNodeData(contextNode.id,{workflowOperation:null});closeMenus()">恢复普通生成节点</button>
+        </template>
+        <template v-if="contextNode && canvasNodeKind(contextNode.data) === 'image' && (contextNode.data.assetId || contextNode.data.asset?.id)">
+          <button :disabled="savingEdit || nodeLocked(contextNode.id) || imageActions.has(contextNode.id)" @click="imageAction(contextNode.id, 'vectorize')">转为矢量 SVG</button>
+          <button :disabled="savingEdit || nodeLocked(contextNode.id) || imageActions.has(contextNode.id)" @click="imageAction(contextNode.id, 'cutout')">一键抠图 · GPT Image 2.5</button>
+        </template>
         <template v-if="contextNode"><button type="button" :disabled="!nodeHasContent(contextNode.data)" @click="openVersionCompare">作品版本对比</button><button type="button" :disabled="nodeLocked(contextNode.id) || !nodeHasContent(contextNode.data)" @click="continueVersion(contextNode.id); closeMenus()">从此版继续修改</button>
           <template v-if="canvasNodeKind(contextNode.data) === 'html'">
             <button type="button" :disabled="contextExportDisabled" @click="saveNode(contextNode.id, 'html')"><Download :size="15" />导出 HTML</button>
@@ -1182,7 +1421,10 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
     </div>
     <Transition name="canvas-dock" :css="motionEnabled">
     <div v-show="isChatMinimized" ref="compactDock" class="canvas-compact-dock" :inert="!isChatMinimized" :aria-hidden="!isChatMinimized" @click.stop @pointerdown.stop @contextmenu.prevent.stop @keydown="canvasKeydown">
-      <button type="button" class="canvas-home-button" aria-label="返回首页" title="返回首页" @click="emit('return-home')"><House :size="18" :stroke-width="1.7" /></button>
+      <div class="canvas-compact-header">
+        <button type="button" class="canvas-home-button" aria-label="返回首页" title="返回首页" @click="emit('return-home')"><House :size="18" :stroke-width="1.7" /></button>
+        <button v-if="!demoMode" type="button" class="canvas-home-button" aria-label="保存工作流" title="保存工作流" :disabled="workflowRunning || savingEdit" @click.stop="prepareWorkflowSave"><Save :size="18" :stroke-width="1.7" /></button>
+      </div>
       <div class="canvas-compact-tools" role="group" aria-label="画布基本操作">
         <button type="button" class="canvas-add-tool" aria-label="新增节点" title="新增节点" :aria-expanded="Boolean(createMenu)" @click="createFromDock"><Plus :size="22" /></button>
         <button type="button" :class="{ active: canvasTool === 'select' }" :aria-pressed="canvasTool === 'select'" aria-label="选择工具" title="选择 · 拖动空白处框选" @click="canvasTool = 'select'; closeMenus()"><MousePointer2 :size="19" /></button>
@@ -1206,7 +1448,7 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
           <div v-if="!messages.length" class="design-chat-welcome"><XiaojuAvatar /><h3>从一个设计目标开始</h3><p>描述你的设计想法，也可以上传参考图、品牌资料或项目需求。</p></div>
           <div class="design-messages" role="log" aria-label="对话记录" aria-live="polite">
             <article v-for="(message, index) in visibleMessages" :key="`${message.conversationTurnId || message.taskId || index}-${message.role}`" :data-task-id="message.taskId" tabindex="-1" class="design-message" :class="[message.role, { 'has-error': message.error }]">
-              <span v-if="message.role === 'assistant'" class="design-message-agent"><XiaojuAvatar :state="avatarState(message)" /><strong>{{ agentName }}</strong><button v-if="message.taskId && message.execution" type="button" class="design-message-inspect" aria-label="查看产物与用量" title="查看产物与用量" @click.stop="emit('task-action', message.taskId, 'inspect')"><FileText :size="16" aria-hidden="true" /></button><AssistantMessageCopy v-if="assistantCopyContent(message)" :content="assistantCopyContent(message)" :task-id="message.taskId" /></span>
+              <span v-if="message.role === 'assistant'" class="design-message-agent"><XiaojuAvatar :state="avatarState(message)" /><strong>{{ agentName }}</strong><button v-if="message.taskId && message.execution" type="button" class="design-message-inspect" aria-label="查看产物与用量" title="查看产物与用量" @click.stop="emit('task-action', message.taskId, 'inspect')"><FileText :size="16" aria-hidden="true" /></button></span>
               <TaskProgress v-if="message.execution" :info="message.execution" :has-reply="Boolean(message.displayContent)" :status="message.status || 'running'" :clarification="Boolean(message.clarification)" :reference-selection="!!message.referenceSelection?.items.length && message.referenceSelection.status === 'pending'" @inspect="inspectDeliveryNode" @action="emit('task-action', message.taskId!, $event)" />
               <details v-if="message.steps?.length" class="design-execution" aria-label="执行过程" :open="!['succeeded', 'failed', 'cancelled'].includes(message.status || '')">
                 <summary>{{ demoMode ? message.status === 'succeeded' ? '方案已完成' : busy ? '正在制作' : '方案已暂停' : executionTitles[message.status || ''] || '执行中' }}</summary>
@@ -1219,13 +1461,17 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
               </details>
               <AgentMarkdown v-if="message.role === 'assistant' && message.clarification?.questions.length && message.status !== 'failed' && message.status !== 'cancelled'" :content="message.clarification.intro || '在开始设计前，先补充几个关键信息。'" />
               <AgentMarkdown v-else-if="message.role === 'assistant' && message.displayContent" :content="publicAssistantMessage(message.displayContent)" :animate="message.animateReply" @reveal="followReplyTyping" />
-              <UserMessageBubble v-else-if="message.role === 'user'" :message="message" :busy="busy" :resend="resubmitMessage" :edit-request="messageEditRequest && messageEditRequest.taskId === message.taskId ? messageEditRequest.requestId : undefined" />
+              <UserMessageBubble v-else-if="message.role === 'user'" :message="message" :timestamp="messageTime(message)" :busy="busy" :resend="resubmitMessage" :edit-request="messageEditRequest && messageEditRequest.taskId === message.taskId ? messageEditRequest.requestId : undefined" />
               <button v-if="message.issue && message.taskId" class="design-canvas-result" :disabled="busy && message.issue.action !== 'settings'" @click="emit('task-action', message.taskId, message.issue.action)">{{ message.issue.actionLabel }}</button>
               <div v-if="message.verification && (message.verification.technical !== '产物已保存' || message.verification.content)" class="message-verification"><span v-if="message.verification.technical !== '产物已保存'">{{ message.verification.technical }}</span><span v-if="message.verification.content">{{ message.verification.content }}</span></div>
               <ReferenceSelectionCard v-if="message.referenceSelection?.items.length" :selection="message.referenceSelection" :api-base-url="apiBaseUrl" :project-id="projectId" :disabled="busy || pendingReferenceSelection(messages)?.id !== message.referenceSelection.id" @submit="emit('select-reference', $event)" />
               <div v-if="message.sources?.length" class="design-search-sources"><small>联网参考来源</small><a v-for="source in message.sources" :key="source.url" :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.title }} <ArrowUpRight :size="12" /></a></div>
               <button v-if="message.role === 'assistant' && message.outputs.length" class="design-canvas-result" type="button" @click.stop="viewTaskOutputs(message.taskId, message.outputs)"><Images :size="15" />查看画布产物 · {{ message.outputs.length }}<ArrowUpRight :size="14" /></button>
               <TaskFeedbackPrompt v-if="message.role === 'assistant' && message.taskId && message.outputs.length" :key="`${projectId}:${message.taskId}`" :api-base-url="apiBaseUrl" :project-id="projectId" :task-id="message.taskId" :record="feedbackRecords[message.taskId]" :loaded="feedbackLoaded" :active="message.taskId === latestAssistantTask && !message.clarification?.questions.length" :ready="readyForFeedback(message.outputs)" :running="message.status === 'running' || message.status === 'queued'" @saved="feedbackRecords[message.taskId!] = $event" />
+              <AssistantMessageCopy v-if="assistantCopyContent(message)" :content="assistantCopyContent(message)" :task-id="message.taskId" :timestamp="messageTime(message)" read-aloud />
+              <div v-if="message.role === 'assistant' && message.execution?.updates?.length" class="design-supplements" aria-label="已发送的补充">
+                <UserMessageBubble v-for="update in message.execution.updates" :key="update.id" :message="{ role: 'user', content: update.text }" :timestamp="update.createdAt" :busy="busy" :resend="resubmitMessage" />
+              </div>
             </article>
           </div>
           <p v-if="busy" class="design-run-progress" role="status"><LoaderCircle :size="15" class="spin-icon" />{{ progressLabel }}</p><p v-if="error" class="design-run-error" role="alert">{{ publicAssistantMessage(error) }}</p>

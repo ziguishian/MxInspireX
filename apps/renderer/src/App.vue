@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import GeneralSettings from './components/GeneralSettings.vue';
+import VoiceInput from './components/composer/VoiceInput.vue';
 import AppUpdate from './components/AppUpdate.vue';
+import DesktopToolbar from './components/DesktopToolbar.vue';
 import ModelBrandIcon from './components/ModelBrandIcon.vue';
 import { canvasTextModel, canvasTaskTerminalPatch, createCanvasSubmissionGate } from './features/canvasGeneration';
 import AppearanceSettings from './components/AppearanceSettings.vue';
@@ -15,9 +17,10 @@ import ThreeDSettings from './components/ThreeDSettings.vue';
 import ModelRouterSettings from './components/ModelRouterSettings.vue';
 import ThemeSwitcher from './components/ThemeSwitcher.vue';
 import HomeUsageSummary from './components/home/HomeUsageSummary.vue';
-import { creditSummary, creditUsageNote, creditLoadError, tokenUsageLabel, type CreditSummary } from './features/credits';
+import { creditSummary, creditLoadError, type CreditSummary } from './features/credits';
 import MascotSettings from './components/MascotSettings.vue';
 import { createMascotSettings, mascotSettingsKey } from './features/home/mascot';
+import LocalCapabilities from './components/LocalCapabilities.vue';
 import BetaTestingAbout from './components/BetaTestingAbout.vue';
 import { recordBetaUsage } from './features/betaTesting';
 import StylePicker from './components/composer/StylePicker.vue';
@@ -69,7 +72,7 @@ import { pendingReferenceSelection, type ReferenceSubmission } from './features/
 import { pendingClarification, type ClarificationSubmission } from './features/clarification';
 import { ComposerDraftStore } from './features/composerDrafts';
 
-import { createProviderModelCatalog, selectAvailableModel, type DetectedModel, type ModelCatalogResponse } from './providerModels';
+import { useSupplementalProvider, createProviderModelCatalog, selectAvailableModel, type DetectedModel, type ModelCatalogResponse } from './providerModels';
 
 import { completedDeliveryReply, designLiveText, designSteps, type DesignStep } from './designPresentation';
 import { isCosmicFutureQuestion } from './features/easterEggs';
@@ -80,7 +83,6 @@ provide(mascotSettingsKey, mascotSettings);
 
 const appVersion = '0.2.0';
 
-const composerShortcut = computed(() => generalSettings.sendWithEnter ? 'Enter' : /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ ↵' : 'Ctrl + Enter');
 
 const isDesktopApp = Boolean(window.studio?.isDesktop || /Electron\//i.test(navigator.userAgent));
 
@@ -181,7 +183,7 @@ const workspaceView = ref<WorkspaceView>('intake');
 
 const settingsReturnPath = ref('/');
 
-const sidebarSection = ref<'home' | 'new' | 'projects' | 'assets' | 'knowledge' | 'schedules' | 'skills'>('home');
+const sidebarSection = ref<'home' | 'new' | 'projects' | 'assets' | 'knowledge' | 'schedules' | 'skills' | 'workflows'>('home');
 
 const settingsHostReady = ref(false);
 
@@ -189,6 +191,7 @@ const sidebarNavItems = [
   { key: 'schedules', label: '定时器' },
   { key: 'skills', label: '技能库' },
   { key: 'projects', label: '项目' },
+  { key: 'workflows', label: '工作流' },
   { key: 'assets', label: '资产' },
   { key: 'knowledge', label: '参考库' },
 ] as const;
@@ -604,17 +607,32 @@ const credentialProviderOptions = computed(() => {
 });
 
 const providerProfiles = ref<Record<string, SavedProviderProfile>>(readStoredRecord('aics.providerProfiles'));
+const supplementalMedia = ref<Record<string, Partial<Record<'image' | 'video' | 'audio', string>>>>(readStoredRecord('aics.supplementalMedia'));
+const mediaKinds = ['image', 'video', 'audio'] as const;
+const mediaLabels = { image: '图像', video: '视频', audio: '音频' };
+const supplementalScope = () => `${credentialTargetProvider.value}:${providerBaseUrl.value.trim().replace(/\/+$/, '')}`;
+function setSupplementalMedia(kind: 'image' | 'video' | 'audio', value: string) {
+  supplementalMedia.value = { ...supplementalMedia.value, [supplementalScope()]: { ...supplementalMedia.value[supplementalScope()], [kind]: value } };
+  localStorage.setItem('aics.supplementalMedia', JSON.stringify(supplementalMedia.value));
+}
+function profileMediaModels(profile: SavedProviderProfile, kind: 'image' | 'video' | 'audio' | '3d') {
+  const ids = kind === 'image' ? profile.imageModels : profile.modelCatalog.filter(model => model.kinds?.includes(kind) || model.kind === kind).map(model => model.id);
+  return ids.filter(id => profile.models.includes(id));
+}
+function supplementalChoices(kind: 'image' | 'video' | 'audio') {
+  return providers.value.filter(provider => provider.key !== credentialTargetProvider.value && provider.configured && !provider.local && profileForProvider(provider.key)?.baseUrl && profileMediaModels(profileForProvider(provider.key)!, kind).length);
+}
 
 const profileForProvider = (providerKey: string) => normalizeSavedProviderProfile(providerKey, providerProfiles.value[providerKey]);
 
 function savedRemoteMediaProvider(kind: 'image' | 'video' | 'audio' | '3d') {
-  const preferred = [imageProvider.value, 'openrouter', 'evolink', 'openai-compatible'];
+  const selected = kind === '3d' ? undefined : supplementalMedia.value[supplementalScope()]?.[kind];
+  const preferred = selected ? [selected] : isOllamaProvider.value ? [imageProvider.value, 'openrouter', 'evolink', 'openai-compatible'] : [];
   const key = [...new Set(preferred)].find((candidate) => {
     const spec = providers.value.find((provider) => provider.key === candidate);
     const profile = profileForProvider(candidate);
     if (!spec?.configured || spec.local || !profile?.baseUrl) return false;
-    if (kind === 'image') return profile.imageModels.length > 0;
-    return profile.modelCatalog.some((model) => model.kinds?.includes(kind) || model.kind === kind);
+    return profileMediaModels(profile, kind).length > 0;
   });
   return key ? { key, profile: profileForProvider(key)! } : undefined;
 }
@@ -622,7 +640,8 @@ function savedRemoteMediaProvider(kind: 'image' | 'video' | 'audio' | '3d') {
 function taskMediaProvider(kind: 'image' | 'video' | 'audio') {
   const textKey = activeTextProvider.value || selectedTextProvider.value;
   const textSpec = providers.value.find((provider) => provider.key === textKey);
-  if (!textSpec?.local) {
+  const supplemental = useSupplementalProvider(liveModelCatalog.status.value, liveModelCatalog.data.value[kind], supplementalMedia.value[supplementalScope()]?.[kind]);
+  if (!textSpec?.local && !supplemental) {
     return kind === 'video'
       ? { key: textKey, endpoint: providerBaseUrl.value, model: videoModel.value, manual: videoModelManual.value }
       : kind === 'image'
@@ -638,10 +657,9 @@ function taskMediaProvider(kind: 'image' | 'video' | 'audio') {
         : { key: textKey, baseUrl: providerBaseUrl.value, model: audioModel.value };
   }
   const { key: remoteKey, profile } = remote;
-  const options = kind === 'image' ? profile.imageModels : profile.modelCatalog
-    .filter((model) => model.kinds?.includes(kind) || model.kind === kind)
-    .map((model) => model.id);
-  const savedModel = kind === 'image' ? profile.imageModel : kind === 'video' ? profile.videoModel || '' : '';
+  const options = profileMediaModels(profile, kind);
+  const selectedModel = kind === 'image' ? imageModel.value : kind === 'video' ? videoModel.value : audioModel.value;
+  const savedModel = options.includes(selectedModel) ? selectedModel : kind === 'image' ? profile.imageModel : kind === 'video' ? profile.videoModel || '' : '';
   const model = selectAvailableModel(savedModel, options);
   return kind === 'video'
     ? { key: remoteKey, endpoint: profile.baseUrl, model, manual: Boolean(savedModel) }
@@ -732,17 +750,15 @@ const detectedImageModels = computed(() => liveModelCatalog.data.value.image);
 
 const textModelOptions = detectedTextModels;
 
-const imageModelOptions = computed(() => isOllamaProvider.value
-  ? savedRemoteMediaProvider('image')?.profile.imageModels || []
-  : detectedImageModels.value);
-
-const videoModelOptions = computed(() => isOllamaProvider.value
-  ? savedRemoteMediaProvider('video')?.profile.modelCatalog.filter((model) => model.kinds?.includes('video') || model.kind === 'video').map((model) => model.id) || []
-  : liveModelCatalog.data.value.video);
-
-const audioModelOptions = computed(() => isOllamaProvider.value
-  ? savedRemoteMediaProvider('audio')?.profile.modelCatalog.filter((model) => model.kinds?.includes('audio') || model.kind === 'audio').map((model) => model.id) || []
-  : liveModelCatalog.data.value.audio);
+function effectiveMediaOptions(kind: 'image' | 'video' | 'audio') {
+  const primary = liveModelCatalog.data.value[kind];
+  if (!isOllamaProvider.value && !useSupplementalProvider(liveModelCatalog.status.value, primary, supplementalMedia.value[supplementalScope()]?.[kind])) return primary;
+  const remote = savedRemoteMediaProvider(kind);
+  return remote ? profileMediaModels(remote.profile, kind) : [];
+}
+const imageModelOptions = computed(() => effectiveMediaOptions('image'));
+const videoModelOptions = computed(() => effectiveMediaOptions('video'));
+const audioModelOptions = computed(() => effectiveMediaOptions('audio'));
 
 const threeDModelOptions = computed(() => isOllamaProvider.value
   ? savedRemoteMediaProvider('3d')?.profile.modelCatalog.filter((model) => model.kinds?.includes('3d') || model.kind === '3d').map((model) => model.id) || []
@@ -830,7 +846,7 @@ const themeMode = ref<'system' | 'dark' | 'light'>(storedTheme === 'dark' || sto
 
 const resolvedTheme = ref<'dark' | 'light'>(window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-const brandLogoSrc = computed(() => `${import.meta.env.BASE_URL}assets/mxinspirex-robot.png`);
+const brandLogoSrc = computed(() => `${import.meta.env.BASE_URL}assets/mxinspirex-app-icon-${resolvedTheme.value}.png`);
 
 const tokenUsageByDay = computed(() => creditSummary.value?.tokenByDay || {});
 const creditPending = computed(() => creditSummary.value?.awaitingReconciliation || 0);
@@ -1220,8 +1236,7 @@ function applyTheme() {
   document.documentElement.dataset.theme = resolved;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'light' ? '#f3f2ef' : '#181818');
   applyAppearance(resolved);
-  document.querySelector<HTMLLinkElement>('#app-favicon')?.setAttribute('href', `${import.meta.env.BASE_URL}assets/mxinspirex-robot.png`);
-  void window.studio?.setTitleBarTheme?.(resolved);
+  document.querySelector<HTMLLinkElement>('#app-favicon')?.setAttribute('href', `${import.meta.env.BASE_URL}assets/mxinspirex-favicon-${resolvedTheme.value}.png`);
   // Keep the native Dock/window artwork in lockstep with the renderer theme.
   // `system` lets the main process continue listening to nativeTheme updates;
   // an explicit mode intentionally overrides the OS appearance for this app.
@@ -1286,6 +1301,7 @@ function navigateSidebar(section: typeof sidebarSection.value) {
   if (section === 'schedules') { openSchedules(); return; }
   sidebarSection.value = section;
   if (section === 'home') startNewIntake();
+  if (section === 'workflows') workspaceView.value = 'workflows';
   if (section === 'skills') workspaceView.value = 'skills';
   if (section === 'assets') workspaceView.value = 'asset-library';
   if (section === 'knowledge') {
@@ -1296,7 +1312,7 @@ function navigateSidebar(section: typeof sidebarSection.value) {
     workspaceView.value = 'projects-library';
     void loadGlobalLibraries();
   }
-  const paths = { home: '/', new: '/', projects: '/projects', assets: '/assets', knowledge: '/references', skills: '/skills' };
+  const paths = { workflows: '/workflows', home: '/', new: '/', projects: '/projects', assets: '/assets', knowledge: '/references', skills: '/skills' };
   void router.push(paths[section]);
 }
 
@@ -2608,7 +2624,7 @@ async function generateCanvasNode(kind: 'image' | 'video' | 'audio' | 'text' | '
   const { canvasProjectId: _projectId, ...generationParams } = params;
   if (!project || !prompt.trim()) return;
   const labels = { image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '图像' };
-  await runCanvasNodeTask(project, `请在当前空白画布节点中生成${labels[kind]}。\n用户提示词：${prompt}`, { ...generationParams, kind });
+  return await runCanvasNodeTask(project, `请在当前空白画布节点中生成${labels[kind]}。\n用户提示词：${prompt}`, { ...generationParams, kind });
 }
 
 async function patchCanvasNodeTaskState(projectId: string, nodeId: string, data: Record<string, any>) {
@@ -3113,7 +3129,6 @@ async function supplementCurrentTask(queued?: QueuedMessage) {
     else if (activeProjectId.value === projectId && draftRevision === revision) { applyComposerDraft(); saveComposerDraft(); }
     const task = await request<TaskRecord>(`/api/projects/${projectId}/tasks/${taskId}`);
     if (activeProjectId.value === projectId) showDesignTask(projectId, task);
-    pushToast('补充已保存，将在下一次判断前生效。已提交的生成请求会保留。', 'success');
   } catch (e) { errorMessage.value = e instanceof Error ? e.message : '补充未确认送达，输入已保留。'; }
   finally { sendingSupplement.value = false; }
 }
@@ -3577,7 +3592,7 @@ provide(projectWorkspaceServices.key, {
   isLoading, errorMessage, designCanvasVisible,
   options: computed(() => {
     const playback = activePlayback.value;
-    return activeProject.value ? ({ messageEditRequest: messageEditRequest.value, resendMessage: resendDesignMessage, taskFocus: taskFocus.value?.projectId === activeProject.value!.id ? taskFocus.value : undefined, messages: playback ? playback.messages.value : [...showcasePlayback.savedMessages.value, ...designConversation.value.map(message => message.role === 'user' ? { ...message, references: messageReferences({ text: message.content, projectId: activeProject.value!.id, apiBaseUrl, snapshot: message.referenceSnapshot, assets: globalAssets.value, documents: globalKnowledgeDocs.value, nodes: designCanvasDocument.value.nodes }) } : message)], busy: playback ? playback.playing.value : isRunningTask.value && runningTaskProjectId.value === activeProject.value.id, progress: playback ? playback.progress.value : designProgress.value, error: playback?.error.value || errorMessage.value, apiBaseUrl, projectId: activeProject.value.id, demoMode: Boolean(playback), canvasDocument: playback ? playback.canvasDocument.value : designCanvasDocument.value, modelOptions: imageModelOptions.value, textModelOptions: textModelOptions.value, audioModelOptions: audioModelOptions.value, videoModelOptions: videoModelOptions.value }) : null;
+    return activeProject.value ? ({ runWorkflowNode: generateCanvasNode, messageEditRequest: messageEditRequest.value, resendMessage: resendDesignMessage, taskFocus: taskFocus.value?.projectId === activeProject.value!.id ? taskFocus.value : undefined, messages: playback ? playback.messages.value : [...showcasePlayback.savedMessages.value, ...designConversation.value.map(message => message.role === 'user' ? { ...message, references: messageReferences({ text: message.content, projectId: activeProject.value!.id, apiBaseUrl, snapshot: message.referenceSnapshot, assets: globalAssets.value, documents: globalKnowledgeDocs.value, nodes: designCanvasDocument.value.nodes }) } : message)], busy: playback ? playback.playing.value : isRunningTask.value && runningTaskProjectId.value === activeProject.value.id, progress: playback ? playback.progress.value : designProgress.value, error: playback?.error.value || errorMessage.value, apiBaseUrl, projectId: activeProject.value.id, demoMode: Boolean(playback), canvasDocument: playback ? playback.canvasDocument.value : designCanvasDocument.value, modelOptions: imageModelOptions.value, textModelOptions: textModelOptions.value, audioModelOptions: audioModelOptions.value, videoModelOptions: videoModelOptions.value }) : null;
   }),
   events: { 'return-home': () => { startNewIntake(); void router.push('/'); }, 'task-action': handleTaskAction, reference: referenceDesignCanvas, 'cancel-canvas-reference': cancelCanvasReferences, 'move-node': moveDesignNode, 'generate-node': generateCanvasNode, 'cancel-node-task': cancelCanvasNodeTask, 'canvas-error': message => { errorMessage.value = message; pushToast(publicAssistantMessage(message), 'error'); }, 'canvas-change': document => { designCanvasDocument.value = document; }, 'composer-ready': markComposerReady, clarify: answerDesignClarification, 'select-reference': answerReferenceSelection },
 });
@@ -3639,34 +3654,31 @@ onUnmounted(() => {
 <template>
   <TaskRequestInspector v-if="inspectedTaskId && activeProjectId" :key="inspectedTaskId" :api-base-url="apiBaseUrl" :project-id="activeProjectId" :task-id="inspectedTaskId" @recovered="refreshRecoveredMedia" @close="inspectedTaskId = null" @locate="nodeId => { taskFocus = { projectId: activeProjectId!, taskId: inspectedTaskId!, nodeId, requestId: Date.now() }; inspectedTaskId = null; }" />
   <main class="shell" :class="{ 'desktop-shell': isDesktopApp, 'shell-general-chat': workspaceView === 'design-agent', 'canvas-open': workspaceView === 'design-agent' && designCanvasVisible, 'settings-open': workspaceView === 'settings' }">
-    <div v-if="isDesktopApp" class="window-chrome" aria-label=" Token  实时消费计数">
-      <span class="window-chrome-token-count" aria-live="polite" :title="creditUsageNote"><span class="window-chrome-token-label"> Token 用量 ·</span><strong class="window-chrome-token-value">{{ tokenUsageLabel(creditSummary) }}</strong><span class="window-chrome-token-unit"> Token </span><small v-if="creditPending"> · {{ creditPending }} 笔待对账</small><small v-if="creditLoadError"> · {{ creditLoadError }}</small></span>
-    </div>
-    <header v-if="workspaceView !== 'design-agent' && workspaceView !== 'settings'" class="mx-app-heading">
-      <button class="mx-wordmark" type="button" aria-label="MxinspireX 首页" @click="startNewIntake(); router.push('/')"><strong>MxinspireX</strong><span class="mx-dot-grid" aria-hidden="true" /><small>AI DESIGN AGENT</small></button>
-      <HomeUsageSummary v-if="workspaceView === 'intake'" />
-      <ThemeSwitcher v-model="themeMode" />
+    <DesktopToolbar v-if="isDesktopApp" />
+    <header v-if="!isDesktopApp && workspaceView === 'intake'" class="mx-app-heading">
+      <HomeUsageSummary v-if="!isDesktopApp && workspaceView === 'intake'" />
+
     </header>
-    <section class="workspace-grid">
-      <nav v-if="workspaceView !== 'design-agent'" class="top-left-nav-card" :style="{ '--nav-count': sidebarNavItems.length + 2 }" aria-label="工作台导航">
-        <button class="sidebar-nav-item brand-home-button" :class="{ active: workspaceView === 'intake' }" type="button" aria-label="返回首页" @click="startNewIntake(); router.push('/')"><span class="nav-icon" aria-hidden="true"><House :size="18" :stroke-width="1.7" /></span><strong>首页</strong></button>
-        <button v-for="(item, index) in sidebarNavItems" :key="item.key" :style="{ '--nav-index': index + 1 }" class="sidebar-nav-item" :class="{ active: workspaceView !== 'settings' && sidebarSection === item.key }" :aria-label="item.label" @click="navigateSidebar(item.key)"><span class="nav-icon" aria-hidden="true"><Clock3 v-if="item.key === 'schedules'" :size="17" :stroke-width="1.7" /><Folder v-else-if="item.key === 'projects'" :size="17" :stroke-width="1.7" /><Images v-else-if="item.key === 'assets'" :size="17" :stroke-width="1.7" /><Wrench v-else-if="item.key === 'skills'" :size="17" :stroke-width="1.7" /><BookOpen v-else :size="17" :stroke-width="1.7" /></span><strong>{{ item.label }}</strong><i v-if="item.key === 'schedules' && scheduleUnreadCount" class="schedule-nav-badge">{{ scheduleUnreadCount > 99 ? '99+' : scheduleUnreadCount }}</i></button>
-              <div class="sidebar-task-wrap">
+              <div v-if="workspaceView !== 'design-agent'" class="sidebar-task-wrap top-task-wrap">
                 <button ref="taskQueueAnchor" type="button" class="sidebar-nav-item" :class="{ active: showAssistantCard, running: taskQueueCount > 0 }" aria-label="任务列表" aria-haspopup="dialog" :title="taskQueueLabel" :aria-expanded="showAssistantCard" @click.stop="openTaskQueue"><span class="nav-icon"><ClipboardList :size="17" /></span><strong>任务</strong><span v-if="taskQueueCount" class="composer-task-count">{{ taskQueueCount }}</span></button>
                 <AnchoredPopover v-if="showAssistantCard" :anchor="taskQueueAnchor" :top-inset="isDesktopApp ? 42 : 12" label="任务列表" @close="showAssistantCard = false">
                   <div class="composer-task-list">
-                    <div class="panel-heading"><span>正在运行的任务</span><button class="icon-button assistant-collapse-button" title="关闭任务列表" aria-label="关闭任务列表" @click="showAssistantCard = false">×</button></div>
+                    <div class="panel-heading"><span>任务<span v-if="taskQueueCount"> · {{ taskQueueCount }}</span></span><button class="icon-button assistant-collapse-button" title="关闭任务列表" aria-label="关闭任务列表" @click="showAssistantCard = false">×</button></div>
                     <section class="task-queue-section" aria-label="正在运行的任务" aria-live="polite">
-                      <h4 v-if="activeQueueTasks.length">运行中 · {{ activeQueueTasks.length }}</h4>
-                      <AnimatedList class="task-queue-animated"><button v-for="task in activeQueueTasks" :key="task.id" type="button" class="task-queue-item" :title="`进入任务：${task.userMessage || task.projectName}`" :aria-label="`进入任务：${task.userMessage || task.projectName}`" @click="openQueueTask(task)"><span class="task-queue-item-icon"><LoaderCircle :size="15" class="spin-icon" /></span><span class="task-queue-item-copy"><strong>{{ task.userMessage || task.projectName }}</strong><small>{{ task.projectName }} · {{ task.taskSurface === 'canvas_node' ? '画布任务' : '对话任务' }}</small></span><span class="task-queue-status">运行中<ChevronRight :size="12" aria-hidden="true" /></span></button></AnimatedList>
-                      <p v-if="!taskQueueCount" class="task-queue-empty">当前没有正在运行的任务。</p>
+                      <AnimatedList v-if="taskQueueCount" class="task-queue-animated"><button v-for="task in activeQueueTasks" :key="task.id" type="button" class="task-queue-item" :title="`进入任务：${task.userMessage || task.projectName}`" :aria-label="`进入任务：${task.userMessage || task.projectName}`" @click="openQueueTask(task)"><span class="task-queue-item-copy"><strong>{{ task.userMessage || task.projectName }}</strong><small>{{ task.projectName }} · 运行中</small><span class="task-queue-progress" role="progressbar" aria-label="任务运行中，进度未知"><i /></span></span><ChevronRight :size="14" aria-hidden="true" /></button></AnimatedList>
+                      <p v-else class="task-queue-empty">暂无运行任务</p>
                     </section>
                   </div>
                 </AnchoredPopover>
               </div>
+    <section class="workspace-grid">
+      <nav v-if="workspaceView !== 'design-agent'" class="top-left-nav-card" :style="{ '--nav-count': sidebarNavItems.length + 2 }" aria-label="工作台导航">
+        <button class="sidebar-nav-item brand-home-button" :class="{ active: workspaceView === 'intake' }" type="button" aria-label="返回首页" @click="startNewIntake(); router.push('/')"><span class="nav-icon" aria-hidden="true"><House :size="18" :stroke-width="1.7" /></span><strong>首页</strong></button>
+        <button v-for="(item, index) in sidebarNavItems" :key="item.key" :style="{ '--nav-index': index + 1 }" class="sidebar-nav-item" :class="{ active: workspaceView !== 'settings' && sidebarSection === item.key }" :aria-label="item.label" @click="navigateSidebar(item.key)"><span class="nav-icon" aria-hidden="true"><Clock3 v-if="item.key === 'schedules'" :size="17" :stroke-width="1.7" /><Folder v-else-if="item.key === 'projects'" :size="17" :stroke-width="1.7" /><Images v-else-if="item.key === 'assets'" :size="17" :stroke-width="1.7" /><Wrench v-else-if="item.key === 'skills'" :size="17" :stroke-width="1.7" /><BookOpen v-else :size="17" :stroke-width="1.7" /></span><strong>{{ item.label }}</strong><i v-if="item.key === 'schedules' && scheduleUnreadCount" class="schedule-nav-badge">{{ scheduleUnreadCount > 99 ? '99+' : scheduleUnreadCount }}</i></button>
+
       </nav>
       <div class="top-left-profile-wrap">
-        <AppUpdate />
+        <template v-if="workspaceView !== 'design-agent'"><AppUpdate /><ThemeSwitcher v-model="themeMode" /></template>
         <button ref="userSummaryButton" class="sidebar-user sidebar-user-mini" type="button" aria-label="用户概览" aria-haspopup="dialog" :aria-expanded="showUserSummary" aria-controls="user-summary-card" @click.stop="toggleUserSummary"><span class="user-avatar user-avatar-sprite" :style="{ backgroundPosition: activeAvatarOption.position }"><span class="sr-only">{{ userNickname }}</span></span></button>
         <section v-if="showUserSummary" id="user-summary-card" ref="userSummaryCard" class="profile-summary-card" role="dialog" aria-label="用户概览" tabindex="-1" @keydown.esc.stop.prevent="closeUserSummary(true)">
           <header class="profile-summary-identity">
@@ -3693,8 +3705,6 @@ onUnmounted(() => {
     </section>
 
     <Teleport v-if="composerHostReady && (workspaceView === 'intake' || workspaceView === 'design-agent')" :key="designComposerEpoch" defer :to="workspaceView === 'design-agent' ? '#design-composer-host' : '#intake-composer-host'">
-            <div class="intake-composer composer-hero" :class="{ 'is-file-dragging': isDraggingComposerFiles }" @dragenter="handleComposerFileDragEnter" @dragover="handleComposerFileDragOver" @dragleave="handleComposerFileDragLeave" @drop="handleComposerFileDrop">
-              <StarBorder :flowing="workspaceView === 'intake'" />
             <section v-if="workspaceView === 'design-agent' && activeQueuedMessages.length" class="composer-message-queue" aria-label="待发送消息队列" aria-live="polite">
               <header class="composer-message-queue-header">
                 <span><ListPlus :size="15" /><strong>待发送 · {{ activeQueuedMessages.length }}</strong></span>
@@ -3717,6 +3727,8 @@ onUnmounted(() => {
                 </li>
               </TransitionGroup>
             </section>
+            <div class="intake-composer composer-hero" :class="{ 'is-file-dragging': isDraggingComposerFiles }" @dragenter="handleComposerFileDragEnter" @dragover="handleComposerFileDragOver" @dragleave="handleComposerFileDragLeave" @drop="handleComposerFileDrop">
+              <StarBorder :flowing="workspaceView === 'intake'" />
             <div v-if="intakeFiles.length" class="intake-file-list" aria-label="已添加的附件"><div v-for="(file, index) in intakeFiles" :key="`${file.name}-${file.lastModified}`" class="intake-file-chip" :class="{ referenced: intakeMentionFiles.includes(index) }" :title="`${index + 1}. ${file.name}`"><span class="intake-file-index">{{ index + 1 }}</span><span v-if="intakeFilePreviews[fileKey(file)]" class="file-thumb"><img :src="intakeFilePreviews[fileKey(file)]" :alt="file.name" /></span><span v-else class="file-type-icon" aria-hidden="true">{{ fileIcon(file) }}</span><span class="sr-only">{{ file.name }}</span><button type="button" class="icon-button" :aria-label="`移除附件 ${file.name}`" @click="removeIntakeFile(index)"><X :size="14" /></button></div></div>
             <label class="intake-label intake-main-label intake-mention-anchor">
               <span class="sr-only">输入需求</span>
@@ -3752,11 +3764,11 @@ onUnmounted(() => {
 
               </div>
               <span class="composer-toolbar-spacer" />
+              <VoiceInput :key="`${workspaceView}:${activeProjectId || 'home'}`" :api-base-url="apiBaseUrl" @text="intakeBrief += (intakeBrief.trim() ? '\n' : '') + $event; syncIntakeComposerEditor()" />
               <button v-if="workspaceView === 'design-agent' && isRunningTask" type="button" class="composer-send composer-stop" :aria-label="isStoppingTask ? '正在停止生成' : '停止生成'" :title="isStoppingTask ? '正在停止…' : '停止生成'" :disabled="isStoppingTask" @click="stopAgent"><LoaderCircle v-if="isStoppingTask" :size="19" class="spin-icon" aria-hidden="true" /><StopIcon v-else :size="14" fill="currentColor" :stroke-width="0" aria-hidden="true" /></button>
-              <button v-if="workspaceView === 'design-agent' && isRunningTask" type="button" class="composer-send composer-queue-submit" :disabled="sendingSupplement || (!intakeBrief.trim() && !intakeFiles.length)" :aria-label="composerRunMode === 'supplement' ? '补充当前任务' : '加入待发送队列'" :title="composerRunMode === 'supplement' ? '补充当前任务' : '加入待发送队列'" @click="submitComposer"><ListPlus :size="18" /></button>
               <button v-else type="button" class="composer-send" :disabled="isCreatingIntake || (!intakeBrief.trim() && !intakeFiles.length)" :aria-label="workspaceView === 'design-agent' ? (activeQueuedMessages.length ? '加入队列并继续执行' : '发送消息') : isCreatingIntake ? '正在连接本地 API' : intakeReady ? '交给 Agent 分析' : '解析并创建记录'" :title="isCreatingIntake ? '正在连接本地 API…' : ''" @click="submitComposer"><LoaderCircle v-if="isCreatingIntake" :size="19" class="spin-icon" /><ArrowUp v-else :size="19" /></button>
             </div>
-            <div class="composer-caption"><span>{{ draftSaveLabel || '支持粘贴或拖拽图片与文件' }} · @ 引用资料 · # 选择技能</span><span>{{ composerShortcut }} {{ isCreatingIntake ? '连接中…' : workspaceView === 'design-agent' && isRunningTask ? (queueMessagesByDefault || intakeFiles.length || intakeMentionAssets.length || intakeSkills.length ? '加入队列' : '补充当前任务') : intakeReady ? '继续' : '开始' }}</span></div>
+            <div class="composer-caption"><span>{{ draftSaveLabel || '支持粘贴或拖拽图片与文件' }} · @ 引用资料 · # 选择技能</span></div>
             <div v-if="intakeFileResults.length" class="intake-results"><div v-for="result in intakeFileResults" :key="result.filename" class="intake-result-row"><span class="status-dot" :class="{ warning: Boolean(result.warning) }" /><strong>{{ result.filename }}</strong><span>{{ result.parser || result.status || '已解析' }}</span><small v-if="result.warning">{{ result.warning }}</small></div></div>
             <div v-if="intakeReady && workspaceView === 'intake'" class="intake-ready-note"><span class="status-dot" />资料已解析，点击箭头交给MxinspireX</div>
             </div>
@@ -3780,7 +3792,7 @@ onUnmounted(() => {
     </div>
     <div v-if="pendingDeleteProject" class="modal-backdrop delete-modal-backdrop" @click.self="cancelDeleteProject">
       <section class="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-project-title">
-        <div class="delete-modal-icon"><svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-2h6l1 2m-9 0 .8 12h6.4L15 7" /></svg></div>
+        <div class="delete-modal-icon"><Trash2 :size="24" :stroke-width="1.8" aria-hidden="true" /></div>
         <p class="eyebrow">DELETE LOCAL RECORD</p><h2 id="delete-project-title">删除这个设计项目？</h2><p>将同时删除项目记录、任务历史、上传资产与研究快照。此操作无法撤销。</p><strong>{{ pendingDeleteProject.name }}</strong>
         <div class="modal-actions"><button class="ghost-button" :disabled="isDeletingProject" @click="cancelDeleteProject">取消</button><button class="danger-button" :disabled="isDeletingProject" @click="deleteProject(pendingDeleteProject)">{{ isDeletingProject ? '删除中…' : '确认删除' }}</button></div>
       </section>
@@ -3822,12 +3834,36 @@ onUnmounted(() => {
           </div>
           <label>Agent 执行方式<select v-model="routingMode"><option v-for="choice in routingChoices" :key="choice.id" :value="choice.id">{{ choice.label }}</option><option value="manual">手动模型（在首页选择）</option></select><small>文本、图像、视频和音频模型统一在首页输入框中切换。</small></label>
           <p class="model-catalog-summary" role="status">{{ settingsCatalogMessage }}</p>
+          <div class="provider-capabilities" aria-label="模型能力检测">
+            <div class="provider-capability-row"><strong>文本</strong><span>{{ liveModelCatalog.status.value === 'ready' ? `${detectedTextModels.length} 个模型` : '等待目录确认' }}</span></div>
+            <div v-for="kind in mediaKinds" :key="kind" class="provider-capability-row">
+              <strong>{{ mediaLabels[kind] }}</strong>
+              <span v-if="liveModelCatalog.status.value !== 'ready'">{{ liveModelCatalog.status.value === 'error' ? '同步失败，保留已存配置' : '等待目录确认' }}</span>
+              <span v-else-if="liveModelCatalog.data.value[kind].length">当前服务商 · {{ liveModelCatalog.data.value[kind].length }} 个模型</span>
+              <span v-else>{{ savedRemoteMediaProvider(kind) ? '使用补充服务商' : '当前目录未发现' }}</span>
+            </div>
+            <div class="provider-capability-row"><strong>3D</strong><span>{{ liveModelCatalog.status.value === 'ready' && liveModelCatalog.data.value.threeD.length ? `目录发现 ${liveModelCatalog.data.value.threeD.length} 个 · 仍需配置已适配的生成接口` : '使用下方独立服务' }}</span></div>
+            <small>模型列表用于发现能力，不等于已验证生成接口；同步失败不会清空补充配置。</small>
+          </div>
+          <template v-if="liveModelCatalog.status.value === 'ready'">
+            <div v-for="kind in mediaKinds.filter(item => !liveModelCatalog.data.value[item].length)" :key="`supplemental-${kind}`" class="provider-supplemental">
+              <label>{{ mediaLabels[kind] }} · 补充服务商
+                <select :value="supplementalMedia[supplementalScope()]?.[kind] || ''" @change="setSupplementalMedia(kind, ($event.target as HTMLSelectElement).value)">
+                  <option value="">{{ isOllamaProvider ? '沿用已有远程配置' : '暂不配置' }}</option>
+                  <option v-if="supplementalMedia[supplementalScope()]?.[kind] && !supplementalChoices(kind).some(item => item.key === supplementalMedia[supplementalScope()]?.[kind])" :value="supplementalMedia[supplementalScope()]?.[kind]" disabled>已选服务不可用，请重新配置</option>
+                  <option v-for="provider in supplementalChoices(kind)" :key="provider.key" :value="provider.key">{{ provider.label }} · {{ profileMediaModels(profileForProvider(provider.key)!, kind).length }} 个模型</option>
+                </select>
+              </label>
+              <small>{{ supplementalChoices(kind).length ? '仅补充当前服务缺少的能力；首页、画布和任务调用使用同一选择，自动保存。' : '先在上方选择其他服务商，保存 Key 并同步目录，再切回当前服务商选择。' }}</small>
+            </div>
+          </template>
+          <p v-if="unknownModelOptions.length" class="model-catalog-summary">{{ unknownModelOptions.length }} 个模型尚未识别能力，暂不自动加入生成列表。{{ liveModelCatalog.data.value.warnings.join('；') }}</p>
           <ThreeDSettings :api-base-url="apiBaseUrl" :provider="threeDConfigProvider" :endpoint="threeDConfigEndpoint" :model="threeDConfigModel" @saved="config => { threeDConfigProvider = config.provider; threeDConfigEndpoint = config.endpoint; threeDConfigModel = config.model; }" />
         </section>
         <ModelRouterSettings v-else-if="settingsTab === 'routing'" :api-base-url="apiBaseUrl" />
         <section v-else-if="settingsTab === 'appearance'" class="settings-pane"><AppearanceSettings v-model="themeMode" :resolved="resolvedTheme" /><label class="settings-switch toggle-control"><input v-model="reduceAnimations" type="checkbox" role="switch" /><span class="toggle-track" /><span>减少动画 <small>MxinspireX保持静止表情，减少画布和对话中的装饰动画；也尊重系统设置</small></span></label><label class="settings-switch toggle-control"><input v-model="allowExternalNetwork" type="checkbox" role="switch" /><span class="toggle-track" /><span>允许联网研究 <small>Agent 可调用 OpenAI 联网搜索并提供来源，可随时关闭</small></span></label><MascotSettings :provider="taskMediaProvider('image')" :model-options="imageModelOptions" /><button type="button" class="about-link" @click="switchSettingsTab('about')">关于灵矩绘境 →</button></section>
-        <section v-else-if="settingsTab === 'components'" class="settings-pane runtime-components-pane"><div class="provider-config-heading"><span>按需能力组件</span><small>只在使用时安装，不包含项目或个人数据</small></div><article v-for="component in runtimeComponents" :key="component.id" class="runtime-component-card"><div class="runtime-component-icon"><Box :size="18" /></div><div><strong>{{ component.label }}</strong><p>{{ component.description }}</p><small>{{ formatComponentSize(component.bytes) }} · {{ component.installed ? '已安装' : component.available ? '可在线下载' : '从能力包安装' }}</small></div><button type="button" :disabled="component.installed || !!runtimeComponentLoading" @click="installRuntimeComponent(component)">{{ component.installed ? '已安装' : runtimeComponentLoading === component.id ? '安装中…' : '按需安装' }}</button></article><p v-if="runtimeComponentMessage" class="runtime-component-message" role="status">{{ runtimeComponentMessage }}</p></section>
-        <section v-else class="settings-pane about-pane" @click="handleAboutClick"><div class="about-mark"><img class="about-logo" :src="brandLogoSrc" alt="灵矩绘境 logo" /></div><p class="eyebrow">MxinspireX · 灵矩绘境</p><h3>与你一起推进设计的 AI Agent</h3><p>MxinspireX 将需求理解、资料检索、视觉生成与画布编辑整合在同一个工作区。从品牌视觉、产品概念到内容设计，让想法形成方案，让方案持续迭代。</p><p>由灵矩绘境研发，为设计师与创意团队提供从探索到交付的智能协作支持。</p><p>联系邮箱：<a class="help-contact-link" href="mailto:ziguishian@foxmail.com">ziguishian@foxmail.com</a></p><p>开发者：<strong>AlexiShi</strong></p><small>版本 {{ appVersion }} · 内部测试构建</small><BetaTestingAbout :api-base-url="apiBaseUrl" /><div class="about-footer-meta"><span>© 2026 灵矩绘境 · MxinspireX</span><span>需求梳理 · 方案生成 · 持续迭代</span></div></section>
+        <section v-else-if="settingsTab === 'components'" class="settings-pane runtime-components-pane"><LocalCapabilities /><div class="provider-config-heading"><span>按需能力组件</span><small>只在使用时安装，不包含项目或个人数据</small></div><article v-for="component in runtimeComponents" :key="component.id" class="runtime-component-card"><div class="runtime-component-icon"><Box :size="18" /></div><div><strong>{{ component.label }}</strong><p>{{ component.description }}</p><small>{{ formatComponentSize(component.bytes) }} · {{ component.installed ? '已安装' : component.available ? '可在线下载' : '从能力包安装' }}</small></div><button type="button" :disabled="component.installed || !!runtimeComponentLoading" @click="installRuntimeComponent(component)">{{ component.installed ? '已安装' : runtimeComponentLoading === component.id ? '安装中…' : '按需安装' }}</button></article><p v-if="runtimeComponentMessage" class="runtime-component-message" role="status">{{ runtimeComponentMessage }}</p></section>
+        <section v-else class="settings-pane about-pane" @click="handleAboutClick"><div class="about-mark"><img class="about-logo" :src="brandLogoSrc" alt="MxInspireX Logo" /></div><p class="eyebrow">MxinspireX · 灵矩绘境</p><h3>与你一起推进设计的 AI Agent</h3><p>MxinspireX 将需求理解、资料检索、视觉生成与画布编辑整合在同一个工作区。从品牌视觉、产品概念到内容设计，让想法形成方案，让方案持续迭代。</p><p>我们相信，设计始于人的观察与判断。AI 帮助探索可能、完成繁复工作，让创作者把精力留给想法与取舍。</p><p>以本地工作区保存创作过程，用可追溯的引用连接灵感与成果，让每一次修改都有来处，也有继续生长的空间。</p><p>由灵矩绘境研发，与设计师一起从探索走向交付。</p><button type="button" class="about-link" @click.stop="switchSettingsTab('help')">查看使用说明 →</button><p>联系邮箱：<a class="help-contact-link" href="mailto:ziguishian@foxmail.com">ziguishian@foxmail.com</a></p><p>开发者：<strong>AlexiShi</strong></p><small>版本 {{ appVersion }} · Beta 测试版</small><BetaTestingAbout :api-base-url="apiBaseUrl" /><div class="about-footer-meta"><span>© 2026 灵矩绘境 · MxinspireX</span><span>需求梳理 · 方案生成 · 持续迭代</span></div></section>
         <p v-if="providerTestResult && settingsTab !== 'about'" class="provider-test-result" role="status" aria-live="polite">{{ providerTestResult }}</p><p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
         <div v-if="settingsTab !== 'about'" class="settings-page-actions"><button v-if="settingsTab === 'text'" type="submit" class="primary-button" :disabled="isSavingProvider || isDetectingModels">{{ isSavingProvider || isDetectingModels ? '同步并保存中…' : '保存并同步模型目录' }}</button><button v-else-if="settingsTab === 'appearance'" type="submit" class="primary-button">保存外观设置</button></div>
       </form>

@@ -16,6 +16,7 @@ dependencies = [
   "python-docx>=1.1,<2",
   "python-pptx>=1.0,<2",
   "Pillow>=11,<13",
+  "vtracer==0.6.15",
   "fonttools>=4.65,<5",
   "psutil>=7,<8",
   "tzdata>=2025.2; sys_platform == 'win32'",

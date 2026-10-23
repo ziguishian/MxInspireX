@@ -48,6 +48,8 @@ const dragging = ref(false);
 const imageKind = computed(() => ['image', 'upload'].includes(props.kind));
 const aspectOptions = computed(() => [...new Set([...(imageKind.value ? imageAspects : imageAspects.slice(0, 5)), aspect.value])]);
 const linkedReferences = computed(() => props.connectedReferences || []);
+const linkedStoryboard = computed(() => props.kind === 'video' ? linkedReferences.value.find(ref => ref.editor === 'storyboard') : undefined);
+watch(() => linkedStoryboard.value?.duration, value => { if (value) duration.value = value; }, {immediate:true});
 const imageIds = computed(() => referenceImageIds(linkedReferences.value, referenceAssetId.value));
 const referenceIssue = computed(() => referenceProblem(props.kind, linkedReferences.value, imageIds.value));
 const frameLabel = (assetId?: string) => props.kind === 'video' && assetId && imageIds.value.includes(assetId) ? (imageIds.value.indexOf(assetId) === 0 ? '首帧' : '尾帧') : '';
@@ -165,7 +167,7 @@ function submit() {
             <label>输出格式<select v-model="outputFormat" aria-label="图像输出格式"><option value="png">PNG</option><option value="webp">WebP</option><option v-if="background !== 'transparent'" value="jpeg">JPEG</option></select></label>
             <small v-if="background === 'transparent'" class="prompt-background-hint">需要支持透明输出的 GPT Image 模型；生成后校验透明通道。</small>
           </template>
-          <label v-if="kind === 'video'">时长（秒）<input v-model.number="duration" type="number" min="1" max="60" /></label>
+          <label v-if="kind === 'video'">{{ linkedStoryboard ? '分镜总时长（秒）' : '时长（秒）' }}<input v-model.number="duration" type="number" min="1" max="60" :disabled="!!linkedStoryboard" /></label>
           <template v-if="kind === 'audio'"><label>音色<input v-model="voice" placeholder="留空使用服务默认音色" /></label><label>语速<input v-model.number="speed" type="number" min="0.25" max="4" step="0.25" /></label></template>
         </template>
       </div>
