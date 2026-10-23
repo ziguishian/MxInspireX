@@ -155,6 +155,8 @@ cpSync(path.join(root, 'dist', 'renderer'), path.join(targetProject, 'dist', 're
 cpSync(path.join(root, 'dist', 'desktop'), path.join(targetProject, 'dist', 'desktop'), { recursive: true });
 cpSync(path.join(root, 'packages'), path.join(targetProject, 'packages'), { recursive: true });
 cpSync(path.join(root, 'package.json'), path.join(targetProject, 'package.json'));
+cpSync(path.join(root, 'LICENSE'), path.join(targetProject, 'LICENSE'));
+cpSync(path.join(root, 'docs/licenses'), path.join(targetProject, 'docs/licenses'), { recursive: true });
 packageDesktopRuntimeDependencies(root, targetProject);
 if (packageProfile === 'lite') {
   const componentManifest = path.resolve(process.env.AICS_RUNTIME_COMPONENT_MANIFEST || path.join(root, 'dist', 'runtime-components', `${process.platform}-${process.arch}`, 'runtime-components.json'));

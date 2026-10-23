@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
-[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
 MxinspireX は、灵矩绘境が開発する **AI デザインワークスペース**です。デザイナー、文化・クリエイティブ分野のチーム、商品づくりに携わる方に向けて、要望や参考資料を、修正・比較・書き出しができるデザイン作品へとつなげます。
@@ -93,6 +93,6 @@ npm run build
 
 ## ライセンス・連絡先
 
-コードは [MIT](LICENSE)。依存ライブラリ、フォント、エンジンには各ライセンスが適用されます（`services/api/notices/`）。作品やアップロード内容の権利は各権利者に帰属します。
+現在のソースコードには [MxinspireX 非商用ライセンス 1.0](LICENSE) が適用されます。非商用の学習・研究・改変・共有は可能ですが、商用導入、有料サービス、受託業務、商用プロジェクト向けのデザイン制作には事前の書面による許可が必要です。ソースコードを公開するライセンスであり、OSI の定義するオープンソースライセンスではありません。v0.2.1 を含む過去の MIT 版と、すでに付与された権利には元の条件が引き続き適用されます。第三者の構成要素には各ライセンスが適用されます（`services/api/notices/`）。ユーザーの資料や生成物の所有権が移転することはありません。商用利用の許可については、下記メールアドレスへお問い合わせください。
 
 **灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

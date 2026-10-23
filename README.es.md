@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
-[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
 MxinspireX es un **espacio de trabajo de diseño con IA** creado por 灵矩绘境 para profesionales del diseño, equipos de proyectos culturales y creativos, y creadores de productos. Convierte requisitos y materiales de referencia en diseños que puedes seguir editando, comparar y exportar.
@@ -93,6 +93,6 @@ Si este espacio de trabajo te resulta útil, puedes darle una estrella o compart
 
 ## Licencia y contacto
 
-El código mantiene la licencia [MIT](LICENSE). Dependencias, fuentes y motores conservan sus licencias (`services/api/notices/`). Las obras y archivos subidos pertenecen a sus respectivos titulares.
+El código fuente actual se distribuye bajo la [Licencia no comercial de MxinspireX 1.0](LICENSE). Se permiten el aprendizaje, la investigación, la modificación y la redistribución sin fines comerciales. El uso en empresas, los servicios de pago, los trabajos para clientes y la producción de diseños para proyectos comerciales requieren autorización previa por escrito. Es una licencia de código disponible, no una licencia de código abierto según la OSI. Las versiones anteriores bajo MIT, incluida la v0.2.1, y los derechos ya concedidos conservan sus condiciones originales. Los componentes de terceros mantienen sus propias licencias (`services/api/notices/`); no se transfiere la propiedad de los materiales ni de los resultados del usuario. Para solicitar autorización comercial, escribe al correo indicado abajo.
 
 **灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

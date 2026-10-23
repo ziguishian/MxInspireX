@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
-[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
 MxinspireX는 灵矩绘境에서 만든 **AI 디자인 작업 공간**입니다. 디자이너, 문화·콘텐츠 제작팀, 제품 기획자가 요구 사항과 참고 자료를 바탕으로 디자인을 만들고, 결과물을 수정·비교·내보낼 수 있도록 돕습니다.
@@ -93,6 +93,6 @@ Vue 3 / TypeScript / Vite / Vue Flow, Electron, FastAPI / Python, Node Agent wor
 
 ## 라이선스 및 문의
 
-코드는 [MIT](LICENSE)를 따릅니다. 의존성, 글꼴, 엔진은 각각의 라이선스를 따릅니다(`services/api/notices/`). 작품과 업로드한 콘텐츠의 권리는 각 권리자에게 있습니다.
+현재 소스 코드에는 [MxinspireX 비상업적 라이선스 1.0](LICENSE)이 적용됩니다. 비상업적 학습·연구·수정·공유는 허용되지만, 상업적 배포와 운영, 유료 서비스, 고객 의뢰 작업, 상업 프로젝트용 디자인 제작에는 사전 서면 허가가 필요합니다. 소스 코드를 공개하는 라이선스이며, OSI가 정의하는 오픈 소스 라이선스는 아닙니다. v0.2.1을 포함한 기존 MIT 버전과 이미 부여된 권리에는 원래 조건이 유지됩니다. 제삼자 구성 요소는 각각의 라이선스를 따르며(`services/api/notices/`), 사용자 자료와 생성물의 소유권은 이전되지 않습니다. 상업적 이용 허가는 아래 이메일로 문의하세요.
 
 **灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

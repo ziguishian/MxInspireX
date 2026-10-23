@@ -1,21 +1,81 @@
-MIT License
+MxinspireX Non-Commercial License 1.0
+Effective for versions carrying this license, from 2026-10-23.
 
 Copyright (c) 2026 子圭时安
+All rights reserved except as expressly granted below.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Scope
+"Software" means the MxinspireX source code, associated project documentation,
+and binaries supplied with this license, to the extent the copyright holder
+has the right to license them. Separately licensed third-party components are
+excluded and remain governed by their own licenses.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Non-commercial permission
+Subject to these terms, you may use, study, copy, modify and redistribute the
+Software, in source or binary form, solely for non-commercial purposes.
+Personal learning, private experimentation, and education or research without
+a commercial purpose are permitted. These permissions are royalty-free.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. Commercial use prohibited
+You may not use, modify, distribute or make the Software available for any
+purpose primarily intended for commercial advantage or monetary compensation
+without prior written permission from the copyright holder. This includes:
+- selling, renting, licensing for a fee, or monetizing access to the Software;
+- hosted, SaaS, API or other paid or advertising-supported services;
+- internal use supporting a business's commercial operations;
+- paid client work, commercial product development, marketing, or generating
+  designs or other outputs for commercial projects.
+Providing access without charging a fee does not make an otherwise commercial
+activity non-commercial. Modified versions are subject to the same limits.
+Commercial permission inquiries: ziguishian@foxmail.com.
+
+4. Redistribution and attribution
+Every copy or substantial portion of the Software you redistribute must retain
+this license, the copyright notice, applicable third-party notices, and any
+required historical license notices. Clearly identify your modifications.
+Your redistribution must preserve these non-commercial restrictions for the
+Software covered by this license; you may not grant broader rights to it.
+No trademark rights or right to imply endorsement are granted.
+
+5. Inputs and outputs
+This license does not transfer ownership of users' inputs or generated outputs
+to the copyright holder. Their rights remain subject to applicable law and
+third-party terms. Nevertheless, using this Software to produce outputs for
+commercial purposes is prohibited under section 3 without written permission.
+
+6. Earlier versions and third-party rights
+This license does not revoke, replace or restrict rights already granted under
+MIT for earlier releases or copies, including v0.2.1 and the repository through
+commit 1222db5. Those copies remain available under their original terms.
+The historical MIT notice is preserved in docs/licenses/MIT-legacy.txt.
+This license does not override third-party licenses or rights independently
+obtained under earlier licenses. New material provided only under this license
+is governed by these terms.
+
+7. Termination
+The permissions granted here terminate automatically upon breach of these
+terms. You must then stop exercising those permissions unless the copyright
+holder grants written reinstatement. Independently held rights under earlier
+or third-party licenses are not terminated by this provision.
+
+8. Disclaimer
+To the maximum extent permitted by applicable law, the Software is provided
+as is, without warranties of any kind, express or implied, including
+merchantability, fitness for a particular purpose, title and non-infringement.
+The authors and copyright holders shall not be liable for claims, damages or
+other liability arising from the Software or its use, whether in contract,
+tort or otherwise. Mandatory rights under applicable law remain unaffected.
+
+9. License status
+This is a source-available, non-commercial license, not an OSI-approved
+open-source license. Rights not expressly granted are reserved. The English
+terms above govern; the Chinese summary below is explanatory only.
+
+中文摘要（以以上英文条款为准）
+允许非商业学习、研究、使用、修改和分享，须保留许可与版权声明。
+禁止未经书面授权的商业部署、销售、收费或广告变现服务、企业经营用途、
+付费客户项目，以及利用本软件为商业项目生成设计或其他内容。
+本许可不取得用户输入或产物的所有权，不改变第三方组件的许可。
+此前按 MIT 发布的版本（包括 v0.2.1）及已授予的权利不受追溯影响。
+本项目属于源码可用软件，而非 OSI 定义的开源软件。
+商业授权联系：ziguishian@foxmail.com。

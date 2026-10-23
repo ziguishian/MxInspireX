@@ -12,7 +12,7 @@
 ## 技术与支持
 - [Agent 执行与引用机制](https://github.com/ziguishian/MxInspireX/blob/main/docs/agent-flow.md)
 - [桌面更新](https://github.com/ziguishian/MxInspireX/blob/main/docs/desktop-updates.md)
-- [MIT 许可](https://github.com/ziguishian/MxInspireX/blob/main/LICENSE)
+- [非商业许可（历史 MIT 版本除外）](https://github.com/ziguishian/MxInspireX/blob/main/LICENSE)
 - [反馈问题](https://github.com/ziguishian/MxInspireX/issues)
 
 本文件是可选资料索引，不是搜索引擎的收录协议。支持平台和功能以实际 Release 和对应版本文档为准。

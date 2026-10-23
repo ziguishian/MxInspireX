@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
-[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
 MxinspireX is an **AI design workspace** by 灵矩绘境, built for designers, cultural and creative teams, and product creators. It turns briefs and reference materials into work you can refine, compare and export.
@@ -93,6 +93,6 @@ If this workspace helps you create, consider giving it a Star or sharing your fe
 
 ## License and contact
 
-[MIT](LICENSE) for project code; dependencies, fonts and engines retain their own licenses (`services/api/notices/`). Artwork and uploaded content retain their respective owners' rights.
+The current source uses the [MxinspireX Non-Commercial License 1.0](LICENSE). Non-commercial learning, research, modification and sharing are permitted. Commercial deployment, paid services, client work and producing designs for commercial projects require prior written permission. This is a source-available license, not an OSI open-source license. Earlier MIT releases, including v0.2.1, and rights already granted remain under their original terms. Third-party components retain their own licenses (`services/api/notices/`); ownership of user materials and outputs is not transferred. Contact the email below for commercial permission.
 
 **灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)

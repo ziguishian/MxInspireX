@@ -4,7 +4,7 @@
 
 [![最新版本](https://img.shields.io/github/v/release/ziguishian/MxInspireX?style=flat-square&color=4b8bd8&label=Release)](https://github.com/ziguishian/MxInspireX/releases/latest)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-4b8bd8?style=flat-square)](https://github.com/ziguishian/MxInspireX/releases/latest)
-[![MIT License](https://img.shields.io/github/license/ziguishian/MxInspireX?style=flat-square&color=608571)](LICENSE)
+[![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
 MxinspireX 是灵矩绘境出品的 **AI 设计工作区**，面向设计师、文创团队和产品创作者，用来把需求与参考资料变成可继续编辑、比较和导出的设计作品。
@@ -105,7 +105,7 @@ npm run build            # 桌面前端及 Electron 编译
 
 **MxinspireX 是否完全离线？** 项目与文件保存在本机，但使用云模型时仍会发送本次任务必要内容。
 
-**是否包含免费模型额度？** 不包含。需要自己的 API Key，费用以服务商回执为准；MIT 许可不等于模型调用免费。
+**是否包含免费模型额度？** 不包含。需要自己的 API Key，费用以服务商回执为准；非商业许可不等于模型调用免费。
 
 **是否支持多种生成类型？** 支持图像、文本、视频、音频、HTML、CAD 等入口，具体能力取决于模型配置。外部 3D 服务需独立配置。
 
@@ -129,6 +129,6 @@ npm run build            # 桌面前端及 Electron 编译
 
 ## 许可与联系
 
-代码沿用仓库的 [MIT 许可](LICENSE)。第三方依赖、字体和引擎遵循各自许可，相关说明见 `services/api/notices/`；案例与用户上传内容的权利归各自权利人。
+当前源码采用 [MxinspireX 非商业许可 1.0](LICENSE)：允许非商业学习、研究、修改与分享；商业部署、收费服务、付费客户项目及商业设计生产须事先取得书面授权。它是源码可用许可，不属于 OSI 定义的开源许可。此前按 MIT 发布的版本（包括 v0.2.1）及已授予的权利保持原许可，不追溯变更。第三方依赖、字体和引擎遵循各自许可，见 `services/api/notices/`；用户资料和产物的所有权不因此转移。商业授权联系下方邮箱。
 
 **灵矩绘境 · MxinspireX** · [ziguishian@foxmail.com](mailto:ziguishian@foxmail.com)
