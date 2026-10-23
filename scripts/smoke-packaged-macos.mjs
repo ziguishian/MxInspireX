@@ -68,8 +68,12 @@ try {
     await sleep(200);
   }
   await evaluate('document.querySelector(\'[aria-label="项目"]\').click()');
-  for (let i = 0; i < 60; i++) { if (await evaluate('document.body.innerText.includes("发布包本地验证")')) break; await sleep(200); }
-  assert.ok(await evaluate('document.body.innerText.includes("发布包本地验证")'));
+  for (let i = 0; i < 60; i++) { if (await evaluate('!!document.querySelector(".project-card")')) break; await sleep(200); }
+  // Current cards reveal their title on hover or keyboard focus.
+  await evaluate('document.querySelector(".project-card")?.focus()');
+  const projectVisible = `document.body.innerText.includes(${JSON.stringify(project.name)})`;
+  for (let i = 0; i < 60; i++) { if (await evaluate(projectVisible)) break; await sleep(200); }
+  assert.ok(await evaluate(projectVisible), await evaluate('document.body.innerText'));
   if (process.argv.includes('--cad')) {
     const base = state.api + '/api/projects/' + project.id;
     const request = async (route, body) => {
