@@ -37,7 +37,7 @@ try {
   await npmRun('typecheck');
   await npmRun('test');
   await run('backend recovery and canvas', python, ['-X', 'utf8', '-m', 'pytest', '-q', '--basetemp', path.join(output, 'pytest'),
-    'tests/test_canvas_placement.py', 'tests/test_canvas_node_tasks.py', 'tests/test_task_interaction_upgrade.py'], path.join(root, 'services/api'));
+    'tests/test_canvas_placement.py', 'tests/test_canvas_node_tasks.py', 'tests/test_task_interaction_upgrade.py', 'tests/test_cad_worker_exit.py'], path.join(root, 'services/api'));
   const port = await new Promise((resolve, reject) => {
     const socket = createServer();
     socket.once('error', reject);

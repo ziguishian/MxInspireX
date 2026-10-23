@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import struct
 import sys
 from types import ModuleType
@@ -107,6 +108,7 @@ def build(payload, directory):
 
 
 def main():
+    exit_code = 0
     try:
         payload = json.loads(sys.stdin.buffer.read(200000))
         # OCP imports the legacy all-in-one ``vtk`` namespace even though this
@@ -123,7 +125,17 @@ def main():
         Path('result.json').write_text(json.dumps({'ok':True, **result},ensure_ascii=False),encoding='utf-8')
     except Exception as error:
         Path('result.json').write_text(json.dumps({'ok':False,'error':str(error)[:3000]},ensure_ascii=False),encoding='utf-8')
-        sys.exit(1)
+        exit_code = 1
+    if sys.platform == 'win32':
+        # OCP/VTK's native shutdown can corrupt the Windows heap after even a
+        # health probe. This disposable worker has already closed every output
+        # and written the validated success/error result; let the OS reclaim
+        # native state instead of running unsafe interpreter finalizers.
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(exit_code)
+    if exit_code:
+        sys.exit(exit_code)
 
 
 if __name__ == '__main__': main()

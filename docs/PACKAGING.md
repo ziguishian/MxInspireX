@@ -38,6 +38,8 @@ Electron 主进程直接导入的 npm 包必须位于根 `dependencies`，并通
 
 ## 本地 CAD 运行依赖
 
+Windows CAD worker 在完成文件关闭、几何检查和结果记录后使用进程级退出，避免 OCP/VTK 在 Python 解释器终结时触发堆损坏；失败仍写错误回执并返回非零。随包 `CAD-SMOKE.cmd` 使用临时 HOME 和与生产一致的线程环境。0.2.1 已通过板件、壳体、旋转体原生构建与 STEP 回读。
+
 CadQuery 2.8.0 及其原生依赖由 `services/api/uv.lock` 固定。完整版中 Mac 随 PyInstaller sidecar 分发、Windows 随内置 Python 分发；轻量版中 Mac 使用独立签名的 CAD worker，Windows 使用独立的锁定 wheel 目录。`AICS_PYPI_MIRROR` 只更改 wheel 下载地址，不改变版本或哈希；缺少的镜像文件回退到官方地址。
 
 `scripts/cad-licenses.py` 收集实际 wheel 的许可证。OCCT 7.9.3 的官方 LGPL 文本、附加条款和源代码地址另存于 `services/api/notices`，随两个平台分发。Windows 安装目录包含 `CAD-SMOKE.cmd`，可直接使用内置 Python 运行原生 CAD 测试。
