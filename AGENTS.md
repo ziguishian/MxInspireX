@@ -10,7 +10,7 @@
 - **能力**：文本、图像、视频、音频、3D、HTML、本地参数化 CAD；知识检索、视觉参考库、技能库、导出与本地定时任务。
 - **技术栈**：Vue 3 + TypeScript + Vite + Vue Router；Vue Flow 画布、Three.js 预览；Electron 桌面端；Python 3.12+ / FastAPI；Node.js / OpenAI Agents SDK；SQLite 与本地文件存储。LanceDB 是可选依赖。Electron 主进程运行依赖必须声明在根 `dependencies`，并由 `desktop-runtime-dependencies.mjs` 复制和验证，不能依赖开发目录的 `node_modules` 向上解析。
 - **统一任务入口**：`design`。任务按需求调用研究、设计能力，没有固定步骤流水线；普通对话无需走完整设计流程。
-- **界面语言**：以中文为主。产品名称为 `MxinspireX`，公司为 `灵矩绘境`；吉祥物默认灰色点阵机器人，可在外观设置中选择预设或自定义，并同步首页与项目 Agent 头像。视觉规范以已确认的深浅色预览为准，共用主题变量在 `style.css`，布局与细节在 `mx-theme.css`。机器人资源是 `mxinspirex-robot.png` 与 `mxinspirex-robot-states.png`（3×2 图集）；用户头像共用 `mxinspirex-user-line-avatars.png`（3×3 图集），保留原有 0–8 选择索引。代码前缀 `AICS`、历史素材文件名和本地存储键中的 `langjuart` / `lumo` 保留兼容，不用作显示名称。
+- **界面语言**：以中文为主。产品名称为 `MxinspireX`，公司为 `灵矩绘境`；吉祥物默认灰色点阵机器人，可在外观设置中选择预设或自定义，并同步首页与项目 Agent 头像。视觉规范以已确认的深浅色预览为准，共用主题变量在 `style.css`，布局与细节在 `mx-theme.css`。Agent 机器人使用 `mascots/robot-soft.png`（3×2 图集），与奶油猫、云朵、小芽统一为柔和全身坐姿玩偶；旧 `mxinspirex-robot.png` 与 `mxinspirex-robot-states.png` 保留作历史/品牌资源；用户头像共用 `mxinspirex-user-line-avatars.png`（3×3 图集），保留原有 0–8 选择索引。代码前缀 `AICS`、历史素材文件名和本地存储键中的 `langjuart` / `lumo` 保留兼容，不用作显示名称。
 
 - **主题维护**：以用户确认的中性灰配色为准。背景、侧栏、卡片、浮层和输入区分别使用 `--theme-bg`、`--theme-sidebar`、`--theme-surface`、`--theme-surface-floating` 和 `--theme-input`，在 `style.css` 中同时定义深浅色值。状态信号灯统一使用 `--theme-status-green/yellow/red`：就绪或成功为绿，处理中、待验证、待配置或警告为黄，故障或离线为红，不跟随中性强调色。共用控件、弹窗和跨页面覆盖统一放在 `mx-theme.css`；画布对话输入框在 `features/composer/composer.css` 中复用同一输入区变量。不要新增全局强制透明背景或隐藏焦点的 `!important` 规则。图片、视频、画板内容和风格参考保留自身颜色。
 
@@ -20,6 +20,8 @@
 - **用户资料编辑**：用户中心点击昵称或简介文字即可原位编辑，保持原字体、居中与内容高度，不显示大输入框及保存/取消按钮；失去焦点自动保存，Esc 取消并恢复原文，空昵称保留原值。使用独立草稿，未修改时不重复保存；昵称支持 Enter 保存，简介支持 Ctrl/⌘ + Enter 保存并保留普通 Enter 换行。头像仍在 hover 或键盘聚焦时显示编辑图标（触屏始终可见），继续使用原生选择对话框。不要恢复统一的“编辑资料”表单入口。
 
 ## 2. 开始任务时怎么读
+
+模型选择菜单（首页、项目对话及画布生成面板）只显示厂商图标和模型名，保留精简自动路由选项；不展示本地目录统计、能力长说明或价格。厂商识别复用 `features/modelBrand.ts`，本地矢量图集为 `assets/model-brands.svg`，由 `ModelBrandIcon.vue` 内联所选图形以兼容 Electron file URL。价格统一在设置「用量和计费」的 `CreditPricing.vue` 展示；加载/连接失败仍需显示真实状态。
 
 图像提示词遵守视觉边界：主 Agent 在 `generate_image.prompt` 中一次性提炼主体、构图、色彩、材质、光照、风格和准确图内文案；编辑以“图像编辑任务：”开头并写修改/保留范围。不传推理、设计理由、流程、交付、验收或资产 ID。后端不重复追加完整设计规格、参考分析、选图记录、前置文档/HTML 或生产规则，只补必要的视觉约束；分析仍存任务和资产快照。不要增加提示词改写模型调用，详见 `docs/agent-flow.md` 的 v9 边界。
 
@@ -74,6 +76,20 @@
 
 ## 4. 一次请求如何流转
 
+- 公开产品 SEO/GEO：`npm run build:site` 生成独立 `dist/site`；只有设置真实 `PUBLIC_SITE_URL` 才开启索引并生成 canonical/sitemap。工作区 HTML 始终 noindex。公开事实集中在 `docs/product-facts.md`、README 与可选 `llms.txt`，不暴露私人项目；见 `docs/search-discovery.md`。
+
+- 发布前运行 `npm run verify:agent-release`；四个 `package:*` 入口已配置前置检查。测试使用隔离 API/SQLite 和模拟 Provider，覆盖七类节点、引用变化、持久化与恢复按钮，不证明真实供应商可用性，详见 `docs/agent-release-check.md`。节点单项摘要沿用实时引用；请求核对的取回入口只查询已受理原任务，禁止重复点击、运行中和取消后取回。工具级 `submitted=false` 不代表整轮未计费。
+
+画布连线：单击选中标红，再次单击或 Delete / Backspace 直接删除，仅节点删除遵守确认设置。目标左侧输入连接点拖至空白画布可断开；多条入线时需先选中唯一要断开的连线。所有删除复用画布持久化与撤销，保留运行中节点锁定和输入框键盘保护。真实指针回归：`npm run test:canvas-edges`。
+
+连线保存冲突校验将缺失标签与空字符串视为同一无标签状态，仍拒绝真正的标签或端点并发变更。`npm run test:canvas-edge-persistence` 需要运行中的本地 API（默认 8765，可用 `AICS_TEST_API_URL` 指定），自动创建并清理临时项目，以真实 API 验证删除后整页刷新、卸载重进、重进后撤销及恢复状态再次刷新。节点底部生成测试只捕获提交参数并结束测试占位状态，不调用 Provider；检查引用清除/恢复、单次提交及上游内容保留。撤销历史仅保留在应用进程内，整页刷新不恢复撤销栈。
+
+空白媒体节点的画幅修改通过 `CanvasPromptPanel.vue` 的 `aspect-change` 事件即时更新并保存画布，复用 `nodeSizing.ts` 的 `nodeAspectPatch` 清除旧像素尺寸与比例别名；保留模型等其他参数，支持画布撤销。已有产物和运行中节点不受此修改影响。节点模型菜单复用 Teleport 的 `AnchoredPopover`，不使用原生 select 或随画布缩放的绝对定位列表。
+
+桌面更新由 `apps/desktop/src/appUpdates.ts` 管理，入口为头像上方的 `AppUpdate.vue`。仅正式 Windows NSIS 版延迟检查公开 GitHub Releases；开发、便携和 macOS 禁用检测。下载和安装分别需要用户点击，`autoDownload` 与 `autoInstallOnAppQuit` 始终关闭。`scripts/package-windows.mjs` 保留运行环境组装，再经 `windows-update-installer.mjs` / `electron-builder.config.cjs` 生成安装包与 `latest.yml`（完整）或 `lite.yml`（轻量）；本地构建固定不发布。依赖必须进入 `desktop-runtime-dependencies.mjs`，不可绕过完整性和签名校验。发布与验证见 [desktop-updates.md](docs/desktop-updates.md)。
+
+EvoLink 公开人民币报价由后端 `evolink_prices.py` / `evolink_price_data.json` 与前端 `CreditPricing.vue` 提供，按 `credits.usdToCny` 换算并保留原币种、单位及日期；公开目录不代表可调用模型，不补算实际扣费。更新入口 `scripts/import-evolink-prices.py`，单位和变体边界见 `docs/evolink-pricing.md`。
+
 ```text
 首页 / 项目输入框
   → POST /api/intake（创建项目及接收资料，按需）
@@ -107,15 +123,39 @@
 - v11：`delivery_execution.mjs` 的 `completionDecision` 统一生成后与最终交付检查的完成/缺项判断，只补依赖就绪项，未知收费不补发。批量 schema 与参考预检一次列出全部条目错误；展示精确数组下标，纠错计数签名仍使用 `*`，不能换条目重置预算。`task_timing.py` 和 `inspection.performance.timingMs` 记录上下文、文本、预检、上传、提交、服务商等待、下载与保存；缺失为 null，轮询观测的排队/处理包含在等待内，并行累计不能相加。EvoLink 上传复用仅使用带时区的官方有效期及同文件/内容/凭据，进程内最多 128 项；生成提交与未知收费保护不变。
 - 工具严格解码只用于已确认支持的入口；未知中转保留本地校验，不按模型名猜测能力。批量参数使用工具分支契约。计划修改核对 revision/scope，执行动作和交付 ID 独立于正文精简保留；整批完成且无新补充时直接保存并完成任务。
 - 媒体产物先保存成真实资产，再由画布节点引用资产 ID。Node worker 通过 Python 工具网关执行项目业务；Provider 协议适配集中在后端。
+- 画布节点独立生成：服务端入队校验目标类型，worker 启动前绑定 taskId；前端不能在任务受理后补写 generating 覆盖快速完成结果。断线、取消失败及未知受理不清空原任务或自动重发；提交锁按项目/节点隔离，CAD 手动模型参与文本路由。回归见 `docs/canvas-node-generation-20261022.md`。
+- 节点底部输入框真实回归见 `docs/node-composer-live-20261023.md`，自动化入口 `npm run test:node-composer`。音频默认音色由服务决定，不能在通用输入框固定 alloy；EvoLink GPT Image 2.5 的 auto 背景在适配层省略，明确透明/不透明保留。CAD 不展示不参与请求的画面参数。
+- 节点生成前由 `node_context.check_canvas_inputs` 检查上游就绪状态、图片资产与提交快照、已读取内容版本；首次预检前变更也必须拦截，不能因资产不再匹配而漏掉节点版本检查。输入框重连与失败后新提交重新获取引用，原请求重放只返回原任务，不自动重发未知收费请求。
+- 节点任务交付类型及数量由目标节点确定（单项），不能把提示词提及的上游图片/视频/文字再推断为额外交付。文字/HTML 节点 ID 不得作为计划图片资产 inputs；计划保存前给出准确纠错。普通文字误带无效 application_items 时，在写入前返回可纠正参数错误，沿用既有纠错上限，不直接报能力缺失。
+- 节点连线引用按来源去重，文本完整传入、视频首尾帧保持顺序、多图保留全部资产。交付数量排除“第二张海报”等序号和“参考两张图”等输入数量，不能据此扩增生成。EvoLink Seedance 2.5 图生视频只接受 adaptive，输出沿用首帧比例；文生视频比例不变。回归包括节点输入框三类连线、重复点击、数量推断与服务适配。
+- 独立节点会话隔离历史时，仍将显式连入的其他任务生成图加入记忆候选并保留原始来源；不导入无关资产。SDK 压缩已完成工具回执只缩短元数据，保留本轮已去重的图片像素，避免多图参考交替补读；历史图片和硬容量边界仍按原策略处理。
 - 复杂设计在理解上下文后、澄清或规划前，由主 Agent 按需通过 `design_state.brief` 保存派生任务说明，不另设润色模型。原始消息和有来源的明确约束优先；假设与待确认项分开。局部修改不强制整理，需求变更或补充答案后清除旧说明，纯确认续接可复用。
 - **生成后直接交付**：已删除自动质量审查 Agent、总览图生成、审查解析、审查缓存与失败重试。设计质量留给用户；不自动自检、修复、复审，不展示旧“已发现问题”“尚未核实”等质量结论。保留生成前参数校验、真实文件/数量/预览状态和未知收费保护。旧记录只在读取展示时兼容，不改历史计费账本。
 - **执行优化策略 v2**：新任务由服务端写入 `executionPolicyVersion=2`；旧任务恢复不改策略。只有明确独立研究报告/研究阶段才单开研究 Agent，普通查证由主 Agent 按需使用检索工具。无歧义的单图/文本/HTML 取得真实产物且无运行中补充后直接完成任务；混合、未完成、未知结果和额外导出仍走完整判断。普通文本直接 `canvas_create_text`，显式 Skill 所需和历史任务仍兼容 `generate_text`。`execution_efficiency.mjs` 只精简模型看到的成功写入回执，不改真实内容；交付检查缓存以输入、画布、文件、参考、预览和补充版本失效。`/tasks/{id}/inspection.performance` 区分 SDK 请求、额外文本和已提交图像，缺少数据为 null，不把外层 `main_agent` 路由算作一次模型调用。回归见 `test_execution_efficiency.py`、`execution_efficiency.test.mjs`；Windows SDK 夹具使用 file URI 与 UTF-8，pytest 建议 `python -X utf8 -m pytest`。
+- 项目 Agent 回复仅展示简洁状态、正文及必要异常提示；执行详情保留在运行记录，不在回复中展开。产物与用量入口使用头像栏图标；成功保存提示只保留正文一处（无正文时由状态区兜底），不重复展示底部“产物已保存”标签。
+- 常规设置使用 `components/GeneralSettings.vue` 与 `features/generalSettings.ts`：本地保存任务后台通知、发送快捷键、启动恢复、产物定位及分类型删除确认。队列默认设置保留原键；通知只针对已观察到的运行任务终态变化，不回放历史。存储占用由 `storage_management.py` 读取，清理仅清除可重建的预览内存缓存，桌面端额外清理 HTTP 缓存；不得删除项目、原图、草稿、会话和运行记录。桌面打开目录仅使用主进程当前工作区路径。
+- 桌面常规设置可迁移数据或打开已有工作区：`workspaceStorage.ts` 校验独立目录，迁移仅允许空目标且不跟随链接；主进程阻止活动任务期间切换，等待 API 真正退出后复制，保留原目录，原子保存位置并重启。失败不改变当前路径；环境变量固定位置或外部 sidecar 模式需先调整启动配置。回归入口 `workspaceStorage.test.ts`。
+- 外观顶部的 `AppearanceSettings.vue` 提供模式缩略图、中性灰/雾海蓝/苔原绿/暖沙/暮光紫/蔷薇六套配色，以及强调色、背景、文字和字体自定义。`features/appearance.ts` 按深浅模式分别保存自定义颜色，只覆盖共用主题变量；默认中性灰恢复原 CSS，不覆盖状态信号色或作品颜色。修改即时生效并本地保存，系统模式变化由 `applyTheme` 同步重新应用配色。
 - 任务终态包括 `succeeded`、`failed`、`cancelled`；交付状态独立，例如 `pending`、`passed`、`needs_review`、`failed`。执行结束不等于所有交付已通过。
 - `needs_review` 仅兼容表示未完成交付或执行异常，不再代表设计质量结论。`delivery_findings.py` 只呈现文件缺失、生成失败、未完成计划和请求结果未知等运行状态；成功产物直接标记完成。异步媒体及迟到图像按本地保存结果收尾，不再启动模型。
 
 - 同款产品主图与场景通过计划 `inputs.role=identity` 绑定真实资产；新主图用 `source=deliverable`，已有产品图用 `source=asset`，不增造母版。`product_identity.py` 在明确无歧义时补齐依赖并规范参考用途；`generation_batch.mjs` 延后尚需看主图的场景，worker 在成功回执中附本地主图预览，下一轮直接组织场景参数。统一图像预检强制真实图片及分析，不能退为无图文生图；多个场景共享主图后并行，成功项不重做，不增加质量审查。详见 `docs/agent-flow.md` v13，回归 `test_product_identity.py` 和 SDK `product_identity` 场景。
 
 ## 5. 必须保留的业务边界
+
+模型上下文压缩保留画布 scope 的节点 ID、版本和数组结构，节点正文独立压缩；不能将结构字段压成省略字符串后再作为数组读取。上下文 manifest 的证据列表按实际发送的数组记录。
+
+画布手动对齐、均匀分布和方向键微调后，将选中节点标记为 `autoPositioned=false`；对齐基准节点即使坐标不变也必须固定，防止保存、内容尺寸变化或新增节点触发自动排版而破坏对齐。未选中节点和显式“自动整理”继续使用自动排版，撤销/重做保留位置及自动排版标记。
+
+纠错预算按新的失败回执计数；同一失败之后成功的前置资料补齐或进度说明不重复消耗纠错次数。`design_spec_required` 必须重新开放规划工具。生成尝试终止不等于产物保存成功，上传失败或未知结果按真实回执收尾；交付有问题且没有真实就绪资产时标记失败。文本响应完整结束后清除活动响应 ID，后续本地校验错误不得沿用旧 ID 误报断流或未知计费，原用量记录保留。回归见 `test_gift_plan_recovery.py`、`delivery_execution.test.mjs`。
+
+计划保存及复用均核对视觉方向与逐图规格是否可执行，使用与生成预检相同的校验。`design_spec_required` 纳入持久化纠错上限且不能缓存为成功回执；预检明确 `submitted=false` 的工具不显示生成完成，修正次数不能靠改写提示词或恢复任务重置。
+
+参考选择仅在存在真实候选图片时展示。无候选时 `referenceWorkflow` 记录为 `unavailable` 并继续，不生成空选择卡或等待选图；历史空卡片不阻塞输入及队列。此状态不代表用户主动跳过参考，也不解除实际附件、产品身份和原有设计约束。
+
+常规设置的“发送时默认加入队列”开关本地持久化，默认关闭：运行中的纯文字消息直接补充，开启后加入下一项；附件、引用和技能仍入队。队列右侧可将纯文字补充给当前任务，发送前持久化原任务绑定并复用稳定请求 ID；结果未确认的补充不得自动改作新任务发送。无运行任务时维持正常发送及队列顺序。
+
+执行策略 v3（`delivery-identity-20261022-v16`）：新任务的单项完成标记以服务端交付约定为准，普通续接或澄清答案不必重复数量。范围不明确、多项或附带其他交付时，主 Agent 在生成前通过现有 `design_plan` 登记本轮稳定交付 ID；不再用“包装”等个别名词推断单图。成功回执按真实节点去重，明确未提交的预检失败不妨碍完成，未知结果不忽略。`execution_store.py` 的 `tool_delivery_claims` 持久化任务内交付身份和已接收补充的版本，参数改写、同轮并发及重启不重复生成；不同交付、不同任务保持独立。旧任务恢复不升级策略。回归见 `test_delivery_identity.py`、`test_execution_efficiency.py` 和 `generation_batch.test.mjs`，细节见 `docs/agent-flow.md`。
 
 1. **真实数据与项目归属**：文件、资产、引用和工具输入需校验项目范围；不能用占位图、默认研究结论或裸 URL 冒充已完成产物。测试 Provider 仅在 `AICS_TEST_MODE=1` 启用。
 2. **恢复与防重复收费**：复用已保存的成功回执、Session 与资产；响应丢失、重启后的未知收费请求需保留待核对状态，不能通过重发或改参数绕过。文本调用只有明确未提交的临时网络、限流或服务错误可在原端点恢复，最多 2 次；同类参数/结构错误最多修正 2 轮，每阶段累计恢复最多 6 次，计数写入检查点。正常 Agent 轮次没有成本型上限，只保留 60 轮技术保护。图像自动降级仅允许目录缺失、无用量 429，以及无用量且明确模型不存在/不可用/无图像端点的 400/404/422；5xx、超时、断线、无效响应、失败事件和 SVG 不降级。取消、重试、模型切换均须保留这一约束。

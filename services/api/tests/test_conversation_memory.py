@@ -68,6 +68,24 @@ def test_local_single_image_selection_is_only_a_first_turn_candidate(workspace,g
     assert service.runtime('one','new')==after
 
 
+def test_independent_node_can_select_connected_generated_assets_without_importing_other_history(workspace):
+    turn(workspace, 'source-task', 'original task', taskSurface='canvas_node', canvasNodeId='source')
+    first=picture(workspace, 'first', taskId='source-task')
+    second=picture(workspace, 'second', taskId='source-task')
+    unrelated=picture(workspace, 'unrelated', taskId='source-task')
+    turn(workspace, 'target-task', 'combine references into one image', taskSurface='canvas_node', canvasNodeId='target',
+         referencedAssets=[{'id':first['id']},{'id':second['id']}])
+    service=ConversationMemoryService(workspace)
+    records=service.read('one','target-task')['records']
+    assert {r['assetId'] for r in records} == {first['id'],second['id']}
+    assert all(r['source']['taskId']=='source-task' for r in records)
+    update(service,'target-task',selected=[r['id'] for r in records])
+    snapshot=service.validate_generation('one','target-task',{'source_asset_ids':[first['id'],second['id']]})
+    assert {r['assetId'] for r in snapshot['references']} == {first['id'],second['id']}
+    with pytest.raises(MemoryError):
+        service.validate_generation('one','target-task',{'source_asset_ids':[unrelated['id']]})
+
+
 def test_scopes_corrections_reopen_and_isolation(workspace):
     service=ConversationMemoryService(workspace)
     turn(workspace,'a','后面统一用蓝色')

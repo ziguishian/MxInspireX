@@ -7,7 +7,8 @@
 ## 内置预设
 
 - `features/home/mascot.ts` 的 `mascotPresets` 管理预设 ID、中文名称、说明、图集路径和六帧显示位置。资源随前端打包，Electron 使用相对资源基址。
-- 机器人复用 `public/assets/mxinspirex-robot-states.png`；其余为 `public/assets/mascots/cream-cat.png`、`cloud.png`、`sprout.png`。均是内置 image_gen 生成的 1536×1024 透明 PNG，生成提示词保存在 [mascot-preset-prompts.json](mascot-preset-prompts.json)。
+- 四款统一为柔和、圆润的全身坐姿玩偶。机器人使用 `public/assets/mascots/robot-soft.png`，保留暖灰机身和点阵屏幕，替换旧金属半身头像；其余为 `cream-cat.png`、`cloud.png`、`sprout.png`。均是内置 image_gen 生成的 1536×1024 透明 PNG，生成提示词保存在 [mascot-preset-prompts.json](mascot-preset-prompts.json)。原机器人文件保留作历史资源，不再作为 Agent 默认头像。
+- 默认机器人也通过 `mascotSpriteStyle` 读取图集与切帧位置，无设置注入时使用相同的新图集，避免首页、设置卡片和消息头像分别回退旧素材。
 - 新图集保持原图像素，使用 CSS 切帧位置校准中心及脚部基线（每格 y=480）；六个表情复用首页现有互动和减少动画规则。预设保留自身颜色。
 - 后端仅接受白名单预设 ID。复用 `mascot_settings.active_id` 保存 `preset:<id>`；默认机器人仍为 NULL，旧 UUID 自定义选择继续兼容，无需迁移。切换预设不创建生成记录，也不覆盖 `latest` 自定义预览。
 

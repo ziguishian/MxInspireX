@@ -28,3 +28,23 @@ def check(store, project_id, task_id, node):
         row=db.execute('SELECT fingerprint FROM agent_node_versions WHERE project_id=? AND task_id=? AND node_id=?',(project_id,task_id,node['id'])).fetchone()
     if row and row[0] != fingerprint(node):
         raise ValueError('节点内容已在读取后改变，已阻止覆盖；请重新读取该节点并基于最新内容修改。')
+
+
+def check_canvas_inputs(store, canvas_store, project_id, task_id, context):
+    """Reject stale composer inputs before dispatch, including the first preflight."""
+    if context.get('taskSurface') != 'canvas_node':
+        return
+    params = context.get('canvasParams') or {}
+    board = {node['id']: node for node in canvas_store.load(project_id)['nodes']}
+    assets = set(params.get('source_asset_ids') or [])
+    if params.get('source_asset_id'):
+        assets.add(params['source_asset_id'])
+    for identity in params.get('reference_node_ids') or []:
+        node = board.get(identity)
+        data = (node or {}).get('data') or {}
+        asset = data.get('assetId') or (data.get('asset') or {}).get('id')
+        if (not node or data.get('generating') or
+                not (asset or data.get('text') or data.get('html') or data.get('summary')) or
+                (data.get('kind') == 'image' and asset not in assets)):
+            raise ValueError('上游引用已改变或尚未就绪，请刷新引用后重新提交；本次未提交生成请求。')
+        check(store, project_id, task_id, node)

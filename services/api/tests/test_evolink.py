@@ -10,6 +10,22 @@ from fastapi.testclient import TestClient
 from app.evolink import EVOLINK_BASE_URL, normalize_evolink_model
 
 
+@pytest.mark.parametrize('model', ['gpt-image-2.5-sunburst', 'gpt-image-2.5-flare', 'gpt-image-2.5-sunburst-2026-09-08'])
+@pytest.mark.parametrize('background', ['auto', 'opaque', 'transparent'])
+def test_node_composer_background_reaches_provider_as_supported_value(model, background):
+    from app.providers.evolink import EvoLinkImageProvider
+    adapter = EvoLinkImageProvider(base_url=EVOLINK_BASE_URL, provider_key='evolink', model=model, credentials=Credentials())
+    with patch.object(adapter, '_json', return_value={'id':'one', 'status':'completed'}) as submit, patch.object(adapter, '_download', return_value=b'image'):
+        assert adapter.generate(prompt='a dog', aspectRatio='1:1', background=background, output_format='png') == b'image'
+    payload = submit.call_args.args[1]
+    assert payload['size'] == '1024x1024'
+    if background == 'auto':
+        assert 'background' not in payload
+    else:
+        assert payload['background'] == background
+    assert submit.call_count == 1
+
+
 def test_speech_uses_dedicated_async_api_and_only_download_get_retries():
     from app.providers.evolink import EvoLinkAudioProvider
     adapter = EvoLinkAudioProvider(base_url=EVOLINK_BASE_URL,provider_key='evolink',model='qwen-audio-3.1-tts-flash',credentials=Credentials())
@@ -255,6 +271,25 @@ def test_video_submission_and_retrieval_use_task_endpoint():
     assert result['raw']['duration'] == 5
     assert download.call_args.args[0].full_url == 'https://cdn.test/video.mp4'
     assert download.call_args.args[0].get_header('Authorization') is None
+
+
+@pytest.mark.parametrize('ratio', ['16:9', '9:16', 'auto', 'adaptive'])
+@pytest.mark.parametrize('last_frame', [False, True])
+def test_seedance_25_frame_video_inherits_first_frame_ratio(tmp_path, ratio, last_frame):
+    first = tmp_path / 'first.png'
+    first.write_bytes(b'first')
+    last = tmp_path / 'last.png'
+    last.write_bytes(b'last')
+    adapter = ProviderRegistry(Credentials()).video('evolink', model='seedance-2.5-image-to-video')
+    with patch.object(adapter, '_upload', side_effect=lambda p: f'https://files.test/{p.name}') as upload, \
+            patch.object(adapter, '_json', return_value={'id': 'frame-video', 'status': 'pending'}) as submit:
+        adapter.generate(prompt='animate', source_asset=first,
+                         last_frame_asset=last if last_frame else None, aspectRatio=ratio)
+    assert upload.call_count == (2 if last_frame else 1)
+    submit.assert_called_once()
+    payload = submit.call_args.args[1]
+    assert payload['aspect_ratio'] == 'adaptive'
+    assert payload['image_urls'] == ['https://files.test/first.png'] + (['https://files.test/last.png'] if last_frame else [])
 
 
 def test_video_mode_conflict_does_not_upload_or_submit():

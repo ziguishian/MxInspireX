@@ -96,10 +96,14 @@ class ReferenceWorkflow:
                 inputs['referenceWorkflow'] = previous
             return None
         latest_card = loads(latest['output_json']).get('structured_data', {}).get('referenceSelection') if latest else None
+        if latest_card and not latest_card.get('items'):
+            latest_card = None
         if not latest_card and previous.get('status') == 'required':
             with self.store._connect() as db:
                 pending = db.execute("SELECT data_json FROM reference_selections WHERE project_id=? AND status='pending' ORDER BY created_at DESC LIMIT 1", (project_id,)).fetchone()
             latest_card = loads(pending[0]) if pending else None
+            if latest_card and not latest_card.get('items'):
+                latest_card = None
         new_goal = bool(re.search(r'重新开始|新项目|换个需求|另做|另一个项目', brief))
         if not selection and latest_card and not new_goal:
             selection = parse_choice(brief, latest_card)
@@ -194,17 +198,19 @@ class ReferenceWorkflow:
         with self.store._connect() as db:
             existing = db.execute('SELECT data_json FROM reference_selections WHERE task_id=?', (task_id,)).fetchone()
             task = db.execute('SELECT input_json FROM tasks WHERE id=? AND project_id=?', (task_id, project_id)).fetchone()
-        if existing:
+        if existing and loads(existing[0]).get('items'):
             return loads(existing[0])
         if not task:
             raise ReferenceError('参考选择必须关联当前项目任务')
         context = loads(task[0])
         if not items:
             from .reference_efficiency import empty_reference_fallback
-            if empty_reference_fallback(context):
-                with self.store._connect() as db:
-                    db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(context, ensure_ascii=False), task_id))
-                return None
+            if not empty_reference_fallback(context):
+                context['referenceWorkflow'] = {**context.get('referenceWorkflow', {}), 'status': 'unavailable',
+                    'reason': 'no_reference_candidates', 'notice': '没有可供选择的参考案例，不展示选择卡；保留用户资料及原有设计约束。'}
+            with self.store._connect() as db:
+                db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(context, ensure_ascii=False), task_id))
+            return None
         safe_items = []
         for item in items[:6]:
             actual = self.library.get(item['id'])
@@ -236,8 +242,11 @@ class ReferenceWorkflow:
             return None
         with self.store._connect() as db:
             saved = db.execute('SELECT data_json FROM reference_selections WHERE task_id=?', (task_id,)).fetchone()
-        if saved:
+        if saved and loads(saved[0]).get('items'):
             return AgentResult(status='succeeded', structured_data={'answer': '选择参考后继续设计，也可以明确跳过。', 'referenceSelection': loads(saved[0])})
+        if saved:
+            self.present(project_id, task_id, [])
+            return None
         result = reference_search(registry, project_id=project_id, task_id=task_id, query=state.get('query') or context.get('userMessage', ''), source='auto', exclude=state.get('exclude', []))
         card = self.present(project_id, task_id, result['items'], errors=result.get('errors'))
         if card is None:

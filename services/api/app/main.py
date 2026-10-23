@@ -59,6 +59,7 @@ from .reference_routes import router as reference_router
 from .drawing import router as drawing_router
 from .mascot import MascotService
 from .mascot_routes import router as mascot_router
+from .storage_management import router as storage_management_router
 from .reference_library import ReferenceLibraryStore, ReferenceError
 from .reference_analysis import ReferenceAnalyzer
 
@@ -184,6 +185,7 @@ app.include_router(skills_router)
 app.include_router(reference_router)
 app.include_router(drawing_router)
 app.include_router(mascot_router)
+app.include_router(storage_management_router)
 
 @app.exception_handler(ReferenceError)
 async def reference_error_handler(request: Request, error: ReferenceError):
@@ -387,7 +389,7 @@ def health() -> dict[str, object]:
     return {
         "status": "ok",
         "service": "aics-api",
-        "agentRuntimeRevision": "design-sweep-20261022-v15",
+        "agentRuntimeRevision": "delivery-identity-20261022-v16",
         "buildRevision": os.environ.get("AICS_BUILD_REVISION") or os.environ.get("AICS_BUILD_VERSION") or "development",
         "modelDefaultsVersion": settings.defaultsVersion,
         "preferredTextProvider": settings.preferredTextProvider.model_dump(mode="json"),

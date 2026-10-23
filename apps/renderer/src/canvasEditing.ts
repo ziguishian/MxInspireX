@@ -1,4 +1,19 @@
+import { alignRects, type Alignment, type LayoutRect } from './canvasLayout';
+
 export type Board = { nodes: any[]; edges: any[] };
+
+export function alignBoardNodes(board: Board, rects: LayoutRect[], mode: Alignment) {
+  const after = cleanBoard(board);
+  for (const position of alignRects(rects, mode)) {
+    const node = after.nodes.find(item => item.id === position.id);
+    const rect = rects.find(item => item.id === position.id)!;
+    if (!node) continue;
+    node.position = { x: node.position.x + position.x - rect.x, y: node.position.y + position.y - rect.y };
+    // The anchor is manual too, even if its coordinates did not change.
+    node.data = { ...node.data, autoPositioned: false };
+  }
+  return after;
+}
 export function cleanBoard(board: Board): Board {
   return JSON.parse(JSON.stringify({ nodes: board.nodes.map(({ id, position, data, meta }) => ({ id, type: 'creative', position: { x: position.x, y: position.y }, data: Object.fromEntries(Object.entries(data || {}).filter(([key]) => !['apiBaseUrl', 'projectId', 'modelOptions', 'videoModelOptions', 'textModelOptions', 'audioModelOptions', 'selected', 'deliveryReview'].includes(key))), ...(meta ? { meta } : {}) })), edges: board.edges.map(({ id, source, target, sourceHandle, targetHandle, label, type }) => ({ id, source, target, sourceHandle, targetHandle, label, type, animated: false })) }));
 }

@@ -6,7 +6,7 @@ import path from 'node:path';
 // does not bundle application dependencies, so every release must carry them
 // inside resources/app instead of accidentally resolving the development
 // checkout's node_modules directory.
-export const desktopRuntimeDependencies = ['extract-zip'];
+export const desktopRuntimeDependencies = ['extract-zip', 'electron-updater'];
 
 function packagePath(nodeModules, name) {
   return path.join(nodeModules, ...name.split('/'));

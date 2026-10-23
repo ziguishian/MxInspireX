@@ -2,6 +2,15 @@ import { htmlPreviewSize } from './htmlPreview';
 
 export type NodePreviewSize = { width: number; height: number };
 
+/** An explicit new aspect replaces stale provider pixel dimensions on an empty node. */
+export function nodeAspectPatch(data: Record<string, any>, aspect: string) {
+  if (!requestedMediaRatio({ aspectRatio: aspect })) return null;
+  const params = { ...data.params, aspectRatio: aspect };
+  for (const key of ['size', 'width', 'height', 'aspect_ratio', 'aspect']) delete params[key];
+  const previewSize = nodePreviewSize({ ...data, params }, requestedMediaRatio(params));
+  return { params, previewSize, autoPositioned: false };
+}
+
 export function requestedMediaRatio(params: Record<string, any> = {}): number | null {
   const ratio = (width: unknown, height: unknown) => {
     const w = Number(width), h = Number(height);

@@ -58,6 +58,8 @@ def test_inspection_reads_saved_outputs_and_pending_cost_without_replaying(works
     executions = ExecutionStore(store)
     fp, _ = executions.claim(task,'canvas_create_text',{'secretPrompt':'DO-NOT-EXPOSE'})
     executions.complete(task,fp,{'status':'succeeded','node':node})
+    rejected, _ = executions.claim(task,'generate_image',{'prompt':'INVALID-PRIVATE'})
+    executions.complete(task, rejected, {'status':'invalid_parameters', 'submitted':False})
     pending, _ = executions.claim(task,'generate_image',{'prompt':'DO-NOT-EXPOSE'})
     with billing._connect() as db:
         db.execute('INSERT INTO credit_ledger VALUES (?,?,?,?,?)', ('pending',project,task,'now',json.dumps({'id':'pending','provider':'fixture','model':'image','kind':'image','status':'pending','points':None})))
@@ -67,6 +69,9 @@ def test_inspection_reads_saved_outputs_and_pending_cost_without_replaying(works
     assert result.status_code == 200, result.text
     assert result.json()['nodes'][0]['id'] == node['id']
     assert result.json()['billing'][0]['status'] == 'pending'
+    receipts = result.json()['receipts']
+    assert any(r['submitted'] is False for r in receipts)
+    assert any(r['status'] == 'running' and r['submitted'] is None for r in receipts)
     assert '不能证明未收费' in result.json()['billingNote']
     assert 'DO-NOT-EXPOSE' not in result.text
     assert client.get(url).json() == result.json()

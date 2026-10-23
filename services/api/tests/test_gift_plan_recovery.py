@@ -46,7 +46,13 @@ def continued_gift(env):
         clarificationTaskId=first, clarificationAnswers=[{'questionId':'qty','value':'100套以内','skipped':False}])
     saved=call(second,'design_plan',plan=gift_plan())
     assert saved['status']=='ready',saved
-    card=ReferenceWorkflow(store,tools.asset_store).present(project,second,[])
+    import io
+    from PIL import Image
+    workflow = ReferenceWorkflow(store, tools.asset_store)
+    image = io.BytesIO()
+    Image.new('RGB', (64, 64), 'green').save(image, format='PNG')
+    reference = workflow.library.add(image.getvalue(), 'reference.png')
+    card=workflow.present(project,second,[reference])
     finish(store,second,{'referenceSelection':card})
     third=enqueue('跳过参考，继续原设计任务。',referenceSelection={'id':card['id'],'action':'skip'})
     current=tools._task_input(project,third)
@@ -77,6 +83,8 @@ def run(env, task, api, mode, recovery=None):
         payload['executionStateVersion']=1
         payload['modelCapabilities']['strictTools']=True
         payload['toolGateway']['supportsAsyncImageJobs']=mode=='durable'
+    if mode == 'upload_failed':
+        payload['executionStateVersion']=1
     environment={**os.environ,'PYTHONPATH':str(ROOT),'FIXTURE_PYTHON':sys.executable,'FIXTURE_WORKSPACE':str(store.workspace_root),
         'FIXTURE_PROJECT':project,'FIXTURE_GIFT_MODE':mode,'FIXTURE_GIFT_PLAN':json.dumps(gift_plan(),ensure_ascii=False)}
     worker=os.environ.get('AICS_TEST_WORKER') or str(ROOT/'app/openai_agent_worker.mjs')
@@ -161,15 +169,46 @@ def test_seven_gift_items_resume_without_plan_rewrite_or_review(env,api):
 
 
 @pytest.mark.parametrize('api',['responses','chat_completions'])
-@pytest.mark.parametrize('mode',['schema_stalled','json_stalled'])
-def test_invalid_arguments_stop_durably_without_paid_calls(env,api,mode):
+def test_upload_failure_is_not_reported_as_saved_or_successful(env,api):
     task=env[4](BRIEF)
+    process,events=run(env,task,api,'upload_failed')
+    assert process.returncode==0,process.stderr+process.stdout[-6000:]
+    result=next(e['result'] for e in events if e['type']=='result')
+    assert result['status']=='failed'
+    assert '尚未提交生成请求' in result['structured_data']['answer']
+    assert '作品已保存' not in result['structured_data']['answer']
+    assert not result['artifact_refs']
+    assert not (env[0].workspace_root/'provider-calls.jsonl').exists()
+
+
+@pytest.mark.parametrize('api',['responses','chat_completions'])
+def test_prerequisite_repair_does_not_count_old_failure_on_successful_turns(env,api):
+    task=env[4](BRIEF)
+    process,events=run(env,task,api,'prerequisite_recovery')
+    assert process.returncode==0,process.stderr+process.stdout[-6000:]
+    checkpoint=[e['recovery'] for e in events if e['type']=='checkpoint'][-1]
+    assert checkpoint['responseCount']==5
+    assert checkpoint['recoveryAttempts']['design']['total']==1
+    assert len([t for t in checkpoint['toolOutputs'] if t['name']=='generate_image' and t['output'].get('status')=='succeeded'])==7
+
+
+@pytest.mark.parametrize('api',['responses','chat_completions'])
+@pytest.mark.parametrize('mode',['schema_stalled','json_stalled','design_spec_stalled'])
+def test_invalid_arguments_stop_durably_without_paid_calls(env,api,mode):
+    task=env[4]('生成一张海报，跳过参考' if mode == 'design_spec_stalled' else BRIEF)
     process,events=run(env,task,api,mode)
     assert process.returncode!=0
     error=next(e for e in reversed(events) if e['type']=='error')
     assert error['kind']=='tool',error
+    assert error['submitted'] is False
+    assert error['billingCertainty']=='not_applicable'
     assert error['recovery']['recoveryAttempts']['design']['total']==2
     assert error['recovery']['responseCount']==3
+    if mode == 'design_spec_stalled':
+        failures = [e for e in events if e.get('phase') == 'error' and '工具失败：generate_image' in e.get('message', '')]
+        assert len(failures) == 3
+        assert not any('工具完成：generate_image' in e.get('message', '') for e in events)
+        assert all(t['output']['submitted'] is False for t in error['recovery']['toolOutputs'] if t['name'] == 'generate_image')
     assert not (env[0].workspace_root/'provider-calls.jsonl').exists()
     again,more=run(env,task,api,mode,recovery=error['recovery'])
     assert again.returncode!=0

@@ -37,7 +37,7 @@ def test_empty_optional_references_continue_without_card_or_repeated_search(env,
         assert db.execute('SELECT count(*) FROM reference_selections WHERE task_id=?', (task,)).fetchone()[0] == 0
 
 
-def test_required_references_still_wait_and_identical_search_is_cached(env, monkeypatch):
+def test_empty_required_reference_search_is_cached_without_empty_card(env, monkeypatch):
     store, project, _, tools, enqueue, call = env
     task = enqueue('先找参考，设计一张咖啡店海报', allowExternalNetwork=False)
     task_context(store, task, executionPolicyVersion=2, designPlanning=None,
@@ -48,8 +48,20 @@ def test_required_references_still_wait_and_identical_search_is_cached(env, monk
     again = call(task, 'reference_search', query='咖啡海报')
     assert first['items'] == again['items'] == [] and again['cached']
     assert search.call_count == 1
-    assert call(task, 'request_reference_selection', items=[])['awaitingUser']
-    assert tools._task_input(project, task)['referenceWorkflow']['status'] == 'required'
+    assert not call(task, 'request_reference_selection', items=[])['awaitingUser']
+    assert tools._task_input(project, task)['referenceWorkflow']['status'] == 'unavailable'
+
+
+@pytest.mark.parametrize('brief', ['为这个IP设计包装', '设计Logo和海报', '调整上一轮的产品设计'])
+def test_empty_reference_card_never_blocks_followups_or_multiple_deliverables(env, brief):
+    store, project, _, tools, enqueue, call = env
+    task = enqueue(brief)
+    workflow = ReferenceWorkflow(store, tools.asset_store)
+    assert workflow.present(project, task, []) is None
+    assert tools._task_input(project, task)['referenceWorkflow']['status'] == 'unavailable'
+    assert workflow.preflight(tools, project, task) is None
+    with store._connect() as db:
+        assert db.execute('SELECT count(*) FROM reference_selections WHERE task_id=?', (task,)).fetchone()[0] == 0
 
 
 @pytest.mark.parametrize('extra', [

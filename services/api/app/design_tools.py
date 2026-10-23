@@ -202,6 +202,14 @@ class DesignToolRegistry:
         if task_id and (name.startswith('generate_') or name in {'canvas_create_text', 'canvas_create_html', 'canvas_create_svg', 'canvas_create_media', 'canvas_create_node', 'canvas_update_node', 'image_edit', 'export_deliverable'}):
             context = self._task_input(project_id, task_id)
             plan = context.get('designPlan') or {}
+            from .deliverable_tracking import creation_kind
+            kind = creation_kind(name, arguments or {})
+            if (context.get('executionPolicyVersion', 0) >= 3 and kind and not plan
+                    and not context.get('deliveryRepairOnly') and not context.get('deliveryReviewOnly')
+                    and (not context.get('singleDeliveryTarget')
+                         or context['singleDeliveryTarget'].get('kind') != kind)):
+                return {'tool': name, 'status': 'planning_required', 'submitted': False,
+                        'instruction': '本轮交付身份尚未明确。请用 design_plan 登记本轮实际交付项及稳定 ID；单项只登记一项，多项分别登记并保留依赖。不要扩展用户范围，也不要重复生成已保存项。'}
             if not context.get('deliveryReviewOnly') and not context.get('deliveryRepairOnly') and ((context.get('designPlanning') or {}).get('required') or plan) and not plan.get('ready'):
                 return {'tool': name, 'status': 'planning_required', 'instruction': '先调用 design_plan 明确本轮目标、交付清单和验收条件；存在关键未决问题时使用 request_clarification。计划就绪后再生成，不把一张概念图当作整套设计。', 'guide': context.get('designPlanning')}
             from .deliverable_tracking import assign_delivery
@@ -279,6 +287,16 @@ class DesignToolRegistry:
                     return error_result(name, error)
             else:
                 arguments = self._focused_arguments(project_id, task_id, name, arguments or {}, delivery_binding=binding)
+            if name == 'canvas_create_text':
+                from .application_inventory import prepare_inventory
+                try:
+                    prepare_inventory(arguments.get('application_items'), arguments.get('text', ''),
+                                      self._task_input(project_id, task_id), binding)
+                except ValueError as error:
+                    if fingerprint: self.executions.reject(task_id, fingerprint)
+                    return {'tool':name, 'status':'invalid_arguments', 'submitted':False,
+                            'fieldPath':'application_items',
+                            'instruction':str(error) + '。普通文字或识图描述请仅提供 text，省略 application_items；不要为此增加计划或交付项。'}
             if name == 'canvas_create_html' and task_id and preview_call_id:
                 from .html_generation import HtmlGenerationPreviews
                 arguments = HtmlGenerationPreviews(self.store, self.canvas_store).bind(project_id, task_id, preview_call_id, arguments)
@@ -350,6 +368,8 @@ class DesignToolRegistry:
         canvas = context.get('canvasParams') or {}
         canvas_generators = {f"generate_{canvas.get('kind')}", f"canvas_create_{canvas.get('kind')}"}
         if canvas.get('canvasNodeId') and name in canvas_generators:
+            from .node_context import check_canvas_inputs
+            check_canvas_inputs(self.store, self.canvas_store, project_id, task_id, context)
             # The node composer owns the output target and reference snapshot.
             # An Agent must not omit inputs or overwrite an upstream reference.
             args['canvas_node_id'] = canvas['canvasNodeId']

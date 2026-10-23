@@ -2,6 +2,7 @@
 import { formatCny, formatTokens } from '../modelEconomy';
 import { onMounted, ref } from 'vue';
 import { durationLabel } from '../features/taskProgress';
+import { canRecoverOriginal, receiptState, recoveryHint } from '../features/taskRecovery';
 const props = defineProps<{ apiBaseUrl: string; projectId: string; taskId: string }>();
 const emit = defineEmits<{ close: []; locate: [nodeId?: string]; recovered: [] }>();
 const tab = ref<'request' | 'outputs' | 'billing' | 'performance'>('request');
@@ -11,6 +12,7 @@ const loading = ref(false);
 const recovering = ref(false);
 const recoveryMessage = ref('');
 async function recover(id: string) {
+  if (recovering.value || loading.value || !canRecoverOriginal(data.value, id)) return;
   recovering.value = true; recoveryMessage.value = ''; error.value = '';
   try {
     const response = await fetch(`${props.apiBaseUrl}/api/projects/${props.projectId}/tasks/${props.taskId}/image-results/${id}/recover`, {method:'POST'});
@@ -50,17 +52,18 @@ onMounted(() => { dialog.value?.showModal(); void load(); });
       <nav aria-label="核对记录"><button :aria-pressed="tab === 'request'" @click="tab = 'request'">查看原请求</button><button :aria-pressed="tab === 'outputs'" @click="tab = 'outputs'">已保存产物</button><button :aria-pressed="tab === 'billing'" @click="tab = 'billing'">计费状态</button><button :aria-pressed="tab === 'performance'" @click="tab = 'performance'">耗时与调用</button></nav>
       <p v-if="error" role="alert">{{ error }}</p><p v-if="loading">正在读取本地记录…</p>
       <section v-if="data?.recoverableImages?.some((item: any) => !item.saved)" aria-label="取回原媒体">
-        <p>查询已提交的图片或语音任务并取回原结果，不重新生成。</p>
+        <p>{{ recoveryHint(data) }}</p>
         <article v-for="item in data.recoverableImages.filter((item: any) => !item.saved)" :key="item.id">
           <small>{{ item.model }} · {{ item.providerTaskId }}</small>
-          <button :disabled="recovering || ['running','queued','cancelled'].includes(data.task.status)" @click="recover(item.id)">{{ recovering ? '正在取回…' : '取回原结果' }}</button>
+          <button :disabled="recovering || loading || !canRecoverOriginal(data, item.id)" @click="recover(item.id)">{{ recovering ? '正在取回…' : '取回原结果' }}</button>
         </article>
       </section>
       <p v-if="recoveryMessage" role="status">{{ recoveryMessage }}</p>
+      <p v-else-if="data && !data.recoverableImages?.some((item: any) => !item.saved) && recoveryHint(data)" role="status">{{ recoveryHint(data) }}</p>
       <template v-if="data">
         <section v-if="tab === 'request'"><small>请求 {{ taskId }} · {{ data.task.createdAt }}</small><p class="original-request">{{ data.task.userMessage }}</p><p>执行状态：{{ ({ succeeded: '已完成', failed: '遇到问题', cancelled: '已停止', running: '运行中', queued: '排队中' } as Record<string, string>)[data.task.status] || data.task.status }}</p><button @click="emit('locate')">定位原对话</button></section>
         <section v-else-if="tab === 'outputs'"><p v-if="!data.nodes.length">当前没有与本次请求关联的已保存画布产物。结果尚未确认时，不代表服务商没有完成生成。</p><article v-for="node in data.nodes" :key="node.id"><img v-if="node.data?.assetId && node.data?.kind === 'image'" :src="`${apiBaseUrl}/api/projects/${projectId}/assets/${node.data.assetId}/content`" :alt="node.data.title || '已保存图片'" /><strong>{{ node.data?.title || node.id }}</strong><button @click="emit('locate', node.id)">在画布中查看</button></article></section>
-        <section v-else-if="tab === 'billing'"><p>{{ data.billingNote }}</p><p v-if="!data.billing.length">本地暂无计费记录，收费状态尚不能确认。</p><ul><li v-for="entry in data.billing" :key="entry.id">{{ entry.model }} · {{ entry.kind }} · {{ entry.tokenUnreported && !entry.totalTokens ? 'Token 未返回' : `${formatTokens(entry.totalTokens)} Token${entry.tokenUnreported ? '（部分）' : ''}` }} · {{ entry.costCny != null ? `${formatCny(entry.costCny)}（已确认扣费）` : entry.estimatedCostCny != null ? `待对账 · 参考估算 ${formatCny(entry.estimatedCostCny)}（非扣款）` : '待对账' }}</li></ul><details><summary>工具记录（{{ data.receipts.length }}）</summary><ul><li v-for="(receipt, index) in data.receipts" :key="index">{{ receipt.tool }} · {{ receipt.status === 'running' ? '已提交，结果尚未确认' : receipt.status === 'rejected' ? '调用被拒绝，请核对费用' : '已有回执' }} · {{ receipt.updatedAt }}</li></ul></details></section>
+        <section v-else-if="tab === 'billing'"><p>{{ data.billingNote }}</p><p v-if="!data.billing.length">本地暂无计费记录，收费状态尚不能确认。</p><ul><li v-for="entry in data.billing" :key="entry.id">{{ entry.model }} · {{ entry.kind }} · {{ entry.tokenUnreported && !entry.totalTokens ? 'Token 未返回' : `${formatTokens(entry.totalTokens)} Token${entry.tokenUnreported ? '（部分）' : ''}` }} · {{ entry.costCny != null ? `${formatCny(entry.costCny)}（已确认扣费）` : entry.estimatedCostCny != null ? `待对账 · 参考估算 ${formatCny(entry.estimatedCostCny)}（非扣款）` : '待对账' }}</li></ul><details><summary>工具记录（{{ data.receipts.length }}）</summary><ul><li v-for="(receipt, index) in data.receipts" :key="index">{{ receipt.tool }} · {{ receiptState(receipt) }} · {{ receipt.updatedAt }}</li></ul></details></section>
         <section v-else aria-label="任务性能记录"><template v-if="data.performance"><dl class="performance-metrics"><div><dt>首个产物</dt><dd>{{ data.performance.firstArtifactMs == null ? '—' : durationLabel(data.performance.firstArtifactMs) }}</dd></div><div><dt>文本请求</dt><dd>{{ data.performance.sdkRequests ?? '—' }} 次</dd></div><div><dt>图片提交</dt><dd>{{ data.performance.imageRequests ?? '—' }} 次</dd></div><div><dt>累计输入 Token</dt><dd>{{ data.performance.inputTokens?.toLocaleString() ?? '—' }}</dd></div><div><dt>累计输出 Token</dt><dd>{{ data.performance.outputTokens?.toLocaleString() ?? '—' }}</dd></div></dl><small>{{ data.performance.note }}{{ data.performance.coverage !== 'full' ? ' 此任务的统计不完整。' : '' }}</small></template><p v-else>此历史任务未记录性能数据。</p></section>
       </template>
       <section v-if="tab === 'performance' && data?.performance?.timingMs" aria-label="分阶段耗时">

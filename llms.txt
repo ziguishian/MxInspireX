@@ -1,0 +1,18 @@
+# MxinspireX
+
+> 灵矩绘境开发的本地优先 AI 设计工作区，结合项目对话、参考资料和无限画布。使用自有模型服务与 API Key；云模型仍需联网，源码许可不包含模型额度。
+
+## 产品与使用
+- [产品事实与能力边界](https://github.com/ziguishian/MxInspireX/blob/main/docs/product-facts.md)
+- [中文介绍与启动](https://github.com/ziguishian/MxInspireX/blob/main/README.md)
+- [English overview](https://github.com/ziguishian/MxInspireX/blob/main/README.en.md)
+- [使用指南](https://github.com/ziguishian/MxInspireX/blob/main/docs/USER_GUIDE.md)
+- [下载与版本记录](https://github.com/ziguishian/MxInspireX/releases)
+
+## 技术与支持
+- [Agent 执行与引用机制](https://github.com/ziguishian/MxInspireX/blob/main/docs/agent-flow.md)
+- [桌面更新](https://github.com/ziguishian/MxInspireX/blob/main/docs/desktop-updates.md)
+- [MIT 许可](https://github.com/ziguishian/MxInspireX/blob/main/LICENSE)
+- [反馈问题](https://github.com/ziguishian/MxInspireX/issues)
+
+本文件是可选资料索引，不是搜索引擎的收录协议。支持平台和功能以实际 Release 和对应版本文档为准。

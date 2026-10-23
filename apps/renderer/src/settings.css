@@ -144,7 +144,8 @@ html .sidebar-user-mini .user-avatar-sprite { border-radius: 50%; }
 .profile-summary-activity-heading small { font-size: var(--ui-font-caption); color: var(--theme-text-subtle); }
 .profile-summary-bars { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; }
 .profile-summary-bars > div { display: grid; gap: 7px; text-align: center; }
-.profile-summary-bars > div > span { display: flex; align-items: flex-end; height: 38px; overflow: hidden; border-radius: 4px; background: var(--theme-surface-hover); }
+.profile-summary-bars > div > span { box-sizing: border-box; display: flex; align-items: flex-end; height: 38px; overflow: hidden; border-radius: 4px; background: transparent; }
+.profile-summary-bars > div > span.is-empty { border: 1px solid var(--theme-border-strong); }
 .profile-summary-bars i { width: 100%; min-height: 3px; border-radius: 4px; background: #6d94b2; }
 html[data-theme="light"] .profile-summary-bars i { background: #527f9f; }
 .profile-summary-bars small { font-size: var(--ui-font-micro); line-height: 18px; color: var(--theme-text-subtle); }

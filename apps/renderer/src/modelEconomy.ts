@@ -33,6 +33,10 @@ export function formatModelPrice(price?: Record<string, unknown>) {
   if (price.pricingMode === 'dynamic') return '动态计价 · 以服务返回费用为准';
   if (price.currency !== 'USD' && price.currency !== 'CNY') return '价格币种待确认';
   const scale = price.currency === 'USD' ? usdToCny.value : 1;
+  if (price.source === 'evolink_public' && Array.isArray(price.publicRates)) {
+    const rates = price.publicRates as { label: string; usd: number; unit: string }[];
+    return rates.length ? `EvoLink 官网参考价 · ${rates.slice(0, 2).map(rate => `${rate.label} ${formatCny(rate.usd * scale)} ${rate.unit}`).join(' · ')}` : '官网单价待确认';
+  }
   const entries = [
     ['inputPerMillion', '输入 / 百万 Token'], ['outputPerMillion', '输出 / 百万 Token'],
     ['cachedPerMillion', '缓存读取 / 百万 Token'], ['cacheWritePerMillion', '缓存写入 / 百万 Token'], ['imageInputPerMillion', '图像输入 / 百万 Token'],

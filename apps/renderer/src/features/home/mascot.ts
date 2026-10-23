@@ -4,7 +4,7 @@ export type MascotGeneration = { id: string; prompt: string; status: 'queued' | 
 export type MascotSettings = { active: MascotGeneration | null; activePreset?: MascotPresetId | null; latest: MascotGeneration | null };
 export type MascotProvider = { key: string; baseUrl?: string; model?: string; manual?: boolean };
 export const mascotPresets = [
-  { id:'robot', name:'点阵机器人', description:'熟悉的设计搭档', image:'mxinspirex-robot-states.png', positions:['1.7578125% 0%','50% 0%','98.33984375% 0%','1.7578125% 96.09375%','50% 96.09375%','98.33984375% 96.09375%'] },
+  { id:'robot', name:'点阵机器人', description:'熟悉的设计搭档', image:'mascots/robot-soft.png', positions:['1.26953125% 2.734375%','50.146484375% 2.734375%','98.681640625% 2.734375%','1.26953125% 97.8515625%','50.09765625% 97.65625%','98.681640625% 97.8515625%'] },
   // Registered viewport offsets keep generated cutouts centered on a common foot baseline without altering the artwork.
   { id:'cream-cat', name:'奶油猫', description:'陪灵感慢慢长大', image:'mascots/cream-cat.png', positions:['3.857421875% -0.5859375%','50.244140625% -0.390625%','96.142578125% -0.5859375%','3.857421875% 93.9453125%','50.146484375% 93.9453125%','96.630859375% 93.9453125%'] },
   { id:'cloud', name:'云朵', description:'让想法轻盈一点', image:'mascots/cloud.png', positions:['0.9765625% -1.3671875%','50.048828125% -1.3671875%','98.095703125% -1.3671875%','0.9765625% 92.7734375%','50.048828125% 92.7734375%','98.095703125% 92.7734375%'] },
@@ -25,7 +25,7 @@ export function mascotImageUrl(baseUrl: string, item: MascotGeneration | null) {
 }
 
 export function mascotSpriteStyle(baseUrl: string, item: MascotGeneration | null, presetId: MascotPresetId | null = 'robot'): CSSProperties {
-  const url = mascotImageUrl(baseUrl, item) || (presetId && presetId !== 'robot' ? mascotPresetImageUrl(presetId) : '');
+  const url = mascotImageUrl(baseUrl, item) || (presetId ? mascotPresetImageUrl(presetId) : '');
   const frames = !item && presetId ? mascotPresets.find(preset => preset.id === presetId)?.positions : null;
   const positions = frames || mascotFrames.map(frame => frame.position);
   return url ? {

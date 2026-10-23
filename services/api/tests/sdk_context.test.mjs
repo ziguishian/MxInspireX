@@ -16,6 +16,23 @@ test('one asset with different upload and memory previews is sent once without l
   assert.ok(JSON.stringify(view.modelData.input).includes('base64,Yw=='));
   assert.equal(JSON.stringify(input),canonical);
 });
+test('compacting sequential image inspections retains both upstream images without repeated bytes',()=>{
+  const input=[user('结合两张参考，只生成一张图')];
+  for (const [id,asset,image] of [['a1','a','YQ=='],['b1','b','Yg=='],['a2','a','YQ==']]) input.push(
+    {type:'function_call',callId:id,name:'asset_inspect',arguments:JSON.stringify({asset_id:asset})},
+    {type:'function_call_result',callId:id,output:[{type:'input_text',text:JSON.stringify({assetId:asset,metadata:'detail '.repeat(900)})},{type:'input_image',image:`data:image/png;base64,${image}`} ]});
+  const canonical=JSON.stringify(input);
+  for (const api of ['responses','chat_completions']) {
+    const view=prepareModelInput({input,instructions:'rules '.repeat(2500)},{api,contextLength:128000});
+    assert.ok(view.manifest.receiptCount>0);
+    assert.equal(view.manifest.inputImages,2);
+    const serialized=JSON.stringify(view.modelData.input);
+    assert.equal(serialized.split('base64,YQ==').length-1,1);
+    assert.equal(serialized.split('base64,Yg==').length-1,1);
+    assert.equal(JSON.stringify(input),canonical);
+  }
+});
+
 test('a long current turn shrinks completed pairs while preserving current evidence, corrections and originals',()=>{
   const input=[user('保留原始 Logo，只修改背景，不改变质量')];
   for(let i=0;i<12;i++) input.push(
@@ -176,6 +193,24 @@ test('evidence and clock reach later stages with body types and stable IDs',()=>
 test('required current input is never silently discarded for model capacity',()=>{
   assert.throws(()=>prepareModelInput({input:[user('当前要求'.repeat(12000))]},{contextLength:8000}),/超出模型容量/);
   const latest=user('本轮');assert.deepEqual(mergeSessionInput([latest],[latest]),[latest]);
+});
+
+test('scope node identities and versions survive compression at string budget boundaries',()=>{
+  for (const api of ['responses','chat_completions']) for (const size of [690,729,760,790,1200,6000]) {
+    const frame={requirements:{text:'原始要求'.repeat(1000)},designPlan:{goal:'设计说明'.repeat(1500)},
+      scope:{mode:'references',description:'x'.repeat(size),nodeIds:['product'],
+        nodes:[{id:'product',version:7,data:{html:'<main>产品</main>'.repeat(3000)}}]}};
+    const original=structuredClone(frame);
+    const result=prepareModelInput({instructions:'规则'.repeat(7000),input:[user('为这个系列设计包装')]},
+      {frame,api,contextLength:128000});
+    assert.deepEqual(result.manifest.nodeIds,['product']);
+    assert.deepEqual(result.manifest.nodeVersions,[{id:'product',version:7}]);
+    const message=result.modelData.input.find(item=>item.content?.some(part=>part.text?.startsWith('本轮项目上下文')));
+    const sent=JSON.parse(message.content[0].text.split('\n').slice(1).join('\n'));
+    assert.ok(Array.isArray(sent.scope.nodes));
+    assert.equal(sent.scope.nodes[0].id,'product');
+    assert.deepEqual(frame,original);
+  }
 });
 test('long earlier requirements cannot crowd evidence and current target out of the frame',()=>{
   const frame={clock:{reportAsOf:'2026-09-14'},requirements:{earlierUserExcerpts:Array.from({length:14},(_,i)=>({taskId:String(i),user:'历史约束'.repeat(200)}))},

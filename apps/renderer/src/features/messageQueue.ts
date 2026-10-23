@@ -3,7 +3,17 @@ export type QueuedComposerMessage<Draft> = {
   text: string;
   draft: Draft;
   createdAt: string;
+  supplementTaskId?: string;
 };
+
+export function supplementUnavailableReason(draft: { files: readonly unknown[]; assets: readonly unknown[]; skills?: readonly unknown[] }) {
+  return draft.files.length || draft.assets.length || draft.skills?.length
+    ? '补充当前任务仅支持文字；附件、引用和技能请在队列中作为下一项发送。' : '';
+}
+
+export function queueItemCanStart(message: { id: string; supplementTaskId?: string }, editingId: string | null, sendingSupplement: boolean) {
+  return message.id !== editingId && !message.supplementTaskId && !sendingSupplement;
+}
 
 export function canDispatchQueue(input: { activeProject: boolean; running: boolean; awaitingInput: boolean; dispatching: boolean; hasMessages: boolean }) {
   return input.activeProject && input.hasMessages && !input.running && !input.awaitingInput && !input.dispatching;
@@ -44,7 +54,7 @@ export function queueTaskResult(task: { status: string; updates?: Array<{ applie
     status: task.status, deliveryStatus: data.deliveryStatus,
     awaitingTaskUpdate: task.updates?.some(item => !item.appliedAt),
     awaitingClarification: Boolean(data.clarification?.questions?.length),
-    awaitingReferenceSelection: Boolean(data.referenceSelection),
+    awaitingReferenceSelection: Boolean(data.referenceSelection?.items?.length && data.referenceSelection.status === 'pending' && !data.referenceSelection.submittedAction),
   };
 }
 

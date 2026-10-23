@@ -5,6 +5,12 @@ import { taskErrorMessage } from './taskErrors';
 
 const raw = 'OpenRouter 图像接口 HTTP 400: Gemini could not generate an image (STOP)';
 describe('generation failure presentation', () => {
+  it('explains node background rejection and preserves unknown-charge stream warnings', () => {
+    expect(generationFailureText('HTTP 400: model only supports background transparent or opaque, got auto')).toContain('背景设置');
+    const message = generationFailureText('model_stream_interrupted: other side closed');
+    expect(message).toContain('费用尚未确认');
+    expect(message).toContain('请求与计费记录');
+  });
   it('removes provider diagnostics from nodes, steps, progress and assistant replies', () => {
     const trace = [{phase:'tool',message:'调用工具：generate_image'}, {phase:'error',message:`工具失败：generate_image · ${raw}`}];
     const text = [generationFailureText(raw), ...designSteps(trace,'running').map(step=>step.label),publicAssistantMessage(`已保存其他方案。\n\n本次生成失败：${raw}`)].join('\n');
@@ -18,6 +24,12 @@ describe('generation failure presentation', () => {
     expect(generationFailureText('429 rate limit')).toContain('暂时繁忙');
     expect(generationFailureText('402 insufficient_quota')).toContain('额度不足');
     expect(generationFailureText('HTTP 504 timeout')).toContain('无法连接');
+  });
+  it('does not report unavailable models mentioning an API key as failed authentication', () => {
+    const unavailable = "404 Model 'test-model' is not available for this API key (unknown model id, or not enabled for your group).";
+    expect(taskErrorMessage(unavailable)).toContain('所选模型不可用');
+    expect(generationFailureText(unavailable)).not.toContain('未能验证账号');
+    expect(taskErrorMessage('401 unauthorized API key')).toContain('模型认证失败');
   });
   it('distinguishes unknown image results from retryable network failures', () => {
     for (const reason of [

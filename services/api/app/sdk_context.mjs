@@ -154,7 +154,8 @@ export function selectProjectFrame(frame, budget) {
       suggestedNext:frame.designBatch.suggestedNext,read:'design_plan'},deliveryProgress:frame.deliveryProgress?.map(({id,status,nodeIds})=>({id,status,nodeIds}))} : {}),
     ...(guide ? {designPlanning:{profile:guide.profile,required:guide.required,areas:guide.areas?.map(({id,title})=>({id,title})),read:'design_plan'}} : {}),
     ...(plan ? {designPlan:budgeted({...plan,coverage:undefined,deliverables:plan.deliverables?.map(item=>({...item,acceptance:excerpt(item.acceptance,100)})),read:'design_plan'},budget*.3)} : {}),
-    scope:budgeted(scope,budget*.2),
+    scope:scope && {...budgeted(scope,budget*.2),nodeIds:scope.nodeIds,
+      nodes:(scope.nodes || []).map(node => ({...budgeted(node,Math.max(200,budget*.2/Math.max(1,scope.nodes.length))),id:node.id,version:node.version}))},
     evidence:[...evidence.values()].map(s=>({...s,text:excerpt(s.text,excerptSize),nextOffset:s.text?.length>excerptSize ? excerptSize : s.nextOffset})),
     handoff:budgeted({...handoff,research:excerpt(handoff.research,900)},budget*.12),
     attachments:budgeted(frame.attachments,budget*.08),
@@ -204,8 +205,8 @@ export function prepareModelInput(modelData, { frame, skills, memory, singleImag
   const frameBudget = Math.min(10000, Math.floor(maxChars*.5));
   const selectedFrame = singleImage && frame ? singleImageFrame(frame) : selectProjectFrame(frame,frameBudget);
   // Control state must remain complete even when long design prose is trimmed.
-  const {execution,...frameContent} = selectedFrame || {};
-  const frameText = selectedFrame ? JSON.stringify({...JSON.parse(boundedJson(frameContent, frameBudget)),...(execution ? {execution} : {})}) : '';
+  const {execution,scope,...frameContent} = selectedFrame || {};
+  const frameText = selectedFrame ? JSON.stringify({...JSON.parse(boundedJson(frameContent, frameBudget)),...(execution ? {execution} : {}),...(scope ? {scope} : {})}) : '';
   localBeforeTokens += frameText.length;
   const sentFrame = frameText ? JSON.parse(frameText) : undefined;
   // Large *completed* tool bodies remain in canonical Session/asset storage.
@@ -300,10 +301,15 @@ export function prepareModelInput(modelData, { frame, skills, memory, singleImag
         notice:'已完成工具回执；完整内容保留在原记录，按来源 ID 读取，不重新执行生成。'};
       const compactArgs = JSON.stringify({...pointers,receipt:true});
       const compactOutput = JSON.stringify(receipt);
-      const after = textSize({...call,arguments:compactArgs}) + textSize({...result,output:compactOutput});
+      // Dedupe above already keeps only the latest pixels for each image.
+      // Retain those pixels while shortening prose: otherwise inspecting B
+      // erases A and multi-reference tasks alternate asset_inspect forever.
+      const visual = Array.isArray(result.output) ? result.output.filter(p=>['input_image','image'].includes(p.type)) : [];
+      const output = visual.length ? [{type:'input_text',text:compactOutput},...visual] : compactOutput;
+      const after = textSize({...call,arguments:compactArgs}) + textSize({...result,output});
       if (after >= before) continue;
       call.arguments = compactArgs;
-      result.output = compactOutput;
+      result.output = output;
       total -= before - after;
       receiptCount++;
     }
@@ -369,6 +375,6 @@ export function prepareModelInput(modelData, { frame, skills, memory, singleImag
   return { modelData: { ...modelData, input: [...(skillText ? [{type:'message',role:'user',content:[{type:'input_text',text:skillText}]}] : []), ...retained,
     ...(dynamicText ? [{type:'message',role:'user',content:[{type:'input_text',text:dynamicText}]}] : []), ...protectedMessage] },
     manifest: { memoryRevision:memory?.memoryRevision, memoryIds:memory?.selected?.map(r=>r.id)||[], referenceSnapshots:(memory?.referenceSnapshots||[]).map(({id,references})=>({id,references})), skillBindings: skills?.bindings || [], skillChars:skillText.length, skillCatalogOmitted:(skills?.catalog || []).length-catalogue.length, capacityKnown:known, inputChars: used, toolSchemaChars, estimatedInputTokens:used+toolSchemaChars, localBeforeTokens:Math.max(localBeforeTokens,used+toolSchemaChars), localAfterTokens:used+toolSchemaChars, localCompacted:!compactedWindow && (receiptCount>0 || omitted>0 || used+toolSchemaChars<localBeforeTokens), receiptCount, localBudgetExceeded:used+toolSchemaChars>(localCompacted ? 8000 : 12000), inputImages:[...retained,...protectedMessage].reduce((n,i)=>n+[...(Array.isArray(i.content)?i.content:[]),...(Array.isArray(i.output)?i.output:[])].filter(p=>['input_image','image'].includes(p.type)).length,0), selected: retained.length, omitted,
-      evidenceIds:(sentFrame?.evidence||[]).map(s=>s.id||s.url).filter(Boolean), nodeIds:sentFrame?.scope?.nodeIds || [], nodeVersions:(sentFrame?.scope?.nodes||[]).filter(n=>n.id).map(n=>({id:n.id,version:n.version})), checkpointVersion:2 } };
+      evidenceIds:(Array.isArray(sentFrame?.evidence) ? sentFrame.evidence : []).map(s=>s.id||s.url).filter(Boolean), nodeIds:sentFrame?.scope?.nodeIds || [], nodeVersions:(Array.isArray(sentFrame?.scope?.nodes) ? sentFrame.scope.nodes : []).filter(n=>n.id).map(n=>({id:n.id,version:n.version})), checkpointVersion:2 } };
 }
 

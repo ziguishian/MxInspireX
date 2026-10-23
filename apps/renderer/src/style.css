@@ -2739,22 +2739,21 @@ html[data-theme="light"] .desktop-shell .window-chrome {
 .design-chat-title strong { font-weight: 600; }
 .home-composer-lumo-sprite,
 .agent-avatar-sprite {
-  /* Register artwork to a common baseline: columns drift 18/0/-17px,
-     row two sits 20px high. Compensate source positions, not layout boxes. */
-  --xiaoju-frame-idle: 1.7578125% 0%;
-  --xiaoju-frame-calm: 50% 96.09375%;
-  --xiaoju-frame-happy: 98.33984375% 0%;
-  --xiaoju-frame-blink: 98.33984375% 96.09375%;
-  --xiaoju-frame-wink: 1.7578125% 96.09375%;
-  --xiaoju-frame-thinking: 50% 0%;
-  --xiaoju-frame-sleepy: 98.33984375% 96.09375%;
+  /* Default soft robot uses the same centered, y=480 baseline as all presets. */
+  --xiaoju-frame-idle: 1.26953125% 2.734375%;
+  --xiaoju-frame-calm: 50.09765625% 97.65625%;
+  --xiaoju-frame-happy: 98.681640625% 2.734375%;
+  --xiaoju-frame-blink: 98.681640625% 97.8515625%;
+  --xiaoju-frame-wink: 1.26953125% 97.8515625%;
+  --xiaoju-frame-thinking: 50.146484375% 2.734375%;
+  --xiaoju-frame-sleepy: 98.681640625% 97.8515625%;
 }
 .home-composer-lumo-sprite,
 .agent-avatar-sprite::after {
   /* Both surfaces inherit the selected artwork and registered expressions. */
-  background: var(--xiaoju-image, url('/assets/mxinspirex-robot-states.png')) var(--xiaoju-frame-idle) / 300% 200% no-repeat;
+  background: var(--xiaoju-image, url('/assets/mascots/robot-soft.png')) var(--xiaoju-frame-idle) / 300% 200% no-repeat;
   clip-path: inset(0%);
-  filter: grayscale(1);
+  filter: none;
   animation: xiaoju-sprite-expression 12s steps(1, end) infinite;
 }
 @keyframes xiaoju-sprite-expression {
@@ -2879,7 +2878,7 @@ html[data-theme="light"] .desktop-shell .window-chrome {
 .design-asset-node .vue-flow__handle-left { left: -6px; }
 .design-asset-node .vue-flow__handle-right { right: -6px; }
 .design-flow .vue-flow__edge-path { stroke: var(--theme-accent-strong); stroke-width: 2; }
-.design-flow .vue-flow__edge.selected .vue-flow__edge-path { stroke: var(--theme-accent-strong); stroke-width: 2.5; }
+.design-flow .vue-flow__edge.selected .vue-flow__edge-path { stroke: var(--theme-status-red); stroke-width: 2.5; }
 .design-flow .vue-flow__edge.animated .vue-flow__edge-path { stroke-dasharray: 7 5; animation: design-edge-flow 1.2s linear infinite; }
 @keyframes design-edge-flow { to { stroke-dashoffset: -24; } }
 .canvas-prompt-panel { position: relative; display: grid; gap: 12px; width: 480px; padding: 13px; border: 1px solid var(--theme-border); border-radius: 18px; background: color-mix(in srgb, var(--theme-surface) 98%, transparent); box-shadow: 0 8px 22px #0000001c; }
@@ -3093,19 +3092,7 @@ body.is-resizing-design-chat, body.is-resizing-design-chat * { cursor: col-resiz
 .design-flow .vue-flow__nodesselection-rect::before { content: '拖动选区'; position: absolute; left: 8px; top: -26px; padding: 3px 9px; border: 1px solid var(--theme-accent-strong); border-radius: 6px 6px 0 0; background: var(--theme-surface-raised); color: var(--theme-accent-strong); font-size: 11px; line-height: 18px; white-space: nowrap; pointer-events: auto; cursor: grab; }
 .design-flow .vue-flow__nodesselection-rect.dragging::before { cursor: grabbing; }
 .design-workspace.has-multiple-selection .design-text-tools { display: none; }
-.canvas-selection-toolbar { position: absolute; transform: translate(-50%, -100%); z-index: 60; width: max-content; max-width: calc(100% - 44px); display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 10px 12px; border: 1px solid var(--theme-border); border-radius: 13px; background: var(--theme-surface-raised); color: var(--theme-text); box-shadow: 0 8px 26px #0003; }
-.canvas-selection-count { font-size: 12px; white-space: nowrap; }
-.canvas-selection-align { display: flex; flex-wrap: wrap; gap: 2px; }
-.canvas-selection-toolbar button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--theme-text); cursor: pointer; }
-.canvas-selection-toolbar button:hover { background: var(--theme-surface-hover); color: var(--theme-accent-strong); }
-.canvas-selection-toolbar button:focus-visible { outline: 2px solid var(--theme-accent-strong); outline-offset: 1px; }
-.canvas-selection-toolbar button:disabled { opacity: .35; cursor: default; }
-.canvas-selection-toolbar .canvas-selection-close { margin-left: auto; }
-.canvas-selection-toolbar small { flex-basis: 100%; color: var(--theme-text-muted); font-size: 11px; line-height: 1.5; }
 
-.composer-run-mode { display: flex; align-items: center; gap: 8px; padding: 3px 5px 8px; font-size: 11px; }
-.composer-run-mode select { color: var(--theme-text); background: var(--theme-surface-raised); border: 1px solid var(--theme-border); border-radius: 6px; padding: 4px; }
-.composer-run-mode small { color: var(--theme-text-muted); }
 .queue-message-copy textarea { width: 100%; min-height: 54px; color: inherit; background: transparent; border: 1px solid var(--theme-border); border-radius: 6px; padding: 6px; }
 
 /* State changes select registered sprite frames without moving the avatar box. */
@@ -3122,7 +3109,6 @@ body.is-resizing-design-chat, body.is-resizing-design-chat * { cursor: col-resiz
 :root[data-reduce-animations="true"] .composer-hero::before, :root[data-reduce-animations="true"] .composer-hero::after { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .agent-avatar-sprite[data-state]::after, .home-composer-lumo-sprite { animation: none !important; } }
 
-.canvas-selection-toolbar .canvas-compare-button { width: auto; padding: 0 9px; white-space: nowrap; font-size: 11px; }
 .composer-message-queue-header { flex-wrap: wrap; }
 .composer-message-queue-header small[role="status"] { display: block; flex: 1; min-width: 170px; line-height: 1.6; }
 .composer-message-queue-header small button, .queue-edit-actions button { border: 1px solid var(--theme-border); border-radius: 6px; color: var(--theme-text); background: var(--theme-surface-raised); font-size: 10px; padding: 3px 6px; cursor: pointer; }

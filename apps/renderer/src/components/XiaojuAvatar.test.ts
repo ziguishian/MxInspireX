@@ -8,7 +8,7 @@ import { createMascotSettings, mascotPresets, mascotSettingsKey, type MascotGene
 const custom: MascotGeneration = { id: 'aa', prompt: '自定义角色', status: 'succeeded', model: 'image', imageUrl: '/api/mascot/generations/aa/image', error: '' };
 
 describe('shared Agent avatar artwork', () => {
-  it.each(mascotPresets.filter(preset => preset.id !== 'robot'))('uses $name for project messages and the celebration', async preset => {
+  it.each(mascotPresets)('uses $name for project messages and the celebration', async preset => {
     const mascot = createMascotSettings('http://localhost:8765');
     mascot.activePreset.value = preset.id;
     for (const component of [XiaojuAvatar, FirstRequestCelebration]) {
@@ -42,7 +42,7 @@ describe('shared Agent avatar artwork', () => {
     const app = createSSRApp(XiaojuAvatar);
     app.provide(mascotSettingsKey, mascot);
     const html = await renderToString(app);
-    expect(html).not.toContain('--xiaoju-image');
+    expect(html).toContain('assets/mascots/robot-soft.png');
     expect(html).not.toContain(custom.imageUrl);
     expect(html).toContain('点阵机器人 ·');
   });
@@ -51,6 +51,6 @@ describe('shared Agent avatar artwork', () => {
     const html = await renderToString(createSSRApp(XiaojuAvatar));
     expect(html).toContain('agent-avatar-sprite');
     expect(html).toContain('data-state="idle"');
-    expect(html).not.toContain('--xiaoju-image');
+    expect(html).toContain('assets/mascots/robot-soft.png');
   });
 });

@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { Plus, Search } from 'lucide-vue-next';
 import ProjectCard from '../components/projects/ProjectCard.vue';
+import MasonryGrid from '../components/shared/MasonryGrid.vue';
 import { projectCompleted, projectActivity } from '../features/projectStatus';
 import LibraryPageLayout from '../components/shared/LibraryPageLayout.vue';
 import EmptyState from '../components/shared/EmptyState.vue';
@@ -35,12 +36,12 @@ function loadMoreProjects() { visibleProjectCount.value = Math.min(visibleProjec
     <EmptyState v-if="isLoading">正在读取项目…</EmptyState>
     <EmptyState v-else-if="errorMessage && !projects.length">{{ errorMessage }}</EmptyState>
     <template v-else>
-      <div class="projects-grid library-grid">
+      <MasonryGrid class="projects-grid">
         <article class="project-create-entry">
           <button class="project-create-card" type="button" aria-label="新建空白画布" @click="createBlankCanvas"><Plus :size="26" :stroke-width="1.5" /><strong>开始创作</strong></button>
         </article>
         <ProjectCard v-for="project in visibleProjects" :key="project.id" :project="project" :board="projectCanvasPreviews[project.id]" :api-base-url="apiBaseUrl" :rename="renameProject" :load-preview="loadPreview" @open="selectProject" @delete="requestDeleteProject" />
-      </div>
+      </MasonryGrid>
       <EmptyState v-if="projects.length && !filteredProjects.length" class="projects-empty-search" :icon="Search" title="没有找到匹配的项目">请调整搜索或筛选条件。</EmptyState>
     </template>
     <InfiniteScrollStatus v-if="!isLoading && filteredProjects.length" :has-more="hasMoreProjects" :loaded="visibleProjects.length" :total="filteredProjects.length" item-label="个项目" @load-more="loadMoreProjects" />
@@ -56,10 +57,5 @@ function loadMoreProjects() { visibleProjectCount.value = Math.min(visibleProjec
 .project-create-card:hover { z-index: 1; border-color: var(--theme-accent-strong); background: var(--theme-surface-hover); transform: translate3d(0, -2px, 0); }
 .project-create-card:focus-visible { outline: 2px solid var(--theme-accent-strong); outline-offset: 4px; }
 .projects-empty-search { margin-top: 24px; }
-/* Project cards are deliberately compact, matching the visual-library layout. */
-:global(.collection-page.projects-page .library-grid) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-@media (max-width: 920px) { :global(.collection-page.projects-page .library-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
-@media (max-width: 720px) { :global(.collection-page.projects-page .library-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
-@media (max-width: 480px) { :global(.collection-page.projects-page .library-grid) { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .project-create-card { transition: none; } }
 </style>

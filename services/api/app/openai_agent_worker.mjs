@@ -1,6 +1,6 @@
 import { applyToolContracts, normalizeOptionalNulls, imageParamsSchema } from './tool_contracts.mjs';
 import { executionFrame } from './execution_frame.mjs';
-import { efficientExecution, directSingleArtifact, singleImageToolAllowed, readyPlanExecution, nestedTextAllowed, singleDeliveryComplete, receiptView, selectRules, researchRules } from './execution_efficiency.mjs';
+import { efficientExecution, directSingleArtifact, singleImageToolAllowed, readyPlanExecution, nestedTextAllowed, receiptView, selectRules, researchRules } from './execution_efficiency.mjs';
 import { normalizeToolInput, bindPlanVersion, inputFailure, planReceipt, currentDesignPlan, reusesReadyPlan, validateBatchArguments, ToolInputNormalizationError } from './tool_input_validation.mjs';
 import { agentOutputTokenLimit, outputFailure, responsesOutputFailure } from './model_output.mjs';
 import { portableResponsesRequest } from './portable_responses.mjs';
@@ -10,7 +10,7 @@ import { memoryDefinitions, memoryInstructions } from './conversation_memory.mjs
 import { imageReferenceInstructions, singleImageInstructions, referenceAnalysisSchema } from './image_reference_design.mjs';
 import { designBriefInstructions, designBriefSchema } from './design_brief.mjs';
 import { skillDefinitions, skillWrites, skillReads } from './skill_runtime.mjs';
-import { hasPendingDelivery, completionDecision, latestClarification, collectArtifactRefs, artifactToolOutputs } from './delivery_execution.mjs';
+import { hasPendingDelivery, completionDecision, generationCompletionMessage, latestClarification, collectArtifactRefs, artifactToolOutputs } from './delivery_execution.mjs';
 import { ProjectSession, boundedJson, mergeSessionInput, prepareModelInput, digest, restoreCompletedHistory } from './sdk_context.mjs';
 import { HtmlGenerationProgress } from './html_generation_progress.mjs';
 import { cacheUsage, cachedModelRequest } from './prompt_cache.mjs';
@@ -167,7 +167,7 @@ const pendingMemoryFailures = () => {
   return pending;
 };
 const memoryStopError = () => Object.assign(new Error(`对话信息保存校验未通过，已停止重复提交。${pendingMemoryFailures()[0]?.output.instruction || ''} 已保留原始消息、资料和已完成产物。`),{failureKind:'tool'});
-const validationFailureStatuses = new Set(['invalid_arguments','plan_conflict','image_parameters_invalid','reference_mismatch','reference_missing','reference_changed','reference_analysis_required','reference_mode_mismatch']);
+const validationFailureStatuses = new Set(['invalid_arguments','plan_conflict','design_spec_required','image_parameters_invalid','reference_mismatch','reference_missing','reference_changed','reference_analysis_required','reference_mode_mismatch']);
 const pendingValidationFailure = () => {
   const failures = new Map();
   for (const item of toolOutputs) {
@@ -186,7 +186,7 @@ const pendingValidationFailure = () => {
     // Reference validation can report a different corrective sentence for the
     // same unresolved binding. Count the status so alternating messages cannot
     // keep a paid-generation loop alive indefinitely.
-    const signature=status.startsWith('reference_') ? status : message;
+    const signature=status.startsWith('reference_') || status === 'design_spec_required' ? status : message;
     failures.set(item.name, {
       message,
       signature,
@@ -253,7 +253,10 @@ const beginRecoveryAttempt = (kind, failure) => {
   // contain user content or provider details and must not enter checkpoints.
   const signature = `${kind}:${tool}:${String(code).slice(0,80)}:${String(fieldPath).slice(0,120)}`;
   const prior = objectValue(stage.signatures[signature]);
-  const turn = Number(stageTurns[currentStage] || 0);
+  // Count a new rejection once; prerequisite fixes and progress turns do not
+  // spend the same failure's correction budget again.
+  const turn = kind === 'validation' && Number.isFinite(failure.stageTurn)
+    ? failure.stageTurn : Number(stageTurns[currentStage] || 0);
   if (Number(prior.lastTurn) === turn) return;
   const attempt = Number(prior.attempts || 0) + 1;
   if (attempt > RECOVERY_PER_SIGNATURE || Number(stage.total || 0) >= RECOVERY_PER_STAGE) {
@@ -371,7 +374,7 @@ const performGatewayCall = async (name, args, runContext, previewCallId, operati
   if (blockedTools[name]) return blockedTools[name];
   if (name === 'web_read' && failedWebPages[effectiveArgs.url]) return failedWebPages[effectiveArgs.url];
   const canonical = (value) => JSON.stringify(value, (_, v) => v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v);
-  const cached = name !== 'design_plan' && toolOutputs.find((item) => item.name === name && !['task_update_pending','invalid_arguments','image_parameters_invalid','planning_required','delivery_assignment_required','dependency_required','representation_required','memory_required','reference_mismatch','reference_missing','reference_changed','reference_analysis_required','reference_mode_mismatch','reference_selection_required'].includes(item.output?.status) && canonical(item.args) === canonical(effectiveArgs));
+  const cached = name !== 'design_plan' && toolOutputs.find((item) => item.name === name && !validationFailureStatuses.has(item.output?.status) && !['task_update_pending','planning_required','delivery_assignment_required','dependency_required','representation_required','memory_required','reference_selection_required'].includes(item.output?.status) && canonical(item.args) === canonical(effectiveArgs));
   if (cached && (['web_search','schedule_create','schedule_update','export_deliverable','image_edit','media_edit','transcribe_audio'].includes(name) || name.startsWith("generate_") || name.startsWith("canvas_") && !['canvas_read','canvas_versions'].includes(name))) return cached.output;
   const gatewayBase = String(gateway.baseUrl || "http://127.0.0.1:8765").replace(/\/$/, "");
   const projectId = encodeURIComponent(String(gateway.projectId || context.projectId || ""));
@@ -515,6 +518,7 @@ const performGatewayCall = async (name, args, runContext, previewCallId, operati
     if (publicSummaryCount++ < 6 && body.summary) send({type:'event',phase:'progress',message:String(body.summary)});
   } else if ((memoryRejected || validationRejected) && !internalProgressTools.has(name)) send({type:'event',phase:'error',message:`工具失败：${name} · ${String(body.instruction || '参数校验未通过').slice(0,300)}`});
   else if (body.status === 'generation_unconfirmed') send({type:'event',phase:'progress',message:'该项图像结果待核对，已保留原请求和其他图像，不会自动重发。'});
+  else if (body.submitted === false && !internalProgressTools.has(name)) send({type:'event',phase:'error',message:`工具失败：${name} · ${String(body.instruction || '预检未通过，请求尚未提交').slice(0,300)}`});
   else if (!internalProgressTools.has(name)) send({ type: "event", phase: "tool", message: `工具完成：${name}` });
   return body;
 };
@@ -1029,6 +1033,9 @@ try {
           accountResponse(event.response);
           throw outputFailure(finishReason === 'length' ? 'length' : 'missing_terminal');
         }
+        // A completed response cannot make a later local validation failure
+        // look like an interrupted, potentially billed model request.
+        if (event.type === 'response_done') acceptedResponseId = undefined;
         yield event;
       }
     },
@@ -1045,14 +1052,12 @@ try {
       const clarification = latestClarification(toolOutputs);
       const references = referenceSelection();
       if (input.executionStateVersion === 1 && !clarification && !references
-        && results.some(result=>generationTools.includes(result.tool?.name) || result.tool?.name==='generate_batch')
+        && results.some(result=>generationTools.includes(result.tool?.name) || ['generate_batch','image_edit'].includes(result.tool?.name))
         && completionDecision(context.constraints,toolOutputs,{updatePending:Boolean(updateReader?.revision)}).finish) {
         const applied = updateReader?.revision || 0;
         await updateReader?.refresh();
         if ((updateReader?.revision || 0) === applied) {
-          return {isFinalOutput:true,finalOutput:completionDecision(context.constraints,toolOutputs).reason === 'video_submitted'
-            ? '视频请求已受理，正在等待生成结果。' : singleDeliveryComplete(context.constraints,toolOutputs)
-            ? '作品已保存到右侧画布。' : '本轮生成已结束，作品已保存到右侧画布。'};
+          return {isFinalOutput:true,finalOutput:generationCompletionMessage(toolOutputs, completionDecision(context.constraints,toolOutputs).reason)};
         }
       }
       // A no-op plan read after every selected generation has settled is a
@@ -1062,7 +1067,7 @@ try {
         && completionDecision(context.constraints,toolOutputs,{updatePending:Boolean(updateReader?.revision)}).finish) {
         const applied = updateReader?.revision || 0;
         await updateReader?.refresh();
-        if ((updateReader?.revision || 0) === applied) return {isFinalOutput:true,finalOutput:'本轮生成已结束，作品已保存到右侧画布。'};
+        if ((updateReader?.revision || 0) === applied) return {isFinalOutput:true,finalOutput:generationCompletionMessage(toolOutputs, completionDecision(context.constraints,toolOutputs).reason)};
       }
       return clarification || references
         ? {isFinalOutput:true, finalOutput:clarification?.intro || references?.intro || '请填写卡片后继续。'}
@@ -1488,7 +1493,7 @@ try {
     if (incomplete.length) finalOutput.next_actions = incomplete.map(d=>d.title+'：'+(d.status==='blocked'?'等待 '+d.blockingFields.join('、'):labels[d.status] || '待完成'));
   }
   if (delivery?.issues?.length) {
-    finalOutput.status = delivery.artifacts?.some(a=>a.ready) || delivery.deliverables?.length ? 'succeeded' : 'failed';
+    finalOutput.status = delivery.artifacts?.some(a=>a.ready) ? 'succeeded' : 'failed';
     finalOutput.warnings = [...(finalOutput.warnings || []), ...delivery.issues];
     finalOutput.structured_data.answer += '\n交付仍有待处理项：' + delivery.issues.join('；');
   }

@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { missingDeliverables, latestClarification, completionDecision } from '../app/delivery_execution.mjs';
+import { missingDeliverables, latestClarification, completionDecision, generationCompletionMessage } from '../app/delivery_execution.mjs';
+
+it.each(['failed','generation_unconfirmed'])('ends a settled %s attempt without claiming a saved image', status => {
+  const constraints = {designPlan:{ready:true,scopeId:'current',deliverables:[{id:'pack',kind:'image'}]}};
+  const outputs = [{name:'generate_image',args:{deliverable_ids:['pack']},output:{status,stopTool:true,retryable:false,message:'参考图上传失败，尚未提交生成请求'}}];
+  const decision = completionDecision(constraints,outputs);
+  expect(decision).toMatchObject({finish:true,missing:[]});
+  expect(generationCompletionMessage(outputs,decision.reason)).toContain('未全部完成');
+  expect(generationCompletionMessage(outputs,decision.reason)).not.toContain('作品已保存');
+});
+
+it('reports mixed outcomes without hiding errors or restarting settled items', () => {
+  const outputs = [{name:'generate_image',output:{status:'succeeded',assetId:'saved'}},
+    {name:'generate_image',output:{status:'failed',stopTool:true,message:'上传失败'}}];
+  expect(generationCompletionMessage(outputs)).toContain('上传失败');
+  expect(generationCompletionMessage(outputs.slice(0,1))).toBe('作品已保存到右侧画布。');
+  expect(generationCompletionMessage([], 'video_submitted')).toContain('正在等待');
+});
 
 it('shares completion decisions without resubmitting unknown or pending media',()=>{
   const constraints={executionPolicyVersion:2,singleDeliveryTarget:{kind:'image',count:1}};

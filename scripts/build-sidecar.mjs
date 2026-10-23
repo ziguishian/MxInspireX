@@ -41,6 +41,7 @@ const args = [
   '--add-data', `${path.join(apiDir, 'app', 'builtin_skills')}${path.delimiter}app/builtin_skills`,
   '--add-data', `${path.join(apiDir, 'app', 'print_fonts')}${path.delimiter}app/print_fonts`,
   '--add-data', `${path.join(apiDir, 'app', 'easter_egg_assets')}${path.delimiter}app/easter_egg_assets`,
+  '--add-data', `${path.join(apiDir, 'app', 'evolink_price_data.json')}${path.delimiter}app`,
   ...(profile === 'full' ? [
     '--collect-submodules', 'fontTools',
   ] : [

@@ -38,10 +38,16 @@ globalThis.fetch = async (input, options={}) => {
   }
   assert.match(url,/^http:\/\/efficiency.invalid\/v1\/(responses|chat\/completions)$/);
   const api = url.endsWith('/responses'), index=round++;
-  assert.ok(index<(mode==='product_identity'?3:['steering','plan_creation','image_input','image_multi','selection_planned'].includes(mode)?2:1),'No reviewer, extra wrap-up or nested text model may be called');
+  assert.ok(index<(['product_identity','packaging'].includes(mode)?3:['steering','plan_creation','image_input','image_multi','selection_planned'].includes(mode)?2:1),'No reviewer, extra wrap-up or nested text model may be called');
   const tools=(body.tools||[]).map(t=>t.function||t);
   let operation, text;
-  if (mode==='product_identity') {
+  if (mode==='packaging') {
+    if (index===0) operation={name:'generate_image',args:{prompt:'产品包装概念'}};
+    else if (index===1) {
+      assert.ok(JSON.stringify(body).includes('planning_required'));
+      operation={name:'design_plan',args:{plan:JSON.parse(process.env.FIXTURE_PLAN)}};
+    } else operation={name:'generate_image',args:{prompt:'产品包装概念',deliverable_ids:['poster']}};
+  } else if (mode==='product_identity') {
     if (index===0) operation={name:'design_plan',args:{plan:JSON.parse(process.env.FIXTURE_PLAN)}};
     else if (index===1) operation={name:'generate_batch',args:{items:[
       {tool:'generate_image',arguments:{prompt:'陶土香薰炉，白底产品摄影',deliverable_ids:['photo']}},
@@ -82,7 +88,7 @@ globalThis.fetch = async (input, options={}) => {
     operation={name:'design_plan',args:{plan:JSON.parse(process.env.FIXTURE_PLAN),expected_revision:2,expected_scope_id:'state-revision-is-not-a-plan'}};
   } else if (index===0 || ['plan_creation','selection_planned'].includes(mode) && index===1) {
     assert.ok(!tools.some(t=>t.name==='generate_text'));
-    assert.ok(!tools.some(t=>(inventoryMode ? ['design_plan','design_state','report_progress','generation_reference_check'] : ['design_plan','design_state','generation_reference_check']).includes(t.name)));
+    if (!['clarification','packaging'].includes(mode)) assert.ok(!tools.some(t=>(inventoryMode ? ['design_plan','design_state','report_progress','generation_reference_check'] : ['design_plan','design_state','generation_reference_check']).includes(t.name)));
     operation = kind==='image' ? {name:'generate_image',args:{prompt:'简约蓝色海报'}}
       : kind==='text' ? {name:'canvas_create_text',args:{text:'完整的品牌设计文案。'}}
       : {name:'canvas_create_html',args:{html:'<!doctype html><html><head><meta name="viewport" content="width=device-width"></head><body><h1>设计作品</h1></body></html>'}};

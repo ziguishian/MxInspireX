@@ -134,4 +134,8 @@ def price_catalog(catalog):
         for item in catalog.view(row['provider'], row['base_url']).get('modelCatalog', []):
             result.append({'provider': row['provider'], 'baseUrl': row['base_url'], 'model': item['id'],
                            'kinds': item.get('kinds') or ['text'], 'price': item.get('price') or {}})
+    from .evolink_prices import public_catalog
+    from .evolink_billing import is_evolink
+    configured = {item['model'] for item in result if is_evolink(item['provider'], item['baseUrl'])}
+    result.extend(item for item in public_catalog() if item['model'] not in configured)
     return result

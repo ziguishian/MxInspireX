@@ -1,10 +1,16 @@
-# MxinspireX
+# MxinspireX — 本地优先 AI 设计 Agent 与无限画布
 
 **从一句需求，到一套设计。** 灵矩绘境出品的本地优先 AI 设计工作区，将对话、参考资料和无限画布连接起来。
 
 [简体中文](README.md) · [English](README.en.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-![同款产品主图、场景与局部编辑](docs/images/product-workflow.png)
+桌面更新：Windows 安装版支持 GitHub Releases 版本提示及用户确认后下载、重启安装。构建、签名与人工发布步骤见 [桌面更新发布说明](docs/desktop-updates.md)。
+
+[下载安装包](https://github.com/ziguishian/MxInspireX/releases) · [使用指南](docs/USER_GUIDE.md) · [产品事实与能力边界](docs/product-facts.md) · [问题反馈](https://github.com/ziguishian/MxInspireX/issues)
+
+<img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例一" src="https://github.com/user-attachments/assets/838a1600-51fa-4382-81ea-13d7e9d9834b" />
+<img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例二" src="https://github.com/user-attachments/assets/a53fa767-5d18-4aa2-9ae0-758ecd35e7a2" />
+<img width="3840" height="1978" alt="MxinspireX 设计工作区与画布示例三" src="https://github.com/user-attachments/assets/005e4846-60de-4e4f-bb43-4ee812f649b7" />
 
 ## 能做什么
 
@@ -18,6 +24,8 @@
 Agent 按依赖组织任务：就绪的独立产物可并行，依赖新主图的场景顺序生成。生成完成后直接交付，由人判断设计质量；未知收费请求不会自动重复提交。
 
 ## 快速启动
+
+只使用软件可直接到 [GitHub Releases](https://github.com/ziguishian/MxInspireX/releases) 下载 Windows x64 安装包；以下是源码启动方式。
 
 准备 **Node.js 22 或 24**（含 npm）和 **uv**，然后：
 
@@ -71,6 +79,18 @@ npm run build            # 桌面前端及 Electron 编译
 便携启动的数据默认在 `.local/portable-workspace/`；备份、移动或升级前先停止应用。不要提交工作区、数据库、`.env` 或凭据。私人案例原图不随源码分发：布局测试仍执行，缺少整套原图时两项素材完整性测试会明确跳过；部分素材缺失仍会报错。
 
 更多信息：[开发指南](AGENTS.md) · [Agent 链路](docs/agent-flow.md) · [实测记录](docs/browser-design-sweep-20261022.md) · [发布验证](docs/RELEASE_VALIDATION.md)
+
+## 常见问题
+
+**MxinspireX 是否完全离线？** 项目与文件保存在本机，但使用云模型时仍会发送本次任务必要内容。
+
+**是否包含免费模型额度？** 不包含。需要自己的 API Key，费用以服务商回执为准；MIT 许可不等于模型调用免费。
+
+**是否支持多种生成类型？** 支持图像、文本、视频、音频、HTML、CAD 等入口，具体能力取决于模型配置。外部 3D 服务需独立配置。
+
+**生成的包装能直接生产吗？** 概念图片不能替代结构校核、工艺参数与打样确认。
+
+面向搜索与 AI 阅读的资料索引见 [llms.txt](llms.txt)。独立公开介绍页构建与域名配置见 [SEO/GEO 说明](docs/search-discovery.md)。
 
 ## 许可与联系
 

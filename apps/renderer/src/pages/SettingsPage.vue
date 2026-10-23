@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { ArrowLeft, Search, UserRound, Bot, Palette, Box, Info, ChartNoAxesCombined, CircleHelp } from 'lucide-vue-next';
+import { ArrowLeft, Search, UserRound, Bot, Palette, Box, Info, ChartNoAxesCombined, CircleHelp, Settings } from 'lucide-vue-next';
 import { settingsServices } from '../features/pageServices';
 import type { SettingsSection } from '../features/pageServices';
 import AccountPage from './AccountPage.vue';
@@ -8,11 +8,11 @@ import HelpPage from './HelpPage.vue';
 const { current, tabs, select, close, ready } = settingsServices.use();
 const query = ref('');
 const matches = computed(() => tabs.filter(tab => tab.label.toLowerCase().includes(query.value.trim().toLowerCase())));
-const icons = { account: UserRound, text: Bot, routing: ChartNoAxesCombined, appearance: Palette, components: Box, about: Info, help: CircleHelp };
+const icons = { account: UserRound, general: Settings, text: Bot, routing: ChartNoAxesCombined, appearance: Palette, components: Box, about: Info, help: CircleHelp };
 const title = computed(() => tabs.find(tab => tab.key === current.value)?.label || '设置');
 const groups: { title: string; keys: SettingsSection[] }[] = [
   { title: '个人', keys: ['account', 'appearance'] },
-  { title: '工作区', keys: ['text', 'routing', 'components'] },
+  { title: '工作区', keys: ['general', 'text', 'routing', 'components'] },
   { title: '产品', keys: ['about', 'help'] },
 ];
 onMounted(() => ready(true));

@@ -4,7 +4,9 @@ import { currentBatchContext, generationAttemptComplete, readyGenerationItems } 
 // A deterministic projection of persisted plans/receipts, never an LLM summary.
 export function executionFrame(constraints = {}, outputs = []) {
   const plan = currentDesignPlan(constraints,outputs);
-  if (!plan) return undefined;
+  if (!plan) return Number(constraints.executionPolicyVersion || 0) >= 3 && !constraints.singleDeliveryTarget
+    && !constraints.deliveryRepairOnly && !constraints.deliveryReviewOnly
+    ? {version:1,next:'register_deliveries',items:[],instruction:'如本轮需要创建产物，先用 design_plan 登记本轮实际交付清单与稳定 ID；单项仅一项，多项分别登记并保留依赖。普通回答不需要计划。不要扩大用户范围。'} : undefined;
   const {batch,progress} = currentBatchContext(constraints,outputs);
   const selected = plan.deliverables.filter(d=>!batch || batch.itemIds.includes(d.id));
   const ready = new Set(readyGenerationItems(constraints,outputs).map(d=>d.id));

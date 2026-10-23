@@ -33,8 +33,9 @@ describe('canvas reference inputs', () => {
     expect(referenceImageIds([], undefined)).toEqual([]);
   });
   it('drops legacy manual modes so image purpose is detected automatically', () => {
-    const result = canvasReferenceParams(resolve(), { referenceModes: { 'asset-a': 'edit', 'asset-b': 'auto', stale: 'layout' } }, 'target', 'image');
+    const result = canvasReferenceParams(resolve(), { referenceMode: 'edit', referenceModes: { 'asset-a': 'edit', 'asset-b': 'auto', stale: 'layout' } }, 'target', 'image');
     expect(result).not.toHaveProperty('referenceModes');
+    expect(result).not.toHaveProperty('referenceMode');
   });
   it('blocks empty, missing and still-generating inputs instead of silently omitting them', () => {
     for (const data of [{ kind: 'image' }, { kind: 'image', assetId: 'old', generating: true }]) {

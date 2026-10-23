@@ -28,7 +28,7 @@ export const studioRoutes: RouteRecordRaw[] = [
   { path: '/schedules', name: 'schedules', component: () => import('../../pages/SchedulesPage.vue'), meta: { view: 'schedules', title: '定时任务' } },
   { path: '/account', redirect: '/settings/account' },
   { path: '/settings', redirect: '/settings/account' },
-  { path: '/settings/:section(account|text|routing|appearance|components|about|help)', name: 'settings', component: () => import('../../pages/SettingsPage.vue'), meta: { view: 'settings', title: '设置' } },
+  { path: '/settings/:section(account|general|text|routing|appearance|components|about|help)', name: 'settings', component: () => import('../../pages/SettingsPage.vue'), meta: { view: 'settings', title: '设置' } },
   { path: '/help', name: 'help', redirect: '/settings/help' },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../../pages/NotFoundPage.vue'), meta: { title: '页面不存在' } },
 ];

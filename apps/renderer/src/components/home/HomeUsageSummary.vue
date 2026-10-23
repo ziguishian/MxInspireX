@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import CountUp from '../motion/CountUp.vue';
-import { creditSummary, creditLoadError, creditUsageNote, tokenUsageLabel, actualBillLabel, estimatedBillLabel } from '../../features/credits';
+import { creditSummary, creditLoadError, creditUsageNote, tokenUsageLabel, actualBillLabel } from '../../features/credits';
 import { formatTokens, formatCny } from '../../modelEconomy';
 
 const metrics = computed(() => {
   const summary = creditSummary.value;
-  const items = [
+  return [
     { id: 'tokens', label: '累计 Token', text: tokenUsageLabel(summary), value: summary?.totalTokens, format: formatTokens },
     { id: 'cost', label: '已确认扣费', text: actualBillLabel(summary), value: summary?.costCny, format: formatCny },
   ];
-  if (summary && summary.pricedRequests > summary.reportedRequests) {
-    items.push({ id: 'estimate', label: '参考估算（非扣款）', text: estimatedBillLabel(summary), value: summary.estimatedCostCny, format: formatCny });
-  }
-  return items;
 });
 </script>
 
@@ -25,8 +21,7 @@ const metrics = computed(() => {
         <dd><CountUp v-if="metric.text !== '—' && metric.value !== undefined" :to="metric.value" :format="metric.format" :duration="800" /><span v-else>—</span></dd>
       </div>
     </dl>
-    <p v-if="!creditSummary || creditLoadError">{{ creditUsageNote }}</p>
-    <p v-else>人民币 · 本工作区累计<span v-if="creditSummary.tokenUnreported"> · 部分 Token 未返回</span><span v-if="creditSummary.awaitingReconciliation"> · {{ creditSummary.awaitingReconciliation }} 笔待对账</span></p>
+    <p v-if="creditLoadError">用量暂不可用</p>
   </section>
 </template>
 

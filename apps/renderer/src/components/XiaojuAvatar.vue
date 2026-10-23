@@ -7,6 +7,6 @@ const mascot = useMascotSettings();
 const agentName = computed(() => mascot?.activeName.value || '点阵机器人');
 const spriteStyle = computed(() => mascot
   ? mascotSpriteStyle(mascot.apiBaseUrl, mascot.active.value, mascot.activePreset.value)
-  : {});
+  : mascotSpriteStyle('', null));
 </script>
 <template><span class="agent-avatar-sprite" :style="spriteStyle" :data-state="state" role="img" :aria-label="`${agentName} · ${xiaojuStateLabels[state]}`" :title="xiaojuStateLabels[state]" /></template>

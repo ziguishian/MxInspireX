@@ -4,6 +4,16 @@ interface Window {
   studio: {
     apiBaseUrl: string;
     isDesktop?: boolean;
+    updates?: {
+      state: () => Promise<import('../../desktop/src/appUpdates').UpdateState>;
+      check: () => Promise<import('../../desktop/src/appUpdates').UpdateState>;
+      download: () => Promise<import('../../desktop/src/appUpdates').UpdateState>;
+      install: () => Promise<import('../../desktop/src/appUpdates').UpdateState>;
+      subscribe: (listener: (state: import('../../desktop/src/appUpdates').UpdateState) => void) => () => void;
+    };
+    openWorkspaceFolder?: () => Promise<void>;
+    clearAppCache?: () => Promise<void>;
+    changeWorkspaceLocation?: (mode: 'migrate' | 'existing') => Promise<string | null>;
     exportTestingLogs?: () => Promise<string | null>;
     exportHtmlPdf?: (input: { html: string; width: number }) => Promise<Uint8Array>;
     onScheduleNotification?: (listener: (projectId: string | null) => void) => () => void;

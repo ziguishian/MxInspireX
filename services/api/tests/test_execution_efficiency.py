@@ -9,14 +9,115 @@ from unittest.mock import patch
 
 import pytest
 
+
+@pytest.mark.parametrize('brief,count', [
+    ('制作一张横版领养海报：保留第一张图的小狗身份与外观，沿用第二张海报的暖色插画风格和完整文案。必须结合这两张参考，只生成一张。', 1),
+    ('参考两张图片生成一张海报', 1),
+    ('把三张照片合成一张海报', 1),
+    ('使用两张参考图，生成三张海报', 3),
+    ('生成两张海报，第二张海报沿用第一张图的角色', 2),
+    ('制作12张海报', 12),
+    ('请生成这三张海报', 3),
+])
+def test_reference_quantities_and_ordinals_are_not_deliverable_counts(brief, count):
+    from app.task_policy import delivery_contract
+    assert next(item for item in delivery_contract(brief) if item['kind'] == 'image')['count'] == count
+
 from app.task_policy import execution_flow, single_delivery_target
 from app.delivery import DeliveryService
 from app.conversation_memory import ConversationMemoryService
 from app.task_inspection import performance_summary
 from app.model_router import RouteTrace
-from test_design_execution import env
+from test_design_execution import env, finish
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def clarified_bag(env, original='生成这个茶饮的外包装刀版图', answer='外带纸袋，按常见规格先做概念刀版'):
+    source = env[4](original)
+    finish(env[0], source, {'clarification': {'questions': [{'id': 'packaging', 'question': '包装类型和尺寸？'}]}})
+    return env[4](answer, clarificationTaskId=source,
+                  clarificationAnswers=[{'questionId': 'packaging', 'value': answer}])
+
+
+def test_clarification_inherits_single_image_contract_without_repeating_quantity(env):
+    task = clarified_bag(env)
+    data = env[3]._task_input(env[1], task)
+    assert data['continuation']
+    assert data['singleDeliveryTarget'] == {'kind': 'image', 'count': 1, 'nodeId': None}
+
+
+@pytest.mark.parametrize('brief', ['为这个肥皂盒设计一个包装', '设计一款落地灯', '换成更温润的造型', '设计两个包装'])
+def test_unresolved_design_scope_requires_inventory_before_generation(env, brief):
+    task = env[4](brief)
+    data = env[3]._task_input(env[1], task)
+    data['referenceWorkflow'] = {'status': 'skipped'}
+    with env[0]._connect() as db:
+        db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(data), task))
+    result = env[5](task, 'generate_image', prompt='视觉概念')
+    assert result['status'] == 'planning_required'
+    assert result['submitted'] is False
+    assert not env[3].canvas_store.load(env[1])['nodes']
+
+
+@pytest.mark.parametrize('brief', ['为包装设计一个网站', '设计一个包装网站', '设计一个包装文案',
+    '解释如何设计一个包装', '不需要设计一个包装', '设计一个包装 CAD 结构件'])
+def test_packaging_mentions_do_not_invent_image_delivery(brief):
+    from app.task_policy import delivery_contract
+    assert not any(item['kind'] == 'image' for item in delivery_contract(brief))
+
+
+def test_multiple_packaging_concepts_keep_quantity():
+    from app.task_policy import delivery_contract
+    brief = '设计两个包装'
+    contract = delivery_contract(brief)
+    assert contract == []  # Unknown nouns require an explicit inventory, never a guessed count.
+    assert single_delivery_target(brief, {'deliveryContract': contract}) is None
+
+
+@pytest.mark.parametrize('original,answer', [
+    ('生成两张海报', '绿色'),
+    ('生成一张海报和一张文字卡', '绿色'),
+    ('生成一张海报', '生成一张海报并导出 ZIP'),
+])
+def test_clarification_does_not_short_circuit_additional_deliveries(env, original, answer):
+    task = clarified_bag(env, original, answer)
+    assert not env[3]._task_input(env[1], task).get('singleDeliveryTarget')
+
+
+def test_single_image_receipt_survives_prompt_and_deliverable_id_changes(env):
+    task = clarified_bag(env)
+    executions = env[3].executions
+    fingerprint, previous = executions.claim(task, 'generate_image', {'prompt': 'first'})
+    assert previous is None
+    result = {'status': 'succeeded', 'assetId': 'asset', 'node': {'id': 'node', 'data': {'assetId': 'asset'}}}
+    executions.complete(task, fingerprint, result)
+    from app.execution_store import ExecutionStore
+    restarted = ExecutionStore(env[0])
+    reused, previous = restarted.claim(task, 'generate_image', {'prompt': 'rewritten', 'deliverable_ids': ['bag-dieline']})
+    assert reused == fingerprint and previous == result
+
+
+@pytest.mark.parametrize('extra', [{'executionPolicyVersion': 1}])
+def test_single_image_receipt_guard_preserves_plans_and_legacy_tasks(env, extra):
+    task = clarified_bag(env)
+    data = env[3]._task_input(env[1], task)
+    data.update(extra)
+    with env[0]._connect() as db:
+        db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(data), task))
+    executions = env[3].executions
+    fingerprint, _ = executions.claim(task, 'generate_image', {'prompt': 'first'})
+    executions.complete(task, fingerprint, {'status': 'succeeded', 'assetId': 'asset', 'node': {'id': 'node'}})
+    next_fingerprint, previous = executions.claim(task, 'generate_image', {'prompt': 'second'})
+    assert next_fingerprint != fingerprint and previous is None
+
+
+def test_single_image_unconfirmed_request_cannot_be_reissued(env):
+    task = clarified_bag(env)
+    executions = env[3].executions
+    executions.claim(task, 'generate_image', {'prompt': 'first'})
+    with pytest.raises(RuntimeError, match='尚未确认|结果未知'):
+        executions.claim(task, 'generate_image', {'prompt': 'rewritten', 'deliverable_ids': ['bag-dieline']})
 
 
 @pytest.mark.parametrize('recovered',[False,True])
@@ -92,7 +193,7 @@ def test_policy_is_server_owned_and_request_replay_preserves_it(env):
                 request_id='stable',input_data={'executionPolicyVersion':99,'singleDeliveryTarget':{'kind':'text','count':1}})
     task = runtime.enqueue(**args)['id']
     saved = tools._task_input(project,task)
-    assert saved['executionPolicyVersion'] == 2
+    assert saved['executionPolicyVersion'] == 3
     assert saved['singleDeliveryTarget']['kind'] == 'image'
     assert runtime.enqueue(**args)['id'] == task
     with store._connect() as db:
@@ -168,16 +269,27 @@ def test_local_inspection_cache_reuses_only_unchanged_evidence(env, change):
 
 
 @pytest.mark.parametrize('api', ['responses','chat_completions'])
-@pytest.mark.parametrize('kind,mode', [('image','normal'),('text','normal'),('html','normal'),('image','steering'),('image','reference'),('image','planned'),('image','plan_creation'),('image','access_rejected'),('image','image_input'),('image','image_local'),('image','image_edit'),('image','image_multi'),('image','product_identity'),('image','selection_planned')])
+@pytest.mark.parametrize('kind,mode', [('image','normal'),('image','packaging'),('image','clarification'),('text','normal'),('html','normal'),('image','steering'),('image','reference'),('image','planned'),('image','plan_creation'),('image','access_rejected'),('image','image_input'),('image','image_local'),('image','image_edit'),('image','image_multi'),('image','product_identity'),('image','selection_planned')])
 def test_generation_finishes_without_review_or_wrap_up_call(env, api, kind, mode):
     store, project, _, tools, enqueue, _ = env
     brief = {'image':'生成一张海报，不需要参考', 'text':'创建一个文本节点', 'html':'创建一个 HTML 网页，不需要参考'}[kind]
+    if mode == 'packaging':
+        brief = '为这个肥皂盒设计一个包装'
     if mode == 'plan_creation':
         brief = '为咖啡品牌制作海报概念图，并把品牌应用清单作为文本节点保存在画布。本轮包含图像和文字两项交付，不需要参考。'
     if mode == 'product_identity':
         from test_product_identity import BRIEF
         brief = BRIEF
-    task = enqueue(brief)
+    if mode == 'clarification':
+        brief = '外带纸袋，按常见规格先做概念刀版'
+        task = clarified_bag(env, answer=brief)
+    else:
+        task = enqueue(brief)
+    if mode == 'packaging':
+        data = tools._task_input(project, task)
+        data['referenceWorkflow'] = {'status': 'provided'}
+        with store._connect() as db:
+            db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(data), task))
     attachments = []
     asset = None
     if mode in {'image_input','image_local','image_edit','image_multi'}:
@@ -204,6 +316,10 @@ def test_generation_finishes_without_review_or_wrap_up_call(env, api, kind, mode
             {'id':'poster','title':'主海报','kind':'image','acceptance':'简约蓝色主题'},
             {'id':'list','title':'品牌应用清单','kind':'text','acceptance':'已交付、后续、选配分组'}],
         'currentItemIds':['poster','list']}
+    if mode == 'packaging':
+        fixture_plan['deliverables'] = fixture_plan['deliverables'][:1]
+        fixture_plan['currentItemIds'] = ['poster']
+        fixture_plan['goal'] = '为当前产品设计一个包装概念'
     if mode == 'product_identity':
         from test_mixed_delivery_scope import PLAN
         fixture_plan = PLAN
@@ -215,7 +331,7 @@ def test_generation_finishes_without_review_or_wrap_up_call(env, api, kind, mode
         constraints['memoryProtocol']=1
         with store._connect() as db:
             db.execute('UPDATE tasks SET input_json=? WHERE id=?',(json.dumps(constraints),task))
-    if mode not in {'plan_creation','product_identity'}:
+    if mode not in {'plan_creation','product_identity','packaging'}:
         assert constraints['singleDeliveryTarget']['kind'] == kind
     memory = ConversationMemoryService(store)
     memory.prepare_empty_selection(project,task)
@@ -245,7 +361,7 @@ def test_generation_finishes_without_review_or_wrap_up_call(env, api, kind, mode
         assert not result['structured_data'].get('review')
         assert not tools.canvas_store.load(project)['nodes']
         return
-    expected_calls = 3 if mode == 'product_identity' else 2 if mode in {'steering','plan_creation','image_input','image_multi','selection_planned'} else 1
+    expected_calls = 3 if mode in {'product_identity','packaging'} else 2 if mode in {'steering','plan_creation','image_input','image_multi','selection_planned'} else 1
     assert result['provenance']['modelRequestCount'] == expected_calls, process.stderr
     assert result['provenance']['performance']['sdkRequests'] == expected_calls
     assert not result['provenance']['awaitingDelivery']

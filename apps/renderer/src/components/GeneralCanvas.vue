@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import { generalSettings } from '../features/generalSettings';
 import { publicAssistantMessage } from '../features/generationErrors';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { VueFlow, useVueFlow, useKeyPress, getRectOfNodes, ConnectionLineType, SelectionMode, type Connection, type Edge, type Node } from '@vue-flow/core';
 import { Background, BackgroundVariant } from '@vue-flow/background';
-import { boardChanges, cleanBoard, savedBoardEdit, type Board } from '../canvasEditing';
+import { alignBoardNodes, boardChanges, cleanBoard, savedBoardEdit, type Board } from '../canvasEditing';
 import { canvasEditHistory } from '../features/canvasHistory';
-import { snapRect, arrangeRects, alignRects, nearestOpenPosition, type Guide, type LayoutRect, type Alignment } from '../canvasLayout';
+import { snapRect, arrangeRects, nearestOpenPosition, type Guide, type LayoutRect, type Alignment } from '../canvasLayout';
 import { House, Pencil, ArrowDown, ArrowUpRight, Circle, CircleX, Download, FileImage, FileText, Images, LoaderCircle, Map as MapIcon, Maximize2, Minimize2, MousePointer2, Hand, Music2, Minus, Keyboard, Copy, Trash2, Undo2, Redo2, Plus, Upload, Video, X } from 'lucide-vue-next';
-import { AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween } from 'lucide-vue-next';
+import { Columns2, Layers, AlignStartVertical, AlignCenterVertical, AlignEndVertical, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignHorizontalSpaceBetween, AlignVerticalSpaceBetween } from 'lucide-vue-next';
 import GeneralCanvasNode from './GeneralCanvasNode.vue';
 import GeneralCanvasEdge from './GeneralCanvasEdge.vue';
 import CanvasVersionCompare from './CanvasVersionCompare.vue';
@@ -29,7 +30,7 @@ import { pendingReferenceSelection, type ReferenceSubmission } from '../features
 import { pendingClarification, type ClarificationSubmission } from '../features/clarification';
 import UserMessageBubble from './composer/UserMessageBubble.vue';
 import AssistantMessageCopy from './composer/AssistantMessageCopy.vue';
-import { canvasNodeKind, nodePreviewSize, type NodePreviewSize } from '../nodeSizing';
+import { canvasNodeKind, nodePreviewSize, nodeAspectPatch, type NodePreviewSize } from '../nodeSizing';
 import { canExportNode, exportNode, nodeMediaUrl, nodeSaveLabel, type NodeExportFormat } from '../nodeExport';
 import { MAX_CANVAS_ZOOM, parseViewport, canvasContentRevision, fitCanvasContents, type FocusRect, type CanvasControlsRect } from '../features/canvasWorkspace';
 import { connectedReferences, canvasReferenceParams } from '../features/canvasReferences';
@@ -240,7 +241,10 @@ const selectionToolbarPosition = computed(() => {
   return { left: `${x + (bounds.x + bounds.width / 2) * zoom}px`, top: `${y + (bounds.y - 26) * zoom - 12}px` };
 });
 let selectionBeforeClick = new Set<string>();
+let edgeSelectionBeforeClick = new Set<string>();
+let disconnectGesture: { edgeId: string; projectId: string; x: number; y: number } | null = null;
 function rememberSelection(event: MouseEvent | PointerEvent) {
+  edgeSelectionBeforeClick = new Set(getSelectedEdges.value.map(edge => edge.id));
   selectionBeforeClick = new Set(getSelectedNodes.value.map(node => node.id)); multiSelectionActive.value = event.shiftKey || event.metaKey || event.ctrlKey;
   const target = event.target instanceof Element ? event.target : null;
   if (target?.closest('.canvas-drawing-pad')) stopAutoFraming();
@@ -355,6 +359,7 @@ async function restoreCanvasView() {
   if (stored) { minCanvasZoom.value = Math.min(.2, stored.zoom); await nextTick(); await setViewport(stored); }
 }
 function stopAutoFraming() { autoFraming = false; autoFocusPending = false; pendingContentIds.clear(); clearTimeout(autoFocusTimer); autoFocusTimer = undefined; cancelAnimationFrame(revealFrame); }
+watch(() => generalSettings.focusNewOutputs, enabled => { if (!enabled) stopAutoFraming(); else autoFraming = true; });
 const navigatingViewport = ref(false);
 let navigationEndTimer: ReturnType<typeof setTimeout> | undefined;
 function canvasMoveStarted({ event }: { event: Event | null }) {
@@ -456,7 +461,7 @@ const avatarState = (message?: ConversationMessage) => props.demoMode ? props.bu
 const progressLabel = computed(() => publicAssistantMessage(props.progress || '正在分析你的设计需求…'));
 const kindLabels: Record<CanvasCreationKind, string> = { drawing: '画板', image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '上传图像' };
 const stepStatusLabels = { running: '进行中', completed: '已完成', failed: '失败', cancelled: '已停止', adjusted: '调整' };
-const thinkingTitles: Record<string, string> = { succeeded: '思考完成', failed: '思考中断', cancelled: '已停止' };
+const executionTitles: Record<string, string> = { succeeded: '执行完成', failed: '执行中断', cancelled: '已停止' };
 const visibleMessages = computed(() => props.messages.map((message) => {
   const outputs = message.taskId ? nodes.value.filter((node) => (node as any).meta?.taskId === message.taskId || node.data?.asset?.metadata?.taskId === message.taskId) : [];
   return { ...message, sources: (message.sources || []).filter((source) => { try { const url = new URL(source.url); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password; } catch { return false; } }), outputs, displayContent: message.role === 'assistant' ? canvasReply(message.content, outputs.length > 0) : message.content };
@@ -552,7 +557,7 @@ watch([canvasSyncKey, interactingWithNode, savingEdit, navigatingViewport], () =
   const nextRevisions = new Map(persisted.map(node => [node.id, canvasContentRevision(node)]));
   const changedIds = persisted.filter(node => node.data.editor !== 'drawing' && contentRevisions.get(node.id) !== nextRevisions.get(node.id)).map(node => node.id);
   contentRevisions = nextRevisions;
-  if (changedIds.length) { changedIds.forEach(id => pendingContentIds.add(id)); autoFraming = true; showCanvas.value = true; scheduleAutoFocus(); }
+  if (changedIds.length && (!sameProject || generalSettings.focusNewOutputs && autoFraming)) { changedIds.forEach(id => pendingContentIds.add(id)); showCanvas.value = true; scheduleAutoFocus(); }
   nodes.value.forEach(node => { node.draggable = !spacePanning.value && !nodeLocked(node.id) && !savingEdit.value && !(node.selected && selectedNodesLocked.value); });
   appliedCanvasSyncKey = canvasSyncKey.value; appliedCanvasProject = props.projectId;
   void restoreCanvasView();
@@ -673,6 +678,11 @@ function selectNode(node: Node, event: MouseEvent | TouchEvent) {
 function selectEdge(edge: Edge, event: MouseEvent | TouchEvent) {
   closeMenus();
   if (!event.shiftKey && !event.metaKey && !event.ctrlKey) {
+    if (edgeSelectionBeforeClick.has(edge.id)) {
+      edgeSelectionBeforeClick.clear();
+      void deleteEdge(edge.id);
+      return;
+    }
     nodes.value.forEach(node => { node.selected = false; });
     edges.value.forEach(item => { item.selected = item.id === edge.id; });
   }
@@ -706,9 +716,10 @@ async function chooseNode(kind: CanvasCreationKind) {
 }
 const submittingGenerations = new Set<string>();
 async function generateFromNode(nodeId: string, prompt: string, kind: CanvasKind, params: Record<string, any> = {}) {
+  const projectId = props.projectId;
   if (props.demoMode) { emit('canvas-error', '当前方案正在按阶段整理，请完成后再发起新的画布请求。'); return; }
   const node = nodes.value.find((item) => item.id === nodeId);
-  if (!node || !prompt.trim() || node.data.generating || submittingGenerations.has(nodeId)) return;
+  if (!node || !prompt.trim() || node.data.generating || savingEdit.value || nodeLocked(nodeId) || submittingGenerations.has(nodeId)) return;
   if (nodeHasContent(node.data)) { emit('canvas-error', '已有内容的节点不能作为输出目标。请新建空白节点，将当前节点连线到新节点后生成。'); return; }
   if (kind === 'upload') kind = 'image';
   const references = nodeReferences.value[nodeId] || [];
@@ -721,10 +732,10 @@ async function generateFromNode(nodeId: string, prompt: string, kind: CanvasKind
   node.data = { ...node.data, ...generationData };
   submittingGenerations.add(nodeId);
   try {
-    const response = await fetch(`${props.apiBaseUrl}/api/projects/${encodeURIComponent(props.projectId)}/agent-tools/canvas_update_node`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node_id: nodeId, patch: { data: generationData } }) });
+    const response = await fetch(`${props.apiBaseUrl}/api/projects/${encodeURIComponent(projectId)}/agent-tools/canvas_update_node`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node_id: nodeId, patch: { data: generationData } }) });
     if (!response.ok) throw new Error(await response.text());
     const context = [inputText && `上游节点内容：\n${inputText}`].filter(Boolean).join('\n');
-    emit('generate-node', kind, context ? `${prompt.trim()}\n${context}` : prompt.trim(), node.position, effectiveParams);
+    emit('generate-node', kind, context ? `${prompt.trim()}\n${context}` : prompt.trim(), node.position, { ...effectiveParams, canvasProjectId: projectId });
   } catch (error) { node.data.generating = false; node.data.error = error instanceof Error ? error.message : '生成未能开始'; emit('canvas-error', node.data.error); }
   finally { await nextTick(); submittingGenerations.delete(nodeId); }
 }
@@ -735,6 +746,16 @@ async function updateNodeData(nodeId: string, patch: Record<string, any>) {
   if (!node) return;
   node.data = { ...node.data, ...patch };
   await persistEdit(before, after);
+}
+async function changeNodeAspect(nodeId: string, aspect: string) {
+  const live = nodes.value.find(node => node.id === nodeId);
+  if (!live || savingEdit.value || nodeLocked(nodeId) || nodeHasContent(live.data)) return;
+  const patch = nodeAspectPatch(live.data, aspect);
+  if (!patch) return;
+  const before = snapshot(), after = cleanBoard(before);
+  after.nodes.find(node => node.id === nodeId)!.data = { ...live.data, ...patch };
+  live.data = { ...live.data, ...patch };
+  await persistEdit(before, cleanBoard(after));
 }
 async function uploadIntoNode(nodeId: string, file: File) {
   const node = nodes.value.find(item => item.id === nodeId);
@@ -755,7 +776,33 @@ async function uploadIntoNode(nodeId: string, file: File) {
   } catch (error) { emit('canvas-error', error instanceof Error ? error.message : '上传失败，请重试'); }
   finally { uploadingNodes.value.delete(nodeId); }
 }
+function connectionPoint(event?: MouseEvent | TouchEvent) {
+  if (!event) return null;
+  const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+  return point ? { x: point.clientX, y: point.clientY } : null;
+}
+function startDisconnectGesture({ event, nodeId, handleType, handleId }: {
+  event?: MouseEvent | TouchEvent; nodeId?: string; handleType?: string; handleId: string | null;
+}) {
+  disconnectGesture = null;
+  if (handleType !== 'target' || savingEdit.value) return;
+  const incoming = edges.value.filter(edge => edge.target === nodeId && (edge.targetHandle || 'input') === (handleId || 'input'));
+  const selected = incoming.filter(edge => edge.selected);
+  const edge = selected.length === 1 ? selected[0] : incoming.length === 1 ? incoming[0] : null;
+  const point = connectionPoint(event);
+  if (edge && point && !edgeLocked(edge.id)) disconnectGesture = { edgeId: edge.id, projectId: props.projectId, ...point };
+}
+function finishDisconnectGesture(event?: MouseEvent | TouchEvent) {
+  const gesture = disconnectGesture;
+  disconnectGesture = null;
+  const point = connectionPoint(event);
+  if (!gesture || !point || gesture.projectId !== props.projectId || event?.type === 'touchcancel') return;
+  if (Math.hypot(point.x - gesture.x, point.y - gesture.y) < 8) return;
+  const target = document.elementFromPoint(point.x, point.y);
+  if (target?.closest('.vue-flow__pane') && canvasArea.value?.contains(target)) void deleteEdge(gesture.edgeId);
+}
 async function connectNodes(connection: Connection) {
+  disconnectGesture = null;
   if (!connection.source || !connection.target || connection.source === connection.target || nodeLocked(connection.source) || nodeLocked(connection.target)) return;
   if (edges.value.some((edge) => edge.source === connection.source && edge.target === connection.target)) return;
   const before = snapshot();
@@ -877,6 +924,7 @@ async function deleteTargets(target: DeleteTarget) {
 }
 async function deleteDrawing(id: string) {
   closeMenus();
+  if (generalSettings.confirmNodeDelete && !window.confirm('删除这个画板？删除后可使用画布撤销。')) return false;
   const removed = await deleteTargets({ projectId: props.projectId, nodeIds: [id], edgeIds: [], label: '画板' });
   if (removed) canvasArea.value?.focus({ preventScroll: true });
   return removed;
@@ -891,6 +939,7 @@ async function deleteEdge(id: string) {
 }
 function requestDeleteSelection() {
   if (selectionLocked.value || savingEdit.value || pendingDelete.value) return;
+  if (!generalSettings.confirmNodeDelete || !getSelectedNodes.value.length) { void deleteSelection(); return; }
   const target = selectedDeleteTarget();
   if (!target.nodeIds.length && !target.edgeIds.length) return;
   closeMenus(); deleteError.value = ''; pendingDelete.value = target;
@@ -1029,13 +1078,9 @@ async function arrangeNodes() {
 async function alignSelection(mode: Alignment) {
   if (selectedNodesLocked.value || savingEdit.value || getSelectedNodes.value.length < (mode.startsWith('distribute') ? 3 : 2)) return;
   stopAutoFraming(); closeMenus();
-  const before = snapshot(), after = cleanBoard(before), selected = new Set(getSelectedNodes.value.map(node => node.id));
+  const before = snapshot(), selected = new Set(getSelectedNodes.value.map(node => node.id));
   const rects = layoutRects().filter(rect => selected.has(rect.id));
-  for (const position of alignRects(rects, mode)) {
-    const node = after.nodes.find(item => item.id === position.id), rect = rects.find(item => item.id === position.id)!;
-    node.position = { x: node.position.x + position.x - rect.x, y: node.position.y + position.y - rect.y };
-  }
-  await persistEdit(before, after);
+  await persistEdit(before, alignBoardNodes(before, rects, mode));
 }
 
 function canvasKeydown(event: KeyboardEvent) {
@@ -1056,7 +1101,7 @@ function canvasKeydown(event: KeyboardEvent) {
     if (selectedNodesLocked.value || savingEdit.value) return;
     const before = snapshot(), after = cleanBoard(before), ids = new Set(getSelectedNodes.value.map(node => node.id));
     const step = event.shiftKey ? 10 : 1;
-    after.nodes.filter(node => ids.has(node.id)).forEach(node => { node.position.x += event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0; node.position.y += event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0; });
+    after.nodes.filter(node => ids.has(node.id)).forEach(node => { node.position.x += event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0; node.position.y += event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0; node.data = { ...node.data, autoPositioned: false }; });
     void persistEdit(before, after);
   }
   else if ((event.key === 'Delete' || event.key === 'Backspace') && !mod && !event.altKey) {
@@ -1074,7 +1119,7 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
   <CanvasVersionCompare v-if="comparingVersions" :nodes="comparableNodes" :initial-ids="comparisonInitialIds" :busy="savingEdit" :locked-ids="nodes.filter(node => nodeLocked(node.id)).map(node => node.id)" @close="comparingVersions = false" @adopt="adoptVersion" @continue="continueVersion" />
   <section class="design-workspace" :class="{ 'chat-minimized': isChatMinimized, 'canvas-pan-tool': canvasTool === 'pan', 'is-interacting-with-node': interactingWithNode, 'is-navigating-viewport': navigatingViewport, 'has-multiple-selection': getSelectedNodes.length > 1 }" :style="{ '--design-chat-width': `${chatWidth}px`, '--design-chat-min-width': `${minChatWidth}px`, '--design-composer-height': `${composerHeight}px` }" aria-label="设计 Agent 工作区" @click="closeMenus">
     <div ref="canvasArea" class="design-canvas-area" aria-label="无限画布" tabindex="-1" @contextmenu="openContextMenu" @keydown.capture="canvasKeydown" @pointerdown.capture="rememberSelection" @mousedown.capture="rememberSelection" @dblclick.capture="openCreateMenu">
-      <VueFlow id="design-canvas" v-model:nodes="nodes" v-model:edges="edges" class="design-flow" :nodes-connectable="true" :elements-selectable="true" :select-nodes-on-drag="false" :node-drag-threshold="5" :selection-key-code="canvasTool === 'select'" :selection-mode="SelectionMode.Partial" :multi-selection-key-code="['Shift', 'Meta', 'Control']" :pan-activation-key-code="'Space'" :delete-key-code="null" :edges-updatable="true" :connection-line-type="ConnectionLineType.Bezier" :zoom-on-double-click="false" :pan-on-drag="spacePanning || canvasTool === 'pan' ? true : [1]" :min-zoom="minCanvasZoom" @move-start="canvasMoveStarted" @move-end="canvasMoveEnded" :max-zoom="MAX_CANVAS_ZOOM" :default-viewport="{ x: 24, y: 68, zoom: 0.85 }" @connect="connectNodes" @edge-update="reconnectEdge" @node-click="({ node, event }) => selectNode(node, event)" @edge-click="({ edge, event }) => selectEdge(edge, event)" @pane-click="clickCanvasPane" @selection-start="startSelection" @selection-end="finishSelection" @node-drag-start="startNodeDrag" @node-drag="dragWithSnap" @node-drag-stop="finishDrag">
+      <VueFlow id="design-canvas" v-model:nodes="nodes" v-model:edges="edges" class="design-flow" :nodes-connectable="true" :elements-selectable="true" :select-nodes-on-drag="false" :node-drag-threshold="5" :selection-key-code="canvasTool === 'select'" :selection-mode="SelectionMode.Partial" :multi-selection-key-code="['Shift', 'Meta', 'Control']" :pan-activation-key-code="'Space'" :delete-key-code="null" :edges-updatable="true" :connection-line-type="ConnectionLineType.Bezier" :zoom-on-double-click="false" :pan-on-drag="spacePanning || canvasTool === 'pan' ? true : [1]" :min-zoom="minCanvasZoom" @move-start="canvasMoveStarted" @move-end="canvasMoveEnded" :max-zoom="MAX_CANVAS_ZOOM" :default-viewport="{ x: 24, y: 68, zoom: 0.85 }" @connect="connectNodes" @connect-start="startDisconnectGesture" @connect-end="finishDisconnectGesture" @edge-update="reconnectEdge" @node-click="({ node, event }) => selectNode(node, event)" @edge-click="({ edge, event }) => selectEdge(edge, event)" @pane-click="clickCanvasPane" @selection-start="startSelection" @selection-end="finishSelection" @node-drag-start="startNodeDrag" @node-drag="dragWithSnap" @node-drag-stop="finishDrag">
         <Background :variant="BackgroundVariant.Lines" pattern-color="var(--workspace-grid-color)" :gap="28" :line-width="1" />
         <template #edge-canvas-bezier="edgeProps">
           <GeneralCanvasEdge v-bind="edgeProps" :disabled="edgeLocked(edgeProps.id) || savingEdit" @delete="deleteEdge" />
@@ -1086,9 +1131,10 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
               :kind="canvasNodeKind(nodeProps.data)"
               :api-base-url="apiBaseUrl" :project-id="projectId" :node-id="nodeProps.id"
               :model-options="modelOptions" :video-model-options="videoModelOptions" :text-model-options="textModelOptions" :audio-model-options="audioModelOptions"
-              :generating="nodeProps.data.generating || uploadingNodes.has(nodeProps.id) || dirtyDrawings.has(nodeProps.id) || (nodeReferences[nodeProps.id] || []).some(ref => dirtyDrawings.has(ref.nodeId))" :params="nodeProps.data.params" :initial-prompt="nodeProps.data.prompt"
+              :generating="savingEdit || nodeProps.data.generating || uploadingNodes.has(nodeProps.id) || dirtyDrawings.has(nodeProps.id) || (nodeReferences[nodeProps.id] || []).some(ref => dirtyDrawings.has(ref.nodeId))" :params="nodeProps.data.params" :initial-prompt="nodeProps.data.prompt"
               :reference-preview-url="nodeProps.data.referencePreviewUrl"
               :connected-references="nodeReferences[nodeProps.id] || []"
+              @aspect-change="changeNodeAspect(nodeProps.id, $event)"
               @submit="generateFromNode(nodeProps.id, $event.prompt, canvasNodeKind(nodeProps.data) as CanvasKind, $event.params)" />
             <p v-else-if="!selectingNodes && getSelectedNodes.length === 1 && selectedNodeId === nodeProps.id" class="canvas-filled-node-hint nodrag nowheel">已有内容节点仅作为来源。请新建空白节点并连线后生成。</p>
           </div>
@@ -1115,12 +1161,11 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
         <button type="button" @click="createMenu = contextMenu; contextMenu = null"><Plus :size="15" />新增节点</button><button type="button" :disabled="selectionLocked || savingEdit || !selectedNodeId" @click="duplicateSelection"><Copy :size="15" />复制选中节点</button><button type="button" class="canvas-delete-action" :disabled="selectionLocked || savingEdit || (!selectedNodeId && !getSelectedEdges.length)" @click="deleteSelection"><Trash2 :size="15" />{{ deleteActionLabel }}</button><button type="button" @click="focusOutputs(nodes); closeMenus()"><Maximize2 :size="15" />适应画布</button><button type="button" @click="showShortcuts = true; canvasToolTab = 'shortcuts'; closeMenus()"><Circle :size="15" />画布快捷键</button><button type="button" @click="closeMenus"><X :size="15" />关闭菜单</button>
       </div>
       <div v-if="getSelectedNodes.length > 1 && !selectingNodes" class="canvas-selection-toolbar nodrag nopan" :style="selectionToolbarPosition" role="toolbar" aria-label="选中节点的移动与对齐" @pointerdown.stop @mousedown.stop @click.stop @contextmenu.stop>
-        <button type="button" class="canvas-compare-button" :disabled="getSelectedNodes.filter(node => nodeHasContent(node.data)).length < 2" @click="openVersionCompare">对比版本</button><span class="canvas-selection-count" role="status">已选 {{ getSelectedNodes.length }} 个节点</span>
+        <button type="button" class="canvas-compare-button" aria-label="对比版本" title="对比版本" :disabled="getSelectedNodes.filter(node => nodeHasContent(node.data)).length < 2" @click="openVersionCompare"><Columns2 :size="17" /></button><span class="canvas-selection-count" role="status" :aria-label="`已选 ${getSelectedNodes.length} 个节点`" :title="`已选 ${getSelectedNodes.length} 个节点`"><Layers :size="15" aria-hidden="true" />{{ getSelectedNodes.length }}</span>
         <div class="canvas-selection-align" role="group" aria-label="对齐与分布">
           <button v-for="action in alignmentActions" :key="action.mode" type="button" :aria-label="action.label" :title="action.label" :disabled="selectedNodesLocked || savingEdit || getSelectedNodes.length < action.minimum" @click="alignSelection(action.mode)"><component :is="action.icon" :size="17" /></button>
         </div>
         <button type="button" class="canvas-selection-close" aria-label="取消选择" title="取消选择（Esc）" @click="clearSelection"><X :size="16" /></button>
-        <small>{{ selectedNodesLocked ? '选中内容含生成中的节点，暂时无法移动或对齐' : '拖动选中节点或选区可整体移动' }}</small>
       </div>
       <CanvasOverview v-if="overviewVisible" @navigate="navigateOverview" @close="hideOverview" />
       <div class="canvas-toolbar-actions" @click.stop @contextmenu.stop>
@@ -1131,7 +1176,7 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
       <div v-if="showShortcuts" class="canvas-shortcuts" @click.stop @contextmenu.stop>
         <header><button :class="{ active: canvasToolTab === 'actions' }" @click="canvasToolTab = 'actions'">操作</button><button :class="{ active: canvasToolTab === 'shortcuts' }" @click="canvasToolTab = 'shortcuts'">快捷键</button><button aria-label="关闭画布工具" @click="showShortcuts = false"><X :size="14" /></button></header>
         <div v-if="canvasToolTab === 'actions'" class="canvas-tool-options"><button :disabled="comparableNodes.length < 2" @click="openVersionCompare">作品版本对比</button><button @click="createAtCenter"><Plus :size="14" />新增节点</button><button @click="focusOutputs(nodes)"><Maximize2 :size="14" />适应全部节点</button><button :disabled="selectionLocked || savingEdit || !selectedNodeId" @click="duplicateSelection"><Copy :size="14" />复制节点</button><button :disabled="selectionLocked || savingEdit || (!selectedNodeId && !getSelectedEdges.length)" @click="deleteSelection"><Trash2 :size="14" />删除选中内容</button><button :disabled="savingEdit || !undoHistory.length" @click="undoEdit()"><Undo2 :size="14" />撤销</button><button :disabled="savingEdit || !redoHistory.length" @click="undoEdit(true)"><Redo2 :size="14" />重做</button><button :disabled="savingEdit || !nodes.length" @click="arrangeNodes"><Images :size="14" />{{ getSelectedNodes.length > 1 ? '整理选中节点' : '自动整理全部节点' }}</button><div class="canvas-snap-options"><label><input v-model="smartSnap" type="checkbox" />智能吸附</label><label><input v-model="gridSnap" type="checkbox" />网格吸附</label></div><div class="canvas-align-options"><button v-for="action in alignmentActions" :key="action.mode" :disabled="selectedNodesLocked || savingEdit || getSelectedNodes.length < action.minimum" @click="alignSelection(action.mode)">{{ action.label }}</button></div></div>
-        <template v-else><p><kbd>双击</kbd> 新增节点</p><p><kbd>中键 / 空格</kbd> 按住拖动画布</p><p><kbd>左键拖动空白处</kbd> 框选多个节点</p><p><kbd>Shift + 框选</kbd> 追加到当前选择</p><p><kbd>Shift / ⌘ / Ctrl + 点击</kbd> 添加或取消单个节点</p><p><kbd>拖动选中节点 / 选区</kbd> 整体移动</p><p><kbd>Esc</kbd> 取消选择</p><p><kbd>拖动连接点</kbd> 连接上下游节点</p><p><kbd>Alt + 拖动</kbd> 暂时关闭吸附</p><p><kbd>⌘ / Ctrl + A</kbd> 全选节点</p><p><kbd>方向键</kbd> 微调位置，Shift 加速</p><p><kbd>拖动连线端点</kbd> 更换连接的节点</p><p><kbd>滚轮</kbd> 缩放画布</p><p><kbd>⌘ / Ctrl + 0</kbd> 适应全部节点</p><p><kbd>⌘ / Ctrl + D</kbd> 复制选中节点</p><p><kbd>Backspace / Delete</kbd> 确认后删除节点或连线</p><p><kbd>⌘ / Ctrl + Z</kbd> 撤销，加 Shift 重做</p></template>
+        <template v-else><p><kbd>双击</kbd> 新增节点</p><p><kbd>中键 / 空格</kbd> 按住拖动画布</p><p><kbd>左键拖动空白处</kbd> 框选多个节点</p><p><kbd>Shift + 框选</kbd> 追加到当前选择</p><p><kbd>Shift / ⌘ / Ctrl + 点击</kbd> 添加或取消单个节点</p><p><kbd>拖动选中节点 / 选区</kbd> 整体移动</p><p><kbd>Esc</kbd> 取消选择</p><p><kbd>拖动连接点</kbd> 连接上下游节点</p><p><kbd>Alt + 拖动</kbd> 暂时关闭吸附</p><p><kbd>⌘ / Ctrl + A</kbd> 全选节点</p><p><kbd>方向键</kbd> 微调位置，Shift 加速</p><p><kbd>拖动连线端点</kbd> 更换连接的节点；从左侧连接点拖至空白处断开</p><p><kbd>滚轮</kbd> 缩放画布</p><p><kbd>⌘ / Ctrl + 0</kbd> 适应全部节点</p><p><kbd>⌘ / Ctrl + D</kbd> 复制选中节点</p><p><kbd>Backspace / Delete</kbd> 删除选中连线；节点需确认</p><p><kbd>⌘ / Ctrl + Z</kbd> 撤销，加 Shift 重做</p></template>
       </div>
       <input ref="uploadInput" class="visually-hidden" type="file" accept="image/*" @change="handleUpload" />
     </div>
@@ -1161,10 +1206,10 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
           <div v-if="!messages.length" class="design-chat-welcome"><XiaojuAvatar /><h3>从一个设计目标开始</h3><p>描述你的设计想法，也可以上传参考图、品牌资料或项目需求。</p></div>
           <div class="design-messages" role="log" aria-label="对话记录" aria-live="polite">
             <article v-for="(message, index) in visibleMessages" :key="`${message.conversationTurnId || message.taskId || index}-${message.role}`" :data-task-id="message.taskId" tabindex="-1" class="design-message" :class="[message.role, { 'has-error': message.error }]">
-              <span v-if="message.role === 'assistant'" class="design-message-agent"><XiaojuAvatar :state="avatarState(message)" /><strong>{{ agentName }}</strong></span>
-              <TaskProgress v-if="message.execution" :info="message.execution" :status="message.status || 'running'" :clarification="Boolean(message.clarification)" :reference-selection="message.referenceSelection?.status === 'pending'" @inspect="inspectDeliveryNode" @action="emit('task-action', message.taskId!, $event)" />
-              <details v-if="message.steps?.length" class="design-execution" :open="!['succeeded', 'failed', 'cancelled'].includes(message.status || '')">
-                <summary>{{ demoMode ? message.status === 'succeeded' ? '方案已完成' : busy ? '正在制作' : '方案已暂停' : thinkingTitles[message.status || ''] || '思考中' }}</summary>
+              <span v-if="message.role === 'assistant'" class="design-message-agent"><XiaojuAvatar :state="avatarState(message)" /><strong>{{ agentName }}</strong><button v-if="message.taskId && message.execution" type="button" class="design-message-inspect" aria-label="查看产物与用量" title="查看产物与用量" @click.stop="emit('task-action', message.taskId, 'inspect')"><FileText :size="16" aria-hidden="true" /></button><AssistantMessageCopy v-if="assistantCopyContent(message)" :content="assistantCopyContent(message)" :task-id="message.taskId" /></span>
+              <TaskProgress v-if="message.execution" :info="message.execution" :has-reply="Boolean(message.displayContent)" :status="message.status || 'running'" :clarification="Boolean(message.clarification)" :reference-selection="!!message.referenceSelection?.items.length && message.referenceSelection.status === 'pending'" @inspect="inspectDeliveryNode" @action="emit('task-action', message.taskId!, $event)" />
+              <details v-if="message.steps?.length" class="design-execution" aria-label="执行过程" :open="!['succeeded', 'failed', 'cancelled'].includes(message.status || '')">
+                <summary>{{ demoMode ? message.status === 'succeeded' ? '方案已完成' : busy ? '正在制作' : '方案已暂停' : executionTitles[message.status || ''] || '执行中' }}</summary>
                 <TransitionGroup name="design-step" tag="ol" class="design-step-list">
                   <li v-for="step in message.steps" :key="step.id" :class="[step.status, { 'execution-summary': step.kind === 'summary' }]">
                     <DesignStepIcon :step="step" />
@@ -1175,10 +1220,9 @@ onUnmounted(() => window.removeEventListener('keydown', canvasKeydown));
               <AgentMarkdown v-if="message.role === 'assistant' && message.clarification?.questions.length && message.status !== 'failed' && message.status !== 'cancelled'" :content="message.clarification.intro || '在开始设计前，先补充几个关键信息。'" />
               <AgentMarkdown v-else-if="message.role === 'assistant' && message.displayContent" :content="publicAssistantMessage(message.displayContent)" :animate="message.animateReply" @reveal="followReplyTyping" />
               <UserMessageBubble v-else-if="message.role === 'user'" :message="message" :busy="busy" :resend="resubmitMessage" :edit-request="messageEditRequest && messageEditRequest.taskId === message.taskId ? messageEditRequest.requestId : undefined" />
-              <AssistantMessageCopy v-if="assistantCopyContent(message)" :content="assistantCopyContent(message)" :task-id="message.taskId" />
               <button v-if="message.issue && message.taskId" class="design-canvas-result" :disabled="busy && message.issue.action !== 'settings'" @click="emit('task-action', message.taskId, message.issue.action)">{{ message.issue.actionLabel }}</button>
-              <div v-if="message.verification" class="message-verification"><span>{{ message.verification.technical }}</span><span v-if="message.verification.content">{{ message.verification.content }}</span></div>
-              <ReferenceSelectionCard v-if="message.referenceSelection" :selection="message.referenceSelection" :api-base-url="apiBaseUrl" :project-id="projectId" :disabled="busy || pendingReferenceSelection(messages)?.id !== message.referenceSelection.id" @submit="emit('select-reference', $event)" />
+              <div v-if="message.verification && (message.verification.technical !== '产物已保存' || message.verification.content)" class="message-verification"><span v-if="message.verification.technical !== '产物已保存'">{{ message.verification.technical }}</span><span v-if="message.verification.content">{{ message.verification.content }}</span></div>
+              <ReferenceSelectionCard v-if="message.referenceSelection?.items.length" :selection="message.referenceSelection" :api-base-url="apiBaseUrl" :project-id="projectId" :disabled="busy || pendingReferenceSelection(messages)?.id !== message.referenceSelection.id" @submit="emit('select-reference', $event)" />
               <div v-if="message.sources?.length" class="design-search-sources"><small>联网参考来源</small><a v-for="source in message.sources" :key="source.url" :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.title }} <ArrowUpRight :size="12" /></a></div>
               <button v-if="message.role === 'assistant' && message.outputs.length" class="design-canvas-result" type="button" @click.stop="viewTaskOutputs(message.taskId, message.outputs)"><Images :size="15" />查看画布产物 · {{ message.outputs.length }}<ArrowUpRight :size="14" /></button>
               <TaskFeedbackPrompt v-if="message.role === 'assistant' && message.taskId && message.outputs.length" :key="`${projectId}:${message.taskId}`" :api-base-url="apiBaseUrl" :project-id="projectId" :task-id="message.taskId" :record="feedbackRecords[message.taskId]" :loaded="feedbackLoaded" :active="message.taskId === latestAssistantTask && !message.clarification?.questions.length" :ready="readyForFeedback(message.outputs)" :running="message.status === 'running' || message.status === 'queued'" @saved="feedbackRecords[message.taskId!] = $event" />

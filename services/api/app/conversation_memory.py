@@ -227,7 +227,10 @@ class ConversationMemoryService:
                     owner = next((row['id'] for row in history if self._associated(json.loads(row['input_json'] or '{}'), asset['id'], meta)), None)
                     if not owner:
                         continue
-                elif not any(row['id']==owner for row in history):
+                # Independent node tasks isolate dialogue history, but their
+                # explicitly connected generated assets remain valid inputs.
+                # Preserve original provenance; do not import unrelated assets.
+                elif not any(row['id']==owner for row in history) and not self._associated(data, asset['id'], meta):
                     continue
                 self._write(db, session, key, {'content': Path(asset['path_relative']).name, 'category':'asset',
                     'scope':'conversation', 'topic':'', 'status':'observed', 'active':True, 'assetId':asset['id'],

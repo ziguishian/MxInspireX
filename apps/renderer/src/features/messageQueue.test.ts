@@ -1,7 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { canDispatchQueue, createQueueMessage, moveQueueItem, shouldAdvanceQueue, queueTaskResult, queuePauseReason } from './messageQueue';
+import { canDispatchQueue, createQueueMessage, moveQueueItem, shouldAdvanceQueue, queueTaskResult, queuePauseReason, supplementUnavailableReason, queueItemCanStart } from './messageQueue';
 
 describe('composer message queue', () => {
+  it('does not pause for an empty historical reference card', () => {
+    const result = (items: unknown[]) => queueTaskResult({ status: 'succeeded', output: { structured_data: { referenceSelection: { status: 'pending', items } } } });
+    expect(shouldAdvanceQueue(result([]))).toBe(true);
+    expect(shouldAdvanceQueue(result([{ id: 'reference' }]))).toBe(false);
+  });
+  it('does not create a new task for pending or restored supplement requests', () => {
+    expect(queueItemCanStart({ id: 'queued' }, null, false)).toBe(true);
+    expect(queueItemCanStart({ id: 'queued' }, null, true)).toBe(false);
+    expect(queueItemCanStart({ id: 'queued' }, 'queued', false)).toBe(false);
+    const restored = JSON.parse(JSON.stringify({ id: 'queued', supplementTaskId: 'original-task' }));
+    expect(queueItemCanStart(restored, null, false)).toBe(false);
+  });
+  it('only supplements text without losing queued attachments, references or skills', () => {
+    expect(supplementUnavailableReason({ files: [], assets: [] })).toBe('');
+    for (const key of ['files', 'assets', 'skills']) {
+      expect(supplementUnavailableReason({ files: [], assets: [], [key]: [{}] })).toContain('仅支持文字');
+    }
+  });
   it('keeps restored tasks paused for the same reasons as streamed tasks', () => {
     const restored = { status: 'succeeded', output: { structured_data: { deliveryStatus: 'needs_review', review: { status: 'timed_out' } } } };
     expect(shouldAdvanceQueue(queueTaskResult(restored))).toBe(false);

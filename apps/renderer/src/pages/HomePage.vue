@@ -17,8 +17,8 @@ onMounted(() => {
   });
 });
 const mascot = useMascotSettings();
-const customMascotStyle = computed(() => mascot ? mascotSpriteStyle(mascot.apiBaseUrl, mascot.active.value, mascot.activePreset.value) : {});
-const hasMascotColor = computed(() => Boolean(mascot?.active.value || (mascot?.activePreset.value && mascot.activePreset.value !== 'robot')));
+const customMascotStyle = computed(() => mascot ? mascotSpriteStyle(mascot.apiBaseUrl, mascot.active.value, mascot.activePreset.value) : mascotSpriteStyle('', null));
+const hasMascotColor = computed(() => Boolean(customMascotStyle.value['--xiaoju-image']));
 const { errorMessage, isSubmitting, addFiles, composerReady, useExample, startDemo, openFeaturedProject, showcaseSlugs } = homeServices.use();
 const visibleExamples = computed(() => designExamples.filter(example => !example.requiresImport || (example.projectSlug && showcaseSlugs?.value.includes(example.projectSlug))));
 type ComposerLumoReaction = LumoReaction | 'thinking' | 'sleepy';

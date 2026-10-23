@@ -28,6 +28,15 @@ describe('same-product stages',()=>{
 });
 
 describe('generic generation batches', () => {
+  it('uses saved delivery bindings and never counts another scope as complete',()=>{
+    const constraints=context([item('a')]);
+    const saved={name:'generate_image',args:{},output:{status:'succeeded',assetId:'asset',node:{id:'node',
+      data:{deliveryBinding:{scopeId:'scope',itemIds:['a']}}}}};
+    expect(generationAttemptComplete(constraints,[saved])).toBe(true);
+    saved.args.deliverable_ids=['a'];
+    saved.output.node.data.deliveryBinding.scopeId='previous-scope';
+    expect(generationAttemptComplete(constraints,[saved])).toBe(false);
+  });
   it('hands off only settled selected items; invalid arguments and unsaved outputs still need work',()=>{
     const constraints=context([item('a'),item('b')]);
     const saved={name:'generate_image',args:{deliverable_ids:['a']},output:{status:'succeeded',assetId:'saved',node:{id:'n',data:{}}}};

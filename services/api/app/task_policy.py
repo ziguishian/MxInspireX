@@ -19,6 +19,7 @@ def delivery_contract(brief, constraints=None):
     constraints = constraints or {}
     if is_skill_management(brief, constraints):
         return []
+    canvas_kind = (constraints.get('canvasParams') or {}).get('kind') if constraints.get('taskSurface') == 'canvas_node' else None
     exclusions = delivery_exclusions(brief, constraints)
     explicit = {item.kind: item.model_dump(exclude_none=True) for raw in constraints.get('deliveryContract', []) for item in [ArtifactRequirement.model_validate(raw)] if item.kind not in exclusions['kinds']}
     for item in explicit.values():
@@ -29,9 +30,16 @@ def delivery_contract(brief, constraints=None):
         item = explicit.setdefault(kind, {'kind': kind, 'count': 1, 'transparent': False})
         # A quantity belongs to the nearest output noun. In “两张图和文字卡”,
         # the two describes images only; it must not also create two text cards.
-        boundary = r'(?:[1-9]\d?|[一二两三四五六七八九十])\s*[张个份段幅套]|' + '|'.join(NOUNS.values())
-        numbers = re.finditer(r'([1-9]\d?|[一二两三四五六七八九十])\s*[张个份段幅套]\s*(?:(?!(?:' + boundary + r'))[^，,。；;\n]){0,12}?(?:' + NOUNS[kind] + ')', text)
+        units = r'[张个份段幅套款种枚件页]'
+        boundary = r'(?:[1-9]\d?|[一二两三四五六七八九十])\s*' + units + '|' + '|'.join(NOUNS.values())
+        numbers = re.finditer(r'(?<![第\d])([1-9]\d?|[一二两三四五六七八九十])\s*' + units + r'\s*(?:(?!(?:' + boundary + r'))[^，,。；;\n]){0,12}?(?:' + NOUNS[kind] + ')', text)
         for number in numbers:
+            # Counts of connected/reference inputs are not output quantities.
+            # Use the closest action so “参考两张图，生成三张海报” retains three.
+            prefix = re.split(r'[，,。；;\n]', text[:number.start()])[-1]
+            actions = list(re.finditer(r'生成|制作|创建|绘制|输出|设计|合成|画|做|参考|结合|沿用|保留|使用|采用|根据|上传|已有|现有|把|将', prefix))
+            if (actions and actions[-1].group() in {'参考','结合','沿用','保留','使用','采用','根据','上传','已有','现有','把','将'}) or (not actions and re.search(r'[这那]\s*$', prefix)):
+                continue
             token = number[1]
             count = int(token) if token.isdigit() else {'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10}[token]
             item['count'] = max(item['count'], min(50, count))
@@ -42,6 +50,10 @@ def delivery_contract(brief, constraints=None):
             fmt = re.search(r'\b(png|jpe?g|webp|gif)\b', text)
             if fmt: item['format'] = 'jpeg' if fmt[1] == 'jpg' else fmt[1]
             if re.search(r'透明(?:背景|底)?|transparent', text) and not re.search(r'不(?:需要|要)?透明|非透明|不透明',text): item['transparent'] = True
+    if canvas_kind in KINDS:
+        # A node composer fills one output of its own type. Upstream media
+        # mentioned in the prompt are inputs, never additional deliverables.
+        return [{**explicit.get(canvas_kind, {'kind':canvas_kind,'transparent':False}), 'count':1}]
     return list(explicit.values())
 
 
@@ -63,7 +75,7 @@ def image_pixel_size(text):
 KINDS = {"image", "video", "audio", "html", "text", "cad"}
 NOUNS = {
     "cad": r"(?<![a-z0-9])cad(?![a-z0-9])|(?<![a-z0-9])step(?![a-z0-9])|参数化模型|精确尺寸模型|结构件|实体建模",
-    "image": r"图片|图像|照片|海报|插画|效果图|三视图|平面图|刀版|展开图|标志|logo|(?<=[张幅])图|(?:\bimage\b|\bphoto\b|\bposter\b)",
+    "image": r"图片|图像|照片|海报|插画|效果图|三视图|平面图|刀版|展开图|标志|logo|(?<=[张幅])[^，,。；;\n和与及、张幅]{0,12}?图|(?:\bimage\b|\bphoto\b|\bposter\b)",
     "video": r"视频|短片|动画|\bvideo\b",
     "audio": r"音频|语音|配音|朗读|\baudio\b|\bspeech\b",
     "html": r"网页|网站|交互原型|html|landing.?page|\bwebsite\b",
@@ -236,6 +248,9 @@ def delivery_requirements(brief, constraints=None):
     constraints = constraints or {}
     if is_skill_management(brief, constraints):
         return []
+    canvas = constraints.get('canvasParams') or {}
+    if constraints.get('taskSurface') == 'canvas_node' and canvas.get('kind') in KINDS:
+        return [canvas['kind']]
     required = set(constraints.get("requiredArtifacts") or []) & KINDS
     excluded = delivery_exclusions(brief, constraints)['kinds']
     canvas = constraints.get("canvasParams") or {}
@@ -252,7 +267,7 @@ def delivery_requirements(brief, constraints=None):
     transcription = bool(re.search(r'转写|转录|语音转文字|transcrib|transcription', text))
     if transcription: required.add('text')
     question = re.match(r"^(?:请)?(?:解释|介绍|如何|怎么|怎样|为什么|what|how|why)", text.strip())
-    if not question and re.search(r"生成|制作|创建|画|做|写|开发|搭建|输出|修改|调整|改成|设计|generate|create|build|make|draw|design", text):
+    if not question and re.search(r"生成|制作|创建|画|做|写|开发|搭建|输出|修改|调整|改成|设计|合成|generate|create|build|make|draw|design", text):
         for kind, pattern in NOUNS.items():
             if transcription and kind in {'audio','video'}: continue
             if re.search(pattern, text):
@@ -260,7 +275,7 @@ def delivery_requirements(brief, constraints=None):
     return sorted(required - excluded)
 
 
-EXECUTION_POLICY_VERSION = 2
+EXECUTION_POLICY_VERSION = 3
 
 
 def independent_research(brief):
@@ -281,13 +296,13 @@ def independent_research(brief):
 
 def single_delivery_target(brief, constraints):
     """A conservative completion hint; the worker must still verify real receipts."""
-    if any(constraints.get(key) for key in ('designPlanning', 'designPlan', 'continuation', 'referencedSkills', 'deliveryRepairOnly', 'deliveryReviewOnly')):
+    if any(constraints.get(key) for key in ('designPlanning', 'designPlan', 'referencedSkills', 'deliveryRepairOnly', 'deliveryReviewOnly')):
         return None
     contract = constraints.get('deliveryContract') or []
     if len(contract) != 1 or contract[0].get('count', 1) != 1:
         return None
     kind = contract[0]['kind']
-    if kind not in {'image', 'text', 'html'}:
+    if kind not in KINDS:
         return None
     text = delivery_request_spans(re.sub(r'“[^”]*”|「[^」]*」|"[^"\n]*"', '', str(brief)))[0]
     # Saving the same artifact and a requested review are not extra deliverables.
@@ -302,9 +317,14 @@ def single_delivery_target(brief, constraints):
     follow_up = r'(?:然后|接着|同时|另外|并|还要|以及|随后|[,，]|\bthen\b|\balso\b|\band\b)\s*(?:再|另外)?\s*(?:写|介绍|解释|说明|总结|输出|交付|生成|制作|创建|做|画|设计|write\b|explain\b|generate\b|create\b|make\b)'
     if re.search(extra, text, re.I) or re.search(follow_up, text, re.I):
         return None
-    canvas = constraints.get('canvasParams') or {}
-    if canvas.get('kind') != kind and not re.search(r'(?:一|1)\s*(?:张|幅|个|份)|\b(?:one|single|an?)\b', text, re.I):
+    # A recognized output followed by another noun may hide an unrecognized
+    # deliverable ("Logo 和包装"). Do not silently reduce it to one known kind.
+    compound = '(?:' + '|'.join(NOUNS.values()) + r')\s*(?:和|与|及|以及|、|\band\b)\s*(?!(?:保留|保持|使用|采用|用|keep\b|preserve\b|use\b))\S'
+    if re.search(compound, text, re.I):
         return None
+    canvas = constraints.get('canvasParams') or {}
+    # The server-owned contract already fixes quantity. A follow-up or a
+    # clarification answer need not repeat an ordinal to retain its scope.
     return {'kind': kind, 'count': 1, 'nodeId': canvas.get('canvasNodeId')}
 
 

@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { boardChanges, cleanBoard, savedBoardEdit } from './canvasEditing';
+import { alignBoardNodes, boardChanges, cleanBoard, savedBoardEdit } from './canvasEditing';
+
+describe('manual alignment ownership', () => {
+  const rects = [{id:'a',x:0,y:26,width:300,height:200}, {id:'b',x:450,y:146,width:200,height:300}, {id:'c',x:900,y:286,width:400,height:150}];
+  const board = {nodes:rects.map(r=>({id:r.id,type:'creative',position:{x:r.x,y:r.y-26},data:{autoPositioned:true,assetId:r.id}})),edges:[]};
+  it.each(['left','right','top','bottom','center-x','center-y','distribute-x','distribute-y'] as const)('persists %s as manual positions, including unchanged anchors', mode => {
+    const before = cleanBoard(board);
+    const after = alignBoardNodes(before,rects,mode);
+    expect(after.nodes.every(n=>n.data.autoPositioned===false)).toBe(true);
+    expect(before).toEqual(board);
+    const rendered = after.nodes.map((n,i)=>({...rects[i],x:n.position.x,y:n.position.y+26}));
+    const horizontal = ['left','right','center-x','distribute-x'].includes(mode);
+    const start = horizontal ? 'x' : 'y', size = horizontal ? 'width' : 'height';
+    if (mode.startsWith('distribute')) {
+      expect(rendered[1][start]-rendered[0][start]-rendered[0][size]).toBeCloseTo(rendered[2][start]-rendered[1][start]-rendered[1][size]);
+    } else {
+      const edge = (r:typeof rects[number])=>r[start]+(mode.startsWith('center') ? r[size]/2 : ['right','bottom'].includes(mode) ? r[size] : 0);
+      expect(edge(rendered[0])).toBeCloseTo(edge(rendered[1]));
+      expect(edge(rendered[1])).toBeCloseTo(edge(rendered[2]));
+    }
+    expect(boardChanges(before,after).upsertNodes.every(n=>n.data.autoPositioned===false)).toBe(true);
+    const saved = savedBoardEdit(before,after,after);
+    expect(boardChanges(saved,before).upsertNodes.every(n=>n.data.autoPositioned===true)).toBe(true);
+  });
+  it('leaves unselected nodes eligible for automatic placement', () => {
+    const result=alignBoardNodes(board,rects.slice(0,2),'top');
+    expect(result.nodes[2]).toEqual(board.nodes[2]);
+    expect(result.nodes[0].position).toEqual(board.nodes[0].position);
+    expect(result.nodes[0].data.autoPositioned).toBe(false);
+  });
+});
 
 describe('canvas history changes', () => {
   const node = { id: 'a', position: { x: 0, y: 10 }, data: { text: 'initial', apiBaseUrl: 'local', selected: true } };

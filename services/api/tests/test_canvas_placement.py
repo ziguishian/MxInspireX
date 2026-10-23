@@ -3,12 +3,13 @@ from types import SimpleNamespace
 import pytest
 
 from app.assets import AssetStore
-from app.canvas import CanvasStore
+from app.canvas import CanvasStore, CanvasConflict
 from app.canvas_layout import GAP, next_output_position, node_height, node_preview_size, nodes_colliding
 from app.design_tools import DesignToolRegistry
 from app.models import new_project
 from app.image_production import explicit_image_disclaimer_requested, prepare_production_image_request
 from app.storage import ProjectStore
+from app.task_runtime import TaskRuntime
 
 
 def node(id, x, y, width=300, height=300, kind='image'):
@@ -77,10 +78,40 @@ def test_only_explicit_user_request_allows_concept_notice_inside_image():
 @pytest.fixture
 def workspace(tmp_path):
     store = ProjectStore(str(tmp_path))
+    TaskRuntime(store)
     project = store.create_project(new_project(name='紧凑布局回归', slug='placement', brief='',
         budget_minor=None, currency='CNY', root_path=str(tmp_path / 'placement')))
     canvas, assets = CanvasStore(store), AssetStore(store)
     return project['id'], canvas, assets, DesignToolRegistry(store, canvas_store=canvas, asset_store=assets)
+
+
+@pytest.mark.parametrize('stored_label', [None, ''])
+def test_unlabeled_edge_delete_reload_and_restore(workspace, stored_label):
+    project_id, canvas, _, _ = workspace
+    source = canvas.create_node(project_id, kind='text', title='source', data={'text': 'preserved source'})
+    target = canvas.create_node(project_id, kind='image', title='target')
+    edge = canvas.link_nodes(project_id, source_node_id=source['id'], target_node_id=target['id'])
+    if stored_label is not None:
+        canvas.apply_changes(project_id, {'upsertEdges': [{'id': edge['id'], 'label': stored_label}]})
+    before = canvas.load(project_id)
+    expected = {**edge, 'label': '', 'animated': False}
+    canvas.apply_changes(project_id, {'removeEdgeIds': [edge['id']], 'expectedEdges': {edge['id']: expected}})
+    reopened = CanvasStore(canvas.store)
+    assert reopened.load(project_id)['edges'] == []
+    assert reopened.load(project_id)['nodes'] == before['nodes']
+    reopened.apply_changes(project_id, {'upsertEdges': [edge], 'expectedEdges': {edge['id']: None}})
+    assert CanvasStore(canvas.store).load(project_id)['edges'] == [edge]
+
+
+def test_unlabeled_edge_conflict_guard_keeps_real_concurrent_edits(workspace):
+    project_id, canvas, _, _ = workspace
+    source = canvas.create_node(project_id, kind='text', title='source')
+    target = canvas.create_node(project_id, kind='image', title='target')
+    edge = canvas.link_nodes(project_id, source_node_id=source['id'], target_node_id=target['id'])
+    canvas.apply_changes(project_id, {'upsertEdges': [{'id': edge['id'], 'label': 'new label'}]})
+    with pytest.raises(CanvasConflict):
+        canvas.apply_changes(project_id, {'removeEdgeIds': [edge['id']], 'expectedEdges': {edge['id']: {**edge, 'label': ''}}})
+    assert canvas.load(project_id)['edges'][0]['label'] == 'new label'
 
 
 @pytest.mark.parametrize('tool,args', [
@@ -178,3 +209,23 @@ def test_automatic_nodes_reflow_when_earlier_markdown_outgrows_its_placeholder(w
     for current in document['nodes']:
         others = [item for item in document['nodes'] if item['id'] != current['id']]
         assert not nodes_colliding(others, current, current['position'])
+
+
+def test_manual_alignment_survives_save_growth_and_new_automatic_nodes(workspace):
+    project, canvas, _, _ = workspace
+    first = canvas.create_node(project, kind='text', title='Alignment anchor', data={'text': ''})
+    second = canvas.create_node(project, kind='image', title='Aligned image')
+    positions = {first['id']: {'x': 40, 'y': 40}, second['id']: {'x': 40, 'y': 350}}
+    canvas.apply_changes(project, {'upsertNodes': [
+        {'id': identity, 'position': position, 'data': {'autoPositioned': False}}
+        for identity, position in positions.items()
+    ]})
+    # User alignment may intentionally leave less space than automatic layout.
+    canvas.update_node(project, first['id'], {'data': {'text': 'Long text. ' * 1000}})
+    added = canvas.create_node(project, kind='image', title='New automatic image')
+    saved = canvas.load(project)
+    fixed = [n for n in saved['nodes'] if n['id'] in positions]
+    assert {n['id']: n['position'] for n in fixed} == positions
+    assert all(n['data']['autoPositioned'] is False for n in fixed)
+    assert added['data']['autoPositioned'] is True
+    assert not nodes_colliding(fixed, added, added['position'])

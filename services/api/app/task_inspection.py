@@ -72,7 +72,9 @@ def inspect_task(store, billing, canvas_store, project_id, task):
         job = result.get('job') or {}
         if (job.get('metadata') or {}).get('canvasNodeId'):
             node_ids.add(job['metadata']['canvasNodeId'])
-        receipts.append({'tool': row['name'], 'status': row['status'], 'resultStatus': result.get('status'), 'updatedAt': row['updated_at']})
+        receipts.append({'tool': row['name'], 'status': row['status'], 'resultStatus': result.get('status'),
+                         'submitted': result.get('submitted') if isinstance(result.get('submitted'), bool) else None,
+                         'updatedAt': row['updated_at']})
     data = (task.get('output') or {}).get('structured_data') or {}
     node_ids.update(data.get('createdNodeIds') or [])
     node_ids.update(item.get('nodeId') for item in data.get('deliveryProgress', []) if item.get('nodeId'))

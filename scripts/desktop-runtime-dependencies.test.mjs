@@ -18,6 +18,7 @@ describe('desktop runtime dependencies', () => {
       const resolved = require.resolve('extract-zip');
       expect(resolved.startsWith(path.join(realpathSync(app), 'node_modules', 'extract-zip'))).toBe(true);
       expect(typeof require('extract-zip')).toBe('function');
+      expect(require.resolve('electron-updater').startsWith(path.join(realpathSync(app), 'node_modules', 'electron-updater'))).toBe(true);
     } finally {
       rmSync(app, { recursive: true, force: true });
     }

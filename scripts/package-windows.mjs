@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { downloadArtifact } from '@electron/get';
 import extract from 'extract-zip';
+import { buildWindowsUpdateInstaller } from './windows-update-installer.mjs';
 import * as ResEdit from 'resedit';
 import { bundleAgentWorker, fileDigest, workerName, runtimeSourceDigest } from './agent-runtime-build.mjs';
 import { packageDesktopRuntimeDependencies } from './desktop-runtime-dependencies.mjs';
@@ -18,9 +19,7 @@ const pythonVersion = '3.13.15';
 const pythonDigest = 'd1f04d990aee1253d8569e8e5104e30fa9f5fa830899f14843448872d936a2cf';
 const hostPython = process.env.AICS_PYTHON || path.join(root, 'services/api/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 const uv = process.env.AICS_UV || 'uv';
-const makensis = process.env.AICS_MAKENSIS || 'makensis';
 if (existsSync(appDir)) throw new Error(`发布目录已存在，请选择新目录，避免覆盖可运行文件：${appDir}`);
-execFileSync(makensis, ['-VERSION'], { stdio: 'inherit' });
 mkdirSync(cache, { recursive: true });
 mkdirSync(path.dirname(appDir), { recursive: true });
 
@@ -132,17 +131,6 @@ const prefix = `LangjuAgent-${pkg.version}-${packageProfile === 'lite' ? 'lite-'
 const zip = path.join(output, `${prefix}-portable.zip`);
 execFileSync(hostPython, ['-c', 'import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); z=zipfile.ZipFile(sys.argv[2],"w",zipfile.ZIP_DEFLATED,compresslevel=6); [z.write(p,p.relative_to(root.parent).as_posix()) for p in sorted(root.rglob("*")) if p.is_file()]; z.close()', appDir, zip], { stdio: 'inherit' });
 const installer = path.join(output, `${prefix}-setup.exe`);
-const uninstall = [];
-const scan = (directory) => {
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    const absolute = path.join(directory, entry.name);
-    const relative = path.relative(appDir, absolute).split(path.sep).join('\\').replaceAll('$', '$$');
-    if (entry.isDirectory()) { scan(absolute); uninstall.push(`RMDir "$INSTDIR\\${relative}"`); }
-    else uninstall.push(`Delete "$INSTDIR\\${relative}"`);
-  }
-};
-scan(appDir);
-const uninstallFile = path.join(output, 'windows-uninstall-files.nsh');
-writeFileSync(uninstallFile, uninstall.join('\n') + '\n');
-execFileSync(makensis, ['-WX', '-V3', `-DAPP_DIR=${appDir}`, `-DOUTPUT_FILE=${installer}`, `-DAPP_VERSION=${pkg.version}`, `-DAPP_ICON=${icon}`, `-DUNINSTALL_FILES=${uninstallFile}`, path.join(root, 'scripts/windows-installer.nsi')], { stdio: 'inherit' });
+// Portable ZIP deliberately has no update feed; only the installer gets one.
+await buildWindowsUpdateInstaller({ root, appDir, output, prefix, profile: packageProfile });
 console.log(`Windows portable: ${zip}\nWindows installer: ${installer}`);

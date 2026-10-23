@@ -1,6 +1,16 @@
 import { expect, it, vi } from 'vitest';
 import { createProviderModelCatalog } from './providerModels';
 import { usdToCny, modelPrices, modelPriceLabel, preferMediaModel, formatCny } from './modelEconomy';
+it('converts public EvoLink USD tariffs using the configured RMB rate without changing units', async () => {
+  const { formatModelPrice } = await import('./modelEconomy');
+  const price = { currency: 'USD', source: 'evolink_public', referenceOnly: true, publicRates: [{ label: '图像输出', usd: 27, unit: '/ 百万 Token' }] };
+  usdToCny.value = 7.2;
+  expect(formatModelPrice(price)).toContain('¥194.40 / 百万 Token');
+  usdToCny.value = 7;
+  expect(formatModelPrice(price)).toContain('¥189.00 / 百万 Token');
+  expect(price.publicRates[0].usd).toBe(27);
+  usdToCny.value = 7.2;
+});
 it('hydrates a persisted catalog without calling the relay', () => {
   const remote = vi.fn();
   const catalog = createProviderModelCatalog(remote);

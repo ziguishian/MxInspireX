@@ -2,6 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { canvasReply, completedDeliveryReply, designLiveText, designSteps } from './designPresentation';
 
 describe('public Agent execution history', () => {
+  it('does not show a rejected image preflight as completed generation', () => {
+    const steps = designSteps([
+      {phase:'tool',message:'调用工具：generate_image'},
+      {phase:'error',message:'工具失败：generate_image · 缺少 visualDirection，预检未通过，请求尚未提交'},
+    ], 'running');
+    expect(steps.filter(step => step.tool === 'generate_image').map(step => step.status)).toEqual(['adjusted']);
+  });
   it('shows HTML argument streaming as one active step until the tool takes over', () => {
     const trace = [{ phase: 'generation', message: '正在生成网页…' }, { phase: 'generation', message: '正在生成网页…' }];
     expect(designSteps(trace, 'running')).toHaveLength(1);

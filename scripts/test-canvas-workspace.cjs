@@ -1,6 +1,7 @@
 // Isolated Chromium regression: real Vue Flow and prompt controls, fixture API only.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.join(__dirname,'..'),pause=ms=>new Promise(r=>setTimeout(r,ms));
+if(process.argv.includes('--edges-only'))process.env.AICS_TEST_EDGES_ONLY='1';
 if(!process.versions.electron){
   (async()=>{
     const {createServer}=await import('vite');
@@ -31,6 +32,7 @@ if(!process.versions.electron){
       // Keep the fixed gesture coordinates on the main canvas; overview
       // navigation and its visible layout are covered by test-canvas-overview.
       await js(`document.querySelector('[aria-label="隐藏画布观察视图"]')?.click();void 0`);
+      if(!process.env.AICS_TEST_EDGES_ONLY){
       for(let i=0;i<3;i++){
         await click('[aria-label="收起对话"]');await pause(500);
         assert.ok(!await visible('[aria-label="对话输入框"]'));assert.ok(!await visible('.design-chat-scroll'));
@@ -39,7 +41,7 @@ if(!process.versions.electron){
         const home=await rect('.canvas-compact-dock .canvas-home-button'),tools=await rect('.canvas-compact-tools'),avatar=await rect('.canvas-agent-toggle'),help=await rect('.support-fab');
         assert.ok(Math.abs(home.y-dock.y)<1,'home stays at the top');
         assert.ok(Math.abs((tools.y+tools.height/2)-(dock.y+dock.height/2))<1,'tools stay vertically centered');
-        assert.ok(Math.abs(avatar.bottom-help.bottom)<1,'avatar aligns with the bottom help button');
+        assert.ok(Math.abs(avatar.bottom-help.bottom)<1,'avatar aligns with the bottom help button: '+JSON.stringify({avatar,help,dock}));
         assert.equal(await js('getComputedStyle(document.querySelector(".canvas-agent-toggle")).borderRadius'),await js('getComputedStyle(document.querySelector(".support-fab")).borderRadius'));
         await click('[aria-label="展开对话"]');await pause(500);
         assert.ok(await visible('[aria-label="对话输入框"]'));assert.equal(await js('document.querySelector("[aria-label=对话输入框]").value'),'保留输入中的设计需求');
@@ -49,8 +51,10 @@ if(!process.versions.electron){
       assert.ok(await visible('.canvas-action-menu'));assert.equal(await js('flow.viewport.value.zoom'),before);assert.equal(await js('document.querySelectorAll(".canvas-action-menu button").length'),8);
       await click('.canvas-action-menu button');await pause(200);assert.equal(await js('state.board.nodes.length'),3);results.push('double-click adds a node without zooming');
       for(const kind of ['image','video','audio','text','upload','html']){
-        await js(`reset(${q(kind)})`);await pause(200);await key('ESC');assert.ok(!await visible(panel));
-        await js('select()');await pause(250);
+        // Let initial framing and HTML preview measurement settle before
+        // deliberately positioning the editor at extreme zoom levels.
+        await js(`reset(${q(kind)})`);await pause(850);await key('ESC');assert.ok(!await visible(panel));
+        await js('select()');await pause(500);
         const p=await rect(panel);
         assert.ok(Math.abs(p.width-480)<2,kind+': composer stays 480 screen pixels wide');
         const originalView=await js('({...flow.viewport.value})');
@@ -61,7 +65,8 @@ if(!process.versions.electron){
           assert.ok(Math.abs(metrics.width-480)<2 && Math.abs(metrics.height-p.height)<2,kind+': stable panel dimensions at '+zoom);
           assert.ok(Math.abs(metrics.gap-10)<1 && Math.abs(metrics.center)<1,kind+': panel follows the node at '+zoom);
           assert.ok(metrics.button>=30 && metrics.text>=12.9 && metrics.hit,kind+': readable and clickable at '+zoom);
-          assert.ok(Math.abs((await js('flow.viewport.value.zoom'))-zoom)<.001,'requested zoom is applied');
+          const actualZoom=await js('flow.viewport.value.zoom');
+          assert.ok(Math.abs(actualZoom-zoom)<.001,kind+': requested zoom '+zoom+' is applied, got '+actualZoom);
           if(zoom===.2 && kind==='image') {
             const settings=await rect(panel+' .prompt-settings-toggle');
             await mouse('mousePressed',settings.x+settings.width/2,settings.y+settings.height/2);await mouse('mouseReleased',settings.x+settings.width/2,settings.y+settings.height/2);await pause(120);
@@ -76,7 +81,10 @@ if(!process.versions.electron){
         await click(panel+' header button:nth-child(2)');await click(panel+' .prompt-assistance button');await click(panel+' header button:nth-child(2)');
         await click(panel+' .prompt-expand');assert.ok(await js(`document.querySelector(${q(panel)}).classList.contains('is-expanded')`));await click(panel+' .prompt-expand');
         const modelKind=kind==='upload'?'image':kind==='html'?'text':kind;
-        await field(panel+' .prompt-select select','test-'+modelKind);
+        await click(panel+' .prompt-model-trigger');
+        await click('.canvas-model-options button:nth-child(2)');
+        assert.equal(await visible('.canvas-model-options'),false,'choosing a model closes its popover');
+        assert.ok((await js(`document.querySelector(${q(panel+' .prompt-model-trigger')}).textContent`)).includes('test-'+modelKind));
         if(['image','upload','video'].includes(kind)){
           await click(panel+' .prompt-settings-toggle');
           await field(panel+' .prompt-advanced-grid select','9:16');
@@ -106,19 +114,63 @@ if(!process.versions.electron){
       assert.ok(await visible(panel+' .prompt-reference-image'));results.push('upload to card updates mounted reference preview');
       await js('document.querySelector(".design-canvas-area").focus()');await key('RIGHT',['shift']);assert.equal(await js('state.board.nodes[0].position.x'),10);await key('z',['meta']);assert.equal(await js('state.board.nodes[0].position.x'),0);await key('z',['meta','shift']);assert.equal(await js('state.board.nodes[0].position.x'),10);
       await key('a',['meta']);assert.equal(await js('flow.getSelectedNodes.value.length'),2);await key('d',['meta']);assert.equal(await js('state.board.nodes.length'),4);await key('z',['meta']);assert.equal(await js('state.board.nodes.length'),2);results.push('select all, nudge, duplicate, undo and redo');
+      }
       await js('reset("image")');await pause(200);
       await js("state.board={...state.board,nodes:[...state.board.nodes,{id:'third',type:'creative',position:{x:600,y:420},data:{kind:'text',text:'第三个节点'}}]};void 0");await pause(750);
       const handle=id=>'.vue-flow__node[data-id="'+id+'"] .vue-flow__handle';
       const drag=async(from,to)=>{const a=await rect(from),b=await rect(to);await mouse('mouseMoved',a.x+a.width/2,a.y+a.height/2);await mouse('mousePressed',a.x+a.width/2,a.y+a.height/2);for(let i=1;i<=8;i++){await mouse('mouseMoved',a.x+a.width/2+(b.x+b.width/2-a.x-a.width/2)*i/8,a.y+a.height/2+(b.y+b.height/2-a.y-a.height/2)*i/8,'left',true);await pause(25);}await mouse('mouseReleased',b.x+b.width/2,b.y+b.height/2);await pause(200);};
       await drag(handle('primary')+'-right',handle('neighbor')+'-left');assert.equal(await js('state.board.edges.length'),1);
       await drag('.vue-flow__edgeupdater-target',handle('third')+'-left');assert.equal(await js('state.board.edges[0].target'),'third');results.push('connect and reconnect workflow edges through actual pointer gestures');
+      const clickEdge=async()=>{
+        const p=await js(`(()=>{const el=document.querySelector('.vue-flow__edge-path'),p=el.getPointAtLength(el.getTotalLength()*.3),s=p.matrixTransform(el.getScreenCTM());return {x:s.x,y:s.y}})()`);
+        await mouse('mouseMoved',p.x,p.y);await mouse('mousePressed',p.x,p.y);await mouse('mouseReleased',p.x,p.y);await pause(220);
+      };
+      const restoreEdge=async()=>{await key('z',['meta']);assert.equal(await js('state.board.edges.length'),1);await key('ESC');};
+      const originalNodes=await js('JSON.stringify(state.board.nodes)');
+      for(const deletionKey of ['DELETE','BACKSPACE']){
+        await clickEdge();assert.equal(await js('flow.getSelectedEdges.value.length'),1);
+        assert.ok(await js(`(()=>{const el=document.querySelector('.vue-flow__edge.selected .vue-flow__edge-path'),probe=document.createElement('i');probe.style.color='var(--theme-status-red)';el.parentElement.append(probe);const same=getComputedStyle(el).stroke===getComputedStyle(probe).color;probe.remove();return same})()`),'selected edge is red');
+        await key(deletionKey);assert.equal(await js('state.board.edges.length'),0);await restoreEdge();
+      }
+      await clickEdge();await clickEdge();assert.equal(await js('state.board.edges.length'),0);await restoreEdge();
+      // Dragging the input onto the empty pane disconnects without touching either node.
+      const dragInputToBlank=async()=>{
+      const input=await rect(handle('third')+'-left');
+      const blank=await js(`(()=>{const pane=document.querySelector('.vue-flow__pane');for(let y=180;y<800;y+=60)for(let x=450;x<1350;x+=60)if(document.elementFromPoint(x,y)===pane)return {x,y};throw Error('No empty pane')})()`);
+      await mouse('mouseMoved',input.x+input.width/2,input.y+input.height/2);await mouse('mousePressed',input.x+input.width/2,input.y+input.height/2);
+      for(let i=1;i<=8;i++)await mouse('mouseMoved',input.x+input.width/2+(blank.x-input.x-input.width/2)*i/8,input.y+input.height/2+(blank.y-input.y-input.height/2)*i/8,'left',true);
+      await mouse('mouseReleased',blank.x,blank.y);await pause(250);
+      };
+      await dragInputToBlank();
+      assert.equal(await js('state.board.edges.length'),0);await restoreEdge();
+      assert.equal(await js('JSON.stringify(state.board.nodes)'),originalNodes,'edge deletion preserves all node content');
+      await clickEdge();
+      await js(`(()=>{const input=document.createElement('textarea');input.id='edge-typing-check';document.querySelector('.design-canvas-area').append(input);input.focus()})()`);
+      await key('BACKSPACE');assert.equal(await js('state.board.edges.length'),1,'typing must not delete edges');
+      await js(`document.querySelector('#edge-typing-check').remove();state.board={...state.board,lockedNodeIds:['third']};void 0`);await pause(150);
+      await js(`document.querySelector('.design-canvas-area').focus()`);await key('DELETE');await clickEdge();await dragInputToBlank();
+      assert.equal(await js('state.board.edges.length'),1,'locked connections cannot be deleted');
+      await js(`state.board={...state.board,lockedNodeIds:[]};void 0`);await pause(150);await key('ESC');
+      await drag(handle('neighbor')+'-right',handle('third')+'-left');assert.equal(await js('state.board.edges.length'),2);
+      await dragInputToBlank();assert.equal(await js('state.board.edges.length'),2,'ambiguous incoming edges must survive');
+      await clickEdge();const selectedId=await js('flow.getSelectedEdges.value[0].id');await dragInputToBlank();
+      assert.equal(await js('state.board.edges.length'),1);assert.equal(await js(`state.board.edges.some(e=>e.id===${q(selectedId)})`),false,'only selected incoming edge is disconnected');
+      await key('z',['meta']);await key('z',['meta']);await key('ESC');assert.equal(await js('state.board.edges.length'),1);
+      results.push('edge selection turns red; Delete, Backspace, second click and input drag disconnect; undo restores edges and preserves nodes');
+      results.push('typing and locked-node protection; multiple incoming edges require selection and preserve other references');
+      if(process.env.AICS_TEST_EDGES_ONLY){assert.deepEqual(await js('window.errors'),[]);console.log(JSON.stringify({passed:true,checks:results}));win.destroy();app.exit(0);return;}
       // Connected references are live inputs, not a frozen preview copied into a draft.
       await js(`state.board={...state.board,nodes:state.board.nodes.map(n=>n.id==='primary'?{...n,data:{kind:'image',title:'主体参考',assetId:'source-a'}}:n.id==='third'?{...n,data:{kind:'image',title:'生成结果',draft:true}}:n)};void 0`);await pause(450);
       await js(`select('third')`);await pause(250);
       const connectedPanel='.vue-flow__node[data-id="third"] .canvas-prompt-panel';
       assert.ok(await visible(connectedPanel+' [data-reference-node="primary"] img'));
       assert.ok(await js(`document.querySelector(${q(connectedPanel+' [data-reference-node="primary"] img')}).naturalWidth>0`));
-      await drag(handle('neighbor')+'-right',handle('third')+'-left');await js(`select('third')`);await pause(250);
+      // Selecting a large image now frames its editor; bring both endpoints
+      // back on screen before performing the next real pointer connection.
+      await js(`document.querySelector('.design-canvas-area').focus()`);await key('ESC');await key('0',['meta']);await pause(850);
+      await drag(handle('neighbor')+'-right',handle('third')+'-left');
+      assert.equal(await js('state.board.edges.length'),2,'both endpoints connect after framing the board');
+      await js(`select('third')`);await pause(500);
       assert.equal(await js(`document.querySelectorAll(${q(connectedPanel+' .prompt-linked-reference')}).length`),2);
       assert.equal(await visible(connectedPanel+' .prompt-reference-modes'),false);
       assert.ok((await js(`document.querySelector(${q(connectedPanel+' .prompt-reference-status')}).textContent`)).includes('已连接 2'));
@@ -169,7 +221,9 @@ if(!process.versions.electron){
       })()`);
       await js(`localStorage.setItem('langjuart.viewport.workspace-interaction-fixture',JSON.stringify({x:-9999,y:-9999,zoom:2}));reset('image')`);await pause(850);
       assert.ok(await allVisible(),'initial board must override an offscreen saved viewport');
-      await js(`state.board={nodes:[],edges:[]};void 0`);await pause(180);
+      // Start arrivals in a fresh empty workspace. Polling an empty board
+      // intentionally preserves local draft nodes in an existing workspace.
+      await js(`state.board={nodes:[],edges:[]};state.epoch++;void 0`);await pause(500);
       await js(`state.board={nodes:[{id:'first-output',position:{x:1400,y:900},data:{kind:'image',generating:true}}],edges:[]};void 0`);await pause(850);
       assert.ok(await allVisible(['first-output']),'first generating placeholder must be focused');
       await js(`state.board={...state.board,nodes:[...state.board.nodes,{id:'next-output',position:{x:9000,y:-4200},data:{kind:'image',generating:true}}]};void 0`);await pause(850);
@@ -178,7 +232,8 @@ if(!process.versions.electron){
       assert.equal(await visible('.canvas-new-results'),false);
       await js(`state.board={...state.board,nodes:[...state.board.nodes,{id:'batch-one',position:{x:4500,y:3800},data:{kind:'image',generating:true}},{id:'batch-two',position:{x:4860,y:3900},data:{kind:'image',generating:true}}]};void 0`);await pause(850);
       assert.ok(await allVisible(['batch-one','batch-two']),'outputs arriving together are focused as one new batch');
-      await js(`select('next-output')`);await pause(500);
+      // Keep automatic framing active: explicitly selecting/editing a node
+      // hands viewport control to the user and intentionally stops auto-focus.
       await js(`flow.setViewport({x:-6000,y:-6000,zoom:1})`);
       const portrait='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="900"><rect width="300" height="900" fill="seagreen"/></svg>');
       await js(`state.board={...state.board,nodes:state.board.nodes.map(n=>n.id==='next-output'?{...n,data:{kind:'image',generating:false,localFile:${q(portrait)}}}:n)};void 0`);await pause(850);
@@ -188,7 +243,11 @@ if(!process.versions.electron){
       const manual=await js('({...flow.viewport.value})');assert.ok(Math.abs(manual.x-beforePan.x-40)<2);
       await js(`state.board=JSON.parse(JSON.stringify(state.board));void 0`);await pause(850);
       assert.deepEqual(await js('({...flow.viewport.value})'),manual,'unchanged polling must preserve manual pan');
+      await js(`state.board={...state.board,nodes:[...state.board.nodes,{id:'after-manual-pan',position:{x:12000,y:9000},data:{kind:'text',text:'用户平移后的新成果'}}]};void 0`);await pause(850);
+      assert.deepEqual(await js('({...flow.viewport.value})'),manual,'new arrivals must not interrupt manual navigation');
       win.setContentSize(390,844);await pause(200);
+      await js(`state.board={nodes:[],edges:[]};state.epoch++;void 0`);await pause(500);
+      await click('[aria-label="收起对话"]');await pause(500);
       await js(`state.board={...state.board,nodes:[...state.board.nodes,{id:'mobile-output',position:{x:1400,y:1500},data:{kind:'text',text:'移动端新成果'}}]};void 0`);await pause(1000);
       assert.ok(await visible('[aria-label="展开对话"]'));
       assert.ok(await allVisible(['mobile-output']),'new output focus avoids the avatar dock and bottom controls');

@@ -42,6 +42,11 @@ def image_parameters(params, model):
             options['aspectRatio'] = options.pop('size')
         result = prepare_image_parameters(options, model=model, provider_api='images')
         result.pop('input_fidelity', None)
+        # The node composer uses auto for an unspecified background. EvoLink's
+        # GPT Image 2.5 endpoint rejects that literal; omit it and use its default.
+        from .image_parameters import is_gpt_image_25
+        if is_gpt_image_25(model) and result.get('background') == 'auto':
+            result.pop('background')
         return result
     # Non-GPT EvoLink models use size for aspect ratio and quality for resolution.
     size = str(options.get('size') or '').replace('×', 'x')

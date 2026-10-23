@@ -1,12 +1,22 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { modelDisplayName, modelPriceLabel } from '../modelEconomy';
-import { ArrowUp, ChevronDown, Expand, Shrink, Lightbulb, Plus, SlidersHorizontal, X, WandSparkles, Palette, Video, Box, LoaderCircle, Link2, FileText, Image, Music2 } from 'lucide-vue-next';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { modelDisplayName } from '../modelEconomy';
+import ModelBrandIcon from './ModelBrandIcon.vue';
+import AnchoredPopover from './composer/AnchoredPopover.vue';
+import { ArrowUp, ChevronDown, Expand, Shrink, Lightbulb, Plus, SlidersHorizontal, X, WandSparkles, Palette, Video, LoaderCircle, Link2, FileText, Image, Music2 } from 'lucide-vue-next';
 import { referenceImageIds, referenceProblem, type CanvasReference } from '../features/canvasReferences';
 import { requestedMediaRatio } from '../nodeSizing';
 
 const props = defineProps<{ kind: string; modelOptions?: string[]; videoModelOptions?: string[]; audioModelOptions?: string[]; textModelOptions?: string[]; generating?: boolean; params?: Record<string, any>; apiBaseUrl: string; projectId: string; nodeId?: string; referencePreviewUrl?: string; initialPrompt?: string; connectedReferences?: CanvasReference[] }>();
-const emit = defineEmits<{ submit: [payload: { prompt: string; params: Record<string, any> }] }>();
+const emit = defineEmits<{ submit: [payload: { prompt: string; params: Record<string, any> }]; 'aspect-change': [aspect: string] }>();
+const modelButton = ref<HTMLElement | null>(null);
+const modelMenu = ref<HTMLElement | null>(null);
+const showModelMenu = ref(false);
+function dismissModelMenu(event: PointerEvent) {
+  if (event.target instanceof Node && !modelButton.value?.contains(event.target) && !modelMenu.value?.contains(event.target)) showModelMenu.value = false;
+}
+onMounted(() => document.addEventListener('pointerdown', dismissModelMenu));
+onUnmounted(() => document.removeEventListener('pointerdown', dismissModelMenu));
 const prompt = ref(props.initialPrompt || '');
 const model = ref(props.params?.model || '');
 const style = ref(props.params?.style || '');
@@ -24,7 +34,7 @@ const outputFormat = ref(props.params?.output_format || 'png');
 const extendedQuality = computed(() => /gpt-image-2\.5(?:-|$)/i.test(model.value));
 const duration = ref(Number.parseInt(props.params?.duration || '5'));
 const camera = ref(props.params?.camera || '');
-const voice = ref(props.params?.voice || 'alloy');
+const voice = ref(props.params?.voice || '');
 const referenceInput = ref<HTMLInputElement | null>(null);
 const referenceAssetId = ref(props.params?.source_asset_id || '');
 const preview = ref(props.referencePreviewUrl || (referenceAssetId.value ? `${props.apiBaseUrl}/api/projects/${encodeURIComponent(props.projectId)}/assets/${encodeURIComponent(referenceAssetId.value)}/content` : ''));
@@ -73,7 +83,7 @@ const visual = computed(() => props.kind === 'image' || props.kind === 'video' |
 const referenceAccept = computed(() => visual.value ? 'image/*' : '.txt,.md,.markdown');
 const referenceLabel = computed(() => visual.value ? '上传参考图' : '导入参考文字');
 const placeholder = computed(() => props.kind === 'cad' ? '描述产品结构、尺寸（mm）和孔位，可添加参考图片…' : props.kind === 'audio' ? '输入要朗读的文字，选择音色与语速…' : ['text', 'html'].includes(props.kind) ? (props.kind === 'html' ? '描述网页的布局、内容、风格与交互…' : '描述你想生成或修改的内容…') : '拖入或粘贴参考图，描述你想创作的画面…');
-const settingsLabel = computed(() => props.kind === 'audio' ? `${voice.value || '音色'} · ${speed.value}×` : [aspect.value, props.kind === 'video' && `${duration.value}s`, resolution.value].filter(Boolean).join(' · '));
+const settingsLabel = computed(() => props.kind === 'audio' ? `${voice.value || '默认音色'} · ${speed.value}×` : [aspect.value, props.kind === 'video' && `${duration.value}s`, resolution.value].filter(Boolean).join(' · '));
 function toggleSettings(value: 'style' | 'camera' | 'settings') { settings.value = settings.value === value ? null : value; }
 const label = computed(() => ({ image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页', cad: 'CAD 模型', upload: '图像' }[props.kind] || '内容'));
 const options = computed(() => props.kind === 'video' ? (props.videoModelOptions || []) : ['text', 'html', 'cad'].includes(props.kind) ? (props.textModelOptions || []) : props.kind === 'audio' ? (props.audioModelOptions || []) : (props.modelOptions || []));
@@ -108,7 +118,7 @@ function submit() {
   if (!prompt.value.trim() || props.generating || uploading.value || referenceIssue.value) return;
   error.value = '';
   if (props.kind === 'video' && (!Number.isInteger(duration.value) || duration.value < 1 || duration.value > 60)) { error.value = '请输入 1–60 的整数秒视频时长'; return; }
-  if (props.kind === 'audio' && (!voice.value.trim() || !Number.isFinite(speed.value) || speed.value < .25 || speed.value > 4)) { error.value = '请输入音色，并将语速设置为 0.25–4 倍'; return; }
+  if (props.kind === 'audio' && (!Number.isFinite(speed.value) || speed.value < .25 || speed.value > 4)) { error.value = '请将语速设置为 0.25–4 倍'; return; }
   const params: Record<string, any> = { model: model.value };
   if (referenceAssetId.value) params.source_asset_id = referenceAssetId.value;
   if (visual.value && props.kind !== 'cad') Object.assign(params, { style: style.value, aspectRatio: aspect.value,
@@ -119,7 +129,7 @@ function submit() {
     output_format: background.value === 'transparent' && outputFormat.value === 'jpeg' ? 'png' : outputFormat.value,
   });
   if (props.kind === 'video') Object.assign(params, { duration: duration.value, camera: camera.value });
-  if (props.kind === 'audio') Object.assign(params, { voice: voice.value, speed: speed.value });
+  if (props.kind === 'audio') Object.assign(params, { voice: voice.value.trim(), speed: speed.value });
   emit('submit', { prompt: prompt.value.trim(), params });
 }
 </script>
@@ -139,6 +149,7 @@ function submit() {
       <small v-if="uploading">正在读取…</small>
     </div>
     <p v-if="linkedReferences.length || kind === 'video' && imageIds.length" class="prompt-reference-status" :class="{ 'has-issue': referenceIssue }" aria-live="polite">{{ referenceIssue || (kind === 'video' && imageIds.length ? (imageIds.length === 2 ? '按参考顺序：第一张首帧，第二张尾帧' : '当前参考图作为首帧') : `已连接 ${linkedReferences.length} 个素材，将作为生成参考`) }}</p>
+    <p class="prompt-delivery-summary" aria-live="polite">{{ generating ? '正在生成' : '本次生成' }}：1 项{{ label }}<span v-if="imageIds.length"> · {{ imageIds.length }} 张参考图</span><span v-if="linkedReferences.some(item => item.text.trim())"> · 含上游文字</span></p>
     <input ref="referenceInput" type="file" class="visually-hidden" :accept="referenceAccept" tabindex="-1" @change="uploadReference" />
     <textarea v-model="prompt" :aria-label="`${label}节点提示词`" :placeholder="placeholder" @paste="pasteReference" @keydown.meta.enter.prevent="submit" @keydown.ctrl.enter.prevent="submit" />
     <div v-if="settings" class="prompt-options" :aria-label="settings === 'style' ? '风格设置' : settings === 'camera' ? '镜头设置' : '生成参数'">
@@ -147,7 +158,7 @@ function submit() {
         <label v-if="settings === 'style'">风格<input v-model="style" placeholder="写实、插画、电影感…" /></label>
         <label v-else-if="settings === 'camera'">镜头<select v-model="camera"><option value="">跟随描述</option><option>静态</option><option>推近</option><option>拉远</option><option>横移</option><option>环绕</option></select></label>
         <template v-else>
-          <template v-if="visual && kind !== 'cad'"><label>画幅<select v-model="aspect"><option v-for="value in aspectOptions" :key="value">{{ value }}</option></select></label><label>分辨率<select v-model="resolution"><template v-if="imageKind"><option value="auto">自动（创意 1K）</option><option>1K</option><option>2K</option><option>4K</option></template><template v-else><option>720p</option><option>1080p</option><option>4K</option></template></select></label></template>
+          <template v-if="visual && kind !== 'cad'"><label>画幅<select v-model="aspect" :disabled="generating" @change="emit('aspect-change', aspect)"><option v-for="value in aspectOptions" :key="value">{{ value }}</option></select></label><label>分辨率<select v-model="resolution"><template v-if="imageKind"><option value="auto">自动（创意 1K）</option><option>1K</option><option>2K</option><option>4K</option></template><template v-else><option>720p</option><option>1080p</option><option>4K</option></template></select></label></template>
           <template v-if="imageKind">
             <label>质量<select v-model="quality"><option value="auto">自动</option><option value="low">快速</option><option value="medium">标准</option><option value="high">高质量</option><template v-if="extendedQuality"><option value="xhigh">超高质量</option><option value="max">最高质量</option></template></select></label>
             <label>背景<select v-model="background" aria-label="图像背景" @change="background === 'transparent' && outputFormat === 'jpeg' && (outputFormat = 'png')"><option value="auto">自动识别</option><option value="transparent">透明背景</option><option value="opaque">不透明背景</option></select></label>
@@ -155,21 +166,29 @@ function submit() {
             <small v-if="background === 'transparent'" class="prompt-background-hint">需要支持透明输出的 GPT Image 模型；生成后校验透明通道。</small>
           </template>
           <label v-if="kind === 'video'">时长（秒）<input v-model.number="duration" type="number" min="1" max="60" /></label>
-          <template v-if="kind === 'audio'"><label>音色<input v-model="voice" placeholder="输入音色 ID" /></label><label>语速<input v-model.number="speed" type="number" min="0.25" max="4" step="0.25" /></label></template>
+          <template v-if="kind === 'audio'"><label>音色<input v-model="voice" placeholder="留空使用服务默认音色" /></label><label>语速<input v-model.number="speed" type="number" min="0.25" max="4" step="0.25" /></label></template>
         </template>
       </div>
     </div>
     <p v-if="error" role="alert" class="prompt-error">{{ error }}</p>
     <footer>
-      <label class="prompt-select" :title="model ? modelPriceLabel(model) : '按任务自动选择模型'"><Box :size="13" /><select v-model="model" :aria-label="`${label}模型`"><option value="">自动选择模型</option><option v-for="item in options" :key="item" :value="item">{{ modelDisplayName(item) }} · {{ modelPriceLabel(item) }}</option></select><ChevronDown :size="11" /></label>
-      <button v-if="visual" class="prompt-footer-tool" type="button" :aria-expanded="settings === 'style'" @click="toggleSettings('style')"><Palette :size="13" />风格</button>
+      <button ref="modelButton" type="button" class="prompt-model-trigger" :aria-label="`${label}模型`" aria-haspopup="dialog" :aria-expanded="showModelMenu" @click.stop="showModelMenu = !showModelMenu"><ModelBrandIcon :model="model || ''" /><span>{{ model ? modelDisplayName(model) : '自动选择模型' }}</span><ChevronDown :size="11" /></button>
+      <AnchoredPopover v-if="showModelMenu" :anchor="modelButton" :label="`选择${label}模型`" @close="showModelMenu = false">
+        <div ref="modelMenu" class="canvas-model-options nodrag nowheel"><button v-for="item in ['', ...options]" :key="item" type="button" :aria-pressed="model === item" @click.stop="model = item; showModelMenu = false; modelButton?.focus()"><ModelBrandIcon :model="item" /><span>{{ item ? modelDisplayName(item) : '自动选择模型' }}</span></button></div>
+      </AnchoredPopover>
+      <button v-if="visual && kind !== 'cad'" class="prompt-footer-tool" type="button" :aria-expanded="settings === 'style'" @click="toggleSettings('style')"><Palette :size="13" />风格</button>
       <button v-if="kind === 'video'" class="prompt-footer-tool" type="button" :aria-expanded="settings === 'camera'" @click="toggleSettings('camera')"><Video :size="13" />镜头</button>
-      <button v-if="!['text', 'html'].includes(kind)" class="prompt-footer-tool prompt-settings-toggle" type="button" aria-label="生成参数" :aria-expanded="settings === 'settings'" @click="toggleSettings('settings')"><SlidersHorizontal :size="13" /><span>{{ settingsLabel }}</span></button>
+      <button v-if="['image', 'upload', 'video', 'audio'].includes(kind)" class="prompt-footer-tool prompt-settings-toggle" type="button" aria-label="生成参数" :aria-expanded="settings === 'settings'" @click="toggleSettings('settings')"><SlidersHorizontal :size="13" /><span>{{ settingsLabel }}</span></button>
       <button class="prompt-submit" type="button" :disabled="!prompt.trim() || generating || uploading || !!referenceIssue" :aria-label="`生成${label}`" :title="referenceIssue || `生成${label} · ⌘ / Ctrl + Enter`" @click="submit"><LoaderCircle v-if="generating" :size="16" class="spin-icon" /><ArrowUp v-else :size="16" /></button>
     </footer>
   </section>
 </template>
 <style scoped>
+.prompt-model-trigger { display: flex; align-items: center; gap: 6px; max-width: 240px; min-width: 0; padding: 6px; border: 0; border-radius: 8px; background: transparent; color: var(--theme-text); font-size: 13px; }
+.prompt-model-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.canvas-model-options { max-height: 320px; overflow: auto; scrollbar-width: thin; }
+.canvas-model-options button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 8px; border: 0; border-radius: 8px; background: transparent; color: var(--theme-text); text-align: left; font-size: 13px; overflow-wrap: anywhere; }
+.canvas-model-options button[aria-pressed="true"], .canvas-model-options button:hover { background: var(--theme-surface-hover); }
 .prompt-background-hint { grid-column: 1 / -1; color: var(--text-muted, #a9a9a9); font-size: 11px; line-height: 1.5; }
 .canvas-prompt-tools { flex-wrap: wrap; align-items: center; gap: 8px; max-height: 168px; overflow-y: auto; padding: 6px 4px; }
 .prompt-linked-reference { position: relative; width: 76px; height: 60px; flex: 0 0 76px; overflow: hidden; border: 1px solid var(--theme-border); border-radius: 9px; background: var(--theme-surface); }
@@ -183,4 +202,5 @@ function submit() {
 .prompt-linked-reference.is-pending { border-style: dashed; }
 .prompt-reference-status { margin: 0 0 7px; font-size: 10px; line-height: 1.5; color: var(--theme-text-muted); }
 .prompt-reference-status.has-issue { color: #bbbbbb; }
+.prompt-delivery-summary { margin: 0 0 7px; color: var(--theme-text-muted); font-size: var(--ui-font-caption); line-height: 1.5; }
 </style>

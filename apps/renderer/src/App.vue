@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import GeneralSettings from './components/GeneralSettings.vue';
+import AppUpdate from './components/AppUpdate.vue';
+import ModelBrandIcon from './components/ModelBrandIcon.vue';
+import { canvasTextModel, canvasTaskTerminalPatch, createCanvasSubmissionGate } from './features/canvasGeneration';
+import AppearanceSettings from './components/AppearanceSettings.vue';
+import { applyAppearance } from './features/appearance';
+import { generalSettings, shouldSendMessage } from './features/generalSettings';
 import { useDesignDemoPlayback } from './features/home/designDemoPlayback';
 import { useShowcasePlayback } from './features/home/showcasePlayback';
 import { readyShowcaseSlugs } from './features/home/designExamples';
@@ -33,7 +40,7 @@ import StarBorder from './components/motion/StarBorder.vue';
 import AnimatedList from './components/motion/AnimatedList.vue';
 import './settings.css';
 
-import { DEFAULT_DRAFT_IMAGE_MODEL, DEFAULT_IMAGE_MODEL, DEFAULT_VIDEO_MODEL, IMAGE_ROUTE_LABEL, usdToCny, modelPrices, modelPriceLabel, modelDisplayName, formatTokens, preferMediaModel, routingChoices, type RoutingMode } from './modelEconomy';
+import { DEFAULT_DRAFT_IMAGE_MODEL, DEFAULT_IMAGE_MODEL, DEFAULT_VIDEO_MODEL, IMAGE_ROUTE_LABEL, usdToCny, modelPrices, modelDisplayName, formatTokens, preferMediaModel, routingChoices, type RoutingMode } from './modelEconomy';
 
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 
@@ -46,7 +53,7 @@ import { homeServices, projectLibraryServices, assetLibraryServices, knowledgeLi
 
 import { useWorkspaceNavigation } from './features/navigation/useWorkspaceNavigation';
 import { createTaskQueue, type QueueTask } from './features/taskQueue';
-import { canDispatchQueue, createQueueMessage, moveQueueItem, shouldAdvanceQueue, queuePauseReason, queueTaskResult, type QueuedComposerMessage } from './features/messageQueue';
+import { canDispatchQueue, createQueueMessage, moveQueueItem, shouldAdvanceQueue, queuePauseReason, queueTaskResult, supplementUnavailableReason, queueItemCanStart, type QueuedComposerMessage } from './features/messageQueue';
 
 import { ArrowUp, House, Wrench, BookOpen, Bot, Box, CircleHelp, ClipboardList, Clock3, ChevronDown, ChevronRight, ChevronUp, FileText, Folder, GripVertical, Images, ListPlus, LoaderCircle, Monitor, Sun, Moon, Palette, Paperclip, Pencil, Play, Settings2, Square as StopIcon, Trash2, Upload, Volume2, X } from 'lucide-vue-next';
 
@@ -73,7 +80,7 @@ provide(mascotSettingsKey, mascotSettings);
 
 const appVersion = '0.2.0';
 
-const composerShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ ↵' : 'Ctrl + Enter';
+const composerShortcut = computed(() => generalSettings.sendWithEnter ? 'Enter' : /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ ↵' : 'Ctrl + Enter');
 
 const isDesktopApp = Boolean(window.studio?.isDesktop || /Electron\//i.test(navigator.userAgent));
 
@@ -142,7 +149,9 @@ const runningTaskId = ref<string | null>(null);
 const runningTaskProjectId = ref<string | null>(null);
 
 const isStoppingTask = ref(false);
-const composerRunMode = ref<'supplement' | 'queue'>('supplement');
+const queueMessagesByDefault = ref(localStorage.getItem('aics.queueMessagesByDefault') === 'true');
+watch(queueMessagesByDefault, value => localStorage.setItem('aics.queueMessagesByDefault', String(value)));
+const composerRunMode = computed(() => queueMessagesByDefault.value || intakeFiles.value.length || intakeMentionAssets.value.length || intakeSkills.value.length ? 'queue' : 'supplement');
 const sendingSupplement = ref(false);
 
 const stopRequested = ref(false);
@@ -346,7 +355,21 @@ const intakeRequestTimeoutMs = 12_000;
 
 const agentDisplayTitle = (_agentKey: string) => '设计 Agent';
 
-const taskQueue = createTaskQueue(projects, projectId => request<TaskRecord[]>(`/api/projects/${projectId}/tasks`), () => request<QueueTask[]>('/api/tasks/activity'));
+const taskQueue = createTaskQueue(projects, projectId => request<TaskRecord[]>(`/api/projects/${projectId}/tasks`), () => request<QueueTask[]>('/api/tasks/activity'), notifyTaskFinished);
+function notifyTaskFinished(task: QueueTask) {
+  if (!generalSettings.notifications || (!document.hidden && document.hasFocus() && activeProjectId.value === task.projectId && workspaceView.value === 'design-agent')) return;
+  const data = task.output?.structured_data || {};
+  const needsInput = data.clarification?.questions?.length || (data.referenceSelection?.items?.length && data.referenceSelection.status === 'pending' && !data.referenceSelection.submittedAction);
+  const state = task.status === 'failed' ? '任务未完成，请查看原因' : needsInput ? '任务需要补充信息' : data.deliveryStatus && data.deliveryStatus !== 'passed' ? '任务有待处理事项' : '任务已完成';
+  const title = projects.value.find(project => project.id === task.projectId)?.name || 'MxinspireX';
+  pushToast(`${title}：${state}`, task.status === 'failed' ? 'error' : 'info');
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      const notification = new Notification(title, { body: state, tag: `task:${task.id}` });
+      notification.onclick = () => { window.focus(); void selectProject(task.projectId); notification.close(); };
+    } catch { /* The in-app notification remains available. */ }
+  }
+}
 const activeQueueTasks = computed(() => taskQueue.activeTasks.value.filter(task => task.status === 'running'));
 const taskQueueCount = computed(() => activeQueueTasks.value.length);
 const taskQueueLabel = computed(() => taskQueueCount.value ? `正在运行的任务 · ${taskQueueCount.value}` : '当前没有正在运行的任务');
@@ -565,7 +588,6 @@ const selectedTextProvider = ref(persistedCredentialProvider || persistedTextPro
 
 const activeTextProvider = computed(() => providers.value.some((provider) => provider.key === selectedTextProvider.value && provider.configured) ? selectedTextProvider.value : '');
 
-const selectedTextProviderLabel = computed(() => providers.value.find((provider) => provider.key === activeTextProvider.value)?.label || '未配置真实模型');
 
 const selectedCredentialProvider = ref(persistedCredentialProvider || persistedTextProvider || 'openrouter');
 
@@ -780,6 +802,7 @@ const modelConnectionHint = computed(() => liveModelCatalog.error.value
 let localCatalogSequence = 0;
 
 const settingsTabs = [
+  { key: 'general', label: '常规设置', icon: 'G' },
   { key: 'account', label: '用户中心', icon: 'U' },
   { key: 'text', label: '模型与连接', icon: 'T' },
   { key: 'routing', label: '用量与计费', icon: '⇄' },
@@ -1196,6 +1219,7 @@ function applyTheme() {
   resolvedTheme.value = resolved;
   document.documentElement.dataset.theme = resolved;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'light' ? '#f3f2ef' : '#181818');
+  applyAppearance(resolved);
   document.querySelector<HTMLLinkElement>('#app-favicon')?.setAttribute('href', `${import.meta.env.BASE_URL}assets/mxinspirex-robot.png`);
   void window.studio?.setTitleBarTheme?.(resolved);
   // Keep the native Dock/window artwork in lockstep with the renderer theme.
@@ -1546,7 +1570,7 @@ function handleIntakeComposerKeydown(event: KeyboardEvent) {
     handleIntakeMentionKeydown(event);
     return;
   }
-  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+  if (shouldSendMessage(event, generalSettings.sendWithEnter)) {
     event.preventDefault();
     void submitComposer();
   }
@@ -2131,6 +2155,7 @@ async function createBlankCanvas() {
 }
 
 function requestDeleteProject(project: Project) {
+  if (!generalSettings.confirmProjectDelete) { void deleteProject(project); return; }
   pendingDeleteProjectId.value = pendingDeleteProjectId.value === project.id ? null : project.id;
   errorMessage.value = '';
 }
@@ -2141,6 +2166,7 @@ function cancelDeleteProject() {
 
 function requestDeleteAsset(asset: AssetRecord, projectId = asset.projectId) {
   if (!projectId) return;
+  if (!generalSettings.confirmAssetDelete) { void deleteAsset({ ...asset, projectId }); return; }
   pendingDeleteAsset.value = { ...asset, projectId };
   pendingDeleteKnowledge.value = null;
   errorMessage.value = '';
@@ -2174,6 +2200,7 @@ async function deleteAsset(asset: AssetRecord) {
 
 function requestDeleteKnowledge(document: { id: string; title: string }, scope: 'global' | 'project', projectId?: string) {
   if (scope === 'project' && !projectId) return;
+  if (!generalSettings.confirmAssetDelete) { void deleteKnowledge({ ...document, scope, projectId }); return; }
   pendingDeleteKnowledge.value = { id: document.id, title: document.title, scope, projectId };
   pendingDeleteAsset.value = null;
   errorMessage.value = '';
@@ -2577,10 +2604,11 @@ async function moveDesignNode(id: string, position: { x: number; y: number }) {
 }
 
 async function generateCanvasNode(kind: 'image' | 'video' | 'audio' | 'text' | 'html' | 'cad' | 'upload', prompt: string, _position: { x: number; y: number }, params: Record<string, any> = {}) {
-  const project = activeProject.value;
+  const project = params.canvasProjectId ? projects.value.find(item => item.id === params.canvasProjectId) : activeProject.value;
+  const { canvasProjectId: _projectId, ...generationParams } = params;
   if (!project || !prompt.trim()) return;
   const labels = { image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '图像' };
-  await runCanvasNodeTask(project, `请在当前空白画布节点中生成${labels[kind]}。\n用户提示词：${prompt}`, { ...params, kind });
+  await runCanvasNodeTask(project, `请在当前空白画布节点中生成${labels[kind]}。\n用户提示词：${prompt}`, { ...generationParams, kind });
 }
 
 async function patchCanvasNodeTaskState(projectId: string, nodeId: string, data: Record<string, any>) {
@@ -2597,7 +2625,7 @@ async function observeCanvasNodeTask(projectId: string, initial: TaskRecord, con
   const refresh = async () => {
     if (refreshing || controller.signal.aborted || activeProjectId.value !== projectId) return;
     refreshing = true;
-    try { await loadDesignCanvas(projectId); } finally { refreshing = false; }
+    try { await loadDesignCanvas(projectId); } catch { /* The task observer handles connection recovery. */ } finally { refreshing = false; }
   };
   const timer = window.setInterval(() => { void refresh(); }, 1200);
   try {
@@ -2609,18 +2637,17 @@ async function observeCanvasNodeTask(projectId: string, initial: TaskRecord, con
     await Promise.allSettled([loadDesignCanvas(projectId), loadAssets(projectId)]);
     if (result.status === 'succeeded') void refreshAchievements();
     const node = activeProjectId.value === projectId ? designCanvasDocument.value.nodes.find(item => item.id === nodeId) : undefined;
-    if (node?.data?.generating) {
-      const message = result.status === 'cancelled' ? '已停止生成' : result.status === 'failed'
-        ? normalizeDesignError(result.error?.message || '生成失败') : '本轮未产生可用内容，可在节点中重试';
-      await patchCanvasNodeTaskState(projectId, nodeId, { generating: false, status: result.status === 'cancelled' ? '已停止' : '生成失败', error: message });
+    const terminalPatch = node && canvasTaskTerminalPatch(result, node.data);
+    if (terminalPatch) {
+      await patchCanvasNodeTaskState(projectId, nodeId, terminalPatch);
       await loadDesignCanvas(projectId);
     }
     return result.status === 'succeeded';
   } catch (error) {
     if (!controller.signal.aborted) {
       const message = error instanceof Error ? error.message : '节点任务连接中断，重新打开项目后可继续查看';
-      await patchCanvasNodeTaskState(projectId, nodeId, { generating: false, status: '生成失败', error: message }).catch(() => undefined);
-      await loadDesignCanvas(projectId);
+      pushToast(message, 'error');
+      if (activeProjectId.value === projectId) await loadDesignCanvas(projectId).catch(() => undefined);
     }
     return false;
   } finally {
@@ -2629,10 +2656,15 @@ async function observeCanvasNodeTask(projectId: string, initial: TaskRecord, con
   }
 }
 
+const guardCanvasSubmission = createCanvasSubmissionGate();
 async function runCanvasNodeTask(project: Project, message: string, canvasParams: Record<string, any>): Promise<boolean> {
+  return guardCanvasSubmission(project.id, String(canvasParams.canvasNodeId || ''), () => submitCanvasNodeTask(project, message, canvasParams));
+}
+async function submitCanvasNodeTask(project: Project, message: string, canvasParams: Record<string, any>): Promise<boolean> {
   canvasParams = automaticImageReferenceParams(canvasParams);
   const nodeId = String(canvasParams.canvasNodeId || '');
   if (!nodeId || taskHistory.value.some(task => task.taskSurface === 'canvas_node' && task.canvasNodeId === nodeId && taskIsActive(task))) return false;
+  let submitted = false;
   try {
     const previousError = errorMessage.value;
     const providerReady = await ensureTextProvider();
@@ -2646,8 +2678,8 @@ async function runCanvasNodeTask(project: Project, message: string, canvasParams
       referencedNodes: [...new Set<string>((canvasParams.reference_node_ids || []) as string[])].map(id => ({ id, projectId: project.id })),
       referencedFiles: [], imageStyle: imageStyle.value, allowExternalNetwork: allowExternalNetwork.value,
       canvasParams: { ...canvasParams, canvasNodeId: nodeId },
-      modelRouting: { mode: ['text', 'html'].includes(canvasParams.kind) && canvasParams.model ? 'manual' : routingMode.value },
-      textProvider: { key: activeTextProvider.value, baseUrl: providerBaseUrl.value, model: ['text', 'html'].includes(canvasParams.kind) && canvasParams.model ? canvasParams.model : providerModel.value },
+      modelRouting: { mode: ['text', 'html', 'cad'].includes(canvasParams.kind) && canvasParams.model ? 'manual' : routingMode.value },
+      textProvider: { key: activeTextProvider.value, baseUrl: providerBaseUrl.value, model: canvasTextModel(canvasParams.kind, canvasParams.model, providerModel.value) },
       mediaProvider: {
         threeD: { key: threeDConfigProvider.value, endpoint: threeDConfigEndpoint.value, model: threeDConfigModel.value },
         audio: taskMediaProvider('audio'),
@@ -2656,16 +2688,23 @@ async function runCanvasNodeTask(project: Project, message: string, canvasParams
       },
     };
     const requestPayload = { agentKey: 'design', workflowStep: 'design', brief: message, async: true, input };
+    submitted = true;
     const task = await request<TaskRecord>(`/api/projects/${project.id}/tasks`, {
       method: 'POST', body: JSON.stringify({ ...requestPayload, requestId: crypto.randomUUID() }),
     });
-    await patchCanvasNodeTaskState(project.id, nodeId, { taskId: task.id, generating: true, status: '生成中', error: '' });
-    if (activeProjectId.value === project.id) await loadDesignCanvas(project.id);
+    taskQueue.update(project.id, task);
+    upsertTaskRecord(project.id, task);
+    if (activeProjectId.value === project.id) await loadDesignCanvas(project.id).catch(() => undefined);
     return await observeCanvasNodeTask(project.id, task);
   } catch (error) {
     const messageText = error instanceof Error ? error.message : '节点生成未能开始';
-    await patchCanvasNodeTaskState(project.id, nodeId, { generating: false, status: '生成失败', error: messageText }).catch(() => undefined);
-    if (activeProjectId.value === project.id) await loadDesignCanvas(project.id);
+    const status = Number((error as { status?: number })?.status);
+    if (!submitted || status >= 400 && status < 500 && status !== 409) {
+      await patchCanvasNodeTaskState(project.id, nodeId, { generating: false, status: '生成失败', error: messageText }).catch(() => undefined);
+    } else {
+      pushToast('暂时无法确认任务受理状态，请重新打开项目查看原任务，避免重复生成。', 'error');
+    }
+    if (activeProjectId.value === project.id) await loadDesignCanvas(project.id).catch(() => undefined);
     return false;
   }
 }
@@ -2677,10 +2716,11 @@ async function cancelCanvasNodeTask(nodeId: string, taskId: string) {
     const task = await request<TaskRecord>(`/api/projects/${projectId}/tasks/${taskId}/cancel`, { method: 'POST' });
     taskQueue.update(projectId, task);
     upsertTaskRecord(projectId, task);
-    await patchCanvasNodeTaskState(projectId, nodeId, { generating: false, status: '已停止', error: '已停止生成' });
+    // The server may return a result that finished just before cancellation.
+    // Reload the persisted node instead of overwriting it with a local stop state.
     await loadDesignCanvas(projectId);
   } catch (error) {
-    await patchCanvasNodeTaskState(projectId, nodeId, { generating: false, status: '停止失败', error: error instanceof Error ? error.message : '暂时无法停止节点任务' }).catch(() => undefined);
+    pushToast(error instanceof Error ? error.message : '暂时无法确认是否停止，任务状态会继续同步', 'error');
     await loadDesignCanvas(projectId);
   }
 }
@@ -3005,7 +3045,7 @@ function queuedMessageMeta(message: QueuedMessage) {
 }
 
 async function runNextQueuedMessage(projectId = activeProjectId.value || '') {
-  if (!projectId || activeProjectId.value !== projectId || isRunningTask.value || dispatchingMessageQueues.has(projectId) || queueNeedsUserInput(projectId)) return;
+  if (!projectId || activeProjectId.value !== projectId || isRunningTask.value || sendingSupplement.value || dispatchingMessageQueues.has(projectId) || queueNeedsUserInput(projectId)) return;
   const project = projects.value.find(item => item.id === projectId);
   if (!project) return;
   dispatchingMessageQueues.add(projectId);
@@ -3015,7 +3055,7 @@ async function runNextQueuedMessage(projectId = activeProjectId.value || '') {
       const messages = queuedMessagesByProject.value[projectId] || [];
       if (!canDispatchQueue({ activeProject: activeProjectId.value === projectId, running: isRunningTask.value, awaitingInput: queueNeedsUserInput(projectId), dispatching: false, hasMessages: Boolean(messages.length) })) break;
       const message = messages[0];
-      if (editingQueuedMessage.value === message.id) break;
+      if (!queueItemCanStart(message, editingQueuedMessage.value, sendingSupplement.value)) break;
       let submitted = false;
       const completed = await runDesignTurn(project, message.text, {}, {
         requestId: message.id,
@@ -3048,26 +3088,31 @@ async function handoffIntake() {
   await runDesignTurn(project, project.brief);
 }
 
-async function supplementCurrentTask() {
+async function supplementCurrentTask(queued?: QueuedMessage) {
   const projectId = activeProjectId.value;
-  const taskId = runningTaskId.value;
-  const text = designChatInput.value.trim();
+  const taskId = queued?.supplementTaskId || runningTaskId.value;
+  const text = (queued?.text || designChatInput.value).trim();
   if (!projectId || !taskId || !text || sendingSupplement.value) return;
-  if (intakeFiles.value.length || intakeMentionAssets.value.length || intakeSkills.value.length) {
-    errorMessage.value = '补充当前任务支持文字要求；带附件、资产或技能的消息请选择“加入下一项”。'; return;
-  }
+  if (!queued?.supplementTaskId && (!isRunningTask.value || runningTaskProjectId.value !== projectId)) return;
+  const unavailable = supplementUnavailableReason(queued?.draft || snapshotComposerDraft());
+  if (unavailable) { errorMessage.value = unavailable; return; }
   sendingSupplement.value = true;
   const revision = draftRevision;
-  const key = `task-update:${taskId}`;
+  const key = queued ? `queue-update:${queued.id}` : `task-update:${taskId}`;
   try {
     const pending = await pendingTaskRequests.load(key).catch(() => undefined);
-    const requestId = pending?.signature === text ? pending.requestId : crypto.randomUUID();
+    const requestId = queued ? `queue-update:${queued.id}` : pending?.signature === text ? pending.requestId : crypto.randomUUID();
+    if (queued) {
+      const messages = queuedMessagesByProject.value[projectId] || [];
+      await persistQueuedMessages(projectId, messages.map(item => item.id === queued.id ? { ...item, supplementTaskId: taskId } : item));
+    }
     await pendingTaskRequests.save(key, { requestId, signature: text });
     await request(`/api/projects/${projectId}/tasks/${taskId}/updates`, { method: 'POST', body: JSON.stringify({ requestId, text }) });
     await pendingTaskRequests.remove(key);
-    if (activeProjectId.value === projectId && draftRevision === revision) { applyComposerDraft(); saveComposerDraft(); }
+    if (queued) await removeQueuedMessage(projectId, queued.id);
+    else if (activeProjectId.value === projectId && draftRevision === revision) { applyComposerDraft(); saveComposerDraft(); }
     const task = await request<TaskRecord>(`/api/projects/${projectId}/tasks/${taskId}`);
-    showDesignTask(projectId, task);
+    if (activeProjectId.value === projectId) showDesignTask(projectId, task);
     pushToast('补充已保存，将在下一次判断前生效。已提交的生成请求会保留。', 'success');
   } catch (e) { errorMessage.value = e instanceof Error ? e.message : '补充未确认送达，输入已保留。'; }
   finally { sendingSupplement.value = false; }
@@ -3081,7 +3126,7 @@ async function submitComposer() {
   if (!activeProject.value) { await createIntakeRecord(); if (activeProject.value) await handoffIntake(); return; }
   if (workspaceView.value === 'intake') { if (!intakeReady.value) await createIntakeRecord(); if (intakeReady.value) await handoffIntake(); return; }
   if (workspaceView.value === 'design-agent') {
-    if (isRunningTask.value && composerRunMode.value === 'supplement') { await supplementCurrentTask(); return; }
+    if (isRunningTask.value && composerRunMode.value === 'supplement' && !supplementUnavailableReason(snapshotComposerDraft())) { await supplementCurrentTask(); return; }
     const messages = await loadQueuedMessages(activeProject.value.id);
     if (!isRunningTask.value && activeQueuePauseReason.value) { await sendDesignMessage(); return; }
     if (isRunningTask.value || messages.length) {
@@ -3538,6 +3583,8 @@ provide(projectWorkspaceServices.key, {
 });
 
 onMounted(async () => {
+  const startupPath = router.currentRoute.value.fullPath;
+  const restoreId = localStorage.getItem(activeProjectStorageKey);
   window.addEventListener('model-prices-changed', loadLocalModelCatalog);
   void mascotSettings.load();
   void activateComposerDraft(activeProjectId.value);
@@ -3555,6 +3602,9 @@ onMounted(async () => {
   scheduleNotificationTimer = window.setInterval(() => { void refreshScheduleNotifications(); }, 5000);
   unsubscribeScheduleNotification = window.studio?.onScheduleNotification?.((projectId) => { if (projectId) void openScheduledProject(projectId); else openSchedules(); });
   await loadProjects();
+  if (generalSettings.restoreProject && startupPath === '/' && router.currentRoute.value.fullPath === startupPath
+      && !activeProjectId.value && !intakeBrief.value.trim() && !intakeFiles.value.length
+      && restoreId && projects.value.some(project => project.id === restoreId)) await selectProject(restoreId);
   void refreshAchievements();
   recordBetaUsage('app_open', { page: workspaceView.value });
   await loadLocalModelCatalog();
@@ -3616,6 +3666,7 @@ onUnmounted(() => {
               </div>
       </nav>
       <div class="top-left-profile-wrap">
+        <AppUpdate />
         <button ref="userSummaryButton" class="sidebar-user sidebar-user-mini" type="button" aria-label="用户概览" aria-haspopup="dialog" :aria-expanded="showUserSummary" aria-controls="user-summary-card" @click.stop="toggleUserSummary"><span class="user-avatar user-avatar-sprite" :style="{ backgroundPosition: activeAvatarOption.position }"><span class="sr-only">{{ userNickname }}</span></span></button>
         <section v-if="showUserSummary" id="user-summary-card" ref="userSummaryCard" class="profile-summary-card" role="dialog" aria-label="用户概览" tabindex="-1" @keydown.esc.stop.prevent="closeUserSummary(true)">
           <header class="profile-summary-identity">
@@ -3625,7 +3676,7 @@ onUnmounted(() => {
           <div class="profile-summary-model"><span>当前模型</span><strong :title="routingMode !== 'manual' ? routingLabel : providerModel || '未选择可用模型'">{{ routingMode !== 'manual' ? routingLabel : providerModel || '未选择可用模型' }}</strong><span class="model-status-light" :class="modelConnection" role="img" :aria-label="modelConnectionHint" :title="modelConnectionHint" /></div>
           <div class="profile-summary-activity">
             <div class="profile-summary-activity-heading"><span>使用活动</span><small>最近一周</small></div>
-            <div v-if="creditSummary && !creditLoadError" class="profile-summary-bars" aria-label="近七天活动预览"><div v-for="day in weeklyTokenUsage" :key="day.key" :title="`周${day.weekday} · ${day.value ? '有使用' : '暂无活动'}`" :aria-label="`周${day.weekday} · ${day.value ? '有使用' : '暂无活动'}`"><span><i v-if="day.value" :style="{ height: `${day.height}%` }" /></span><small>{{ day.weekday }}</small></div></div>
+            <div v-if="creditSummary && !creditLoadError" class="profile-summary-bars" aria-label="近七天活动预览，柱高表示相对用量"><div v-for="day in weeklyTokenUsage" :key="day.key" :title="`周${day.weekday} · ${day.value ? '有使用' : '暂无活动'}`" :aria-label="`周${day.weekday} · ${day.value ? '有使用' : '暂无活动'}`"><span :class="{ 'is-empty': !day.value }"><i v-if="day.value" :style="{ height: `${day.height}%` }" /></span><small>{{ day.weekday }}</small></div></div>
             <small v-else class="profile-summary-note">{{ creditLoadError ? '活动暂不可用' : '正在读取活动…' }}</small>
           </div>
           <button class="profile-summary-settings" type="button" @click="openUserCenter"><Settings2 :size="16" /><span>设置</span><ChevronRight :size="14" /></button>
@@ -3643,7 +3694,7 @@ onUnmounted(() => {
 
     <Teleport v-if="composerHostReady && (workspaceView === 'intake' || workspaceView === 'design-agent')" :key="designComposerEpoch" defer :to="workspaceView === 'design-agent' ? '#design-composer-host' : '#intake-composer-host'">
             <div class="intake-composer composer-hero" :class="{ 'is-file-dragging': isDraggingComposerFiles }" @dragenter="handleComposerFileDragEnter" @dragover="handleComposerFileDragOver" @dragleave="handleComposerFileDragLeave" @drop="handleComposerFileDrop">
-              <StarBorder />
+              <StarBorder :flowing="workspaceView === 'intake'" />
             <section v-if="workspaceView === 'design-agent' && activeQueuedMessages.length" class="composer-message-queue" aria-label="待发送消息队列" aria-live="polite">
               <header class="composer-message-queue-header">
                 <span><ListPlus :size="15" /><strong>待发送 · {{ activeQueuedMessages.length }}</strong></span>
@@ -3658,7 +3709,7 @@ onUnmounted(() => {
                     <template v-if="editingQueuedMessage === message.id"><textarea v-model="queuedEditText" aria-label="编辑待发送消息" @keydown.esc="editingQueuedMessage = null" /><span class="queue-edit-actions"><button type="button" :disabled="!queuedEditText.trim()" @click="saveQueuedMessageEdit(message)">保存</button><button type="button" @click="editingQueuedMessage = null">取消</button></span></template>
                     <strong v-else>{{ message.text }}</strong><small>{{ queuedMessageMeta(message) }}</small>
                   </span>
-                  <span class="queue-message-actions"><button type="button" aria-label="编辑待发送消息" title="编辑" @click="editingQueuedMessage = message.id; queuedEditText = message.text"><Pencil :size="14" /></button>
+                  <span class="queue-message-actions"><button type="button" class="queue-supplement-button" :disabled="sendingSupplement || editingQueuedMessage === message.id || (!isRunningTask && !message.supplementTaskId) || !!supplementUnavailableReason(message.draft)" :title="supplementUnavailableReason(message.draft) || (message.supplementTaskId ? '确认原补充请求，不会创建新任务' : isRunningTask ? '补充当前任务' : '当前没有运行中的任务')" :aria-label="`补充当前任务：${message.text}`" @click="supplementCurrentTask(message)">{{ message.supplementTaskId ? '确认补充' : '补充' }}</button><button type="button" :disabled="sendingSupplement || !!message.supplementTaskId" aria-label="编辑待发送消息" title="编辑" @click="editingQueuedMessage = message.id; queuedEditText = message.text"><Pencil :size="14" /></button>
                     <button type="button" :disabled="index === 0" :aria-label="`上移：${message.text}`" title="上移" @click="moveQueuedMessage(message.id, -1)"><ChevronUp :size="14" /></button>
                     <button type="button" :disabled="index === activeQueuedMessages.length - 1" :aria-label="`下移：${message.text}`" title="下移" @click="moveQueuedMessage(message.id, 1)"><ChevronDown :size="14" /></button>
                     <button type="button" :aria-label="`移出队列：${message.text}`" title="移出队列" @click="removeActiveQueuedMessage(message.id)"><X :size="14" /></button>
@@ -3667,7 +3718,6 @@ onUnmounted(() => {
               </TransitionGroup>
             </section>
             <div v-if="intakeFiles.length" class="intake-file-list" aria-label="已添加的附件"><div v-for="(file, index) in intakeFiles" :key="`${file.name}-${file.lastModified}`" class="intake-file-chip" :class="{ referenced: intakeMentionFiles.includes(index) }" :title="`${index + 1}. ${file.name}`"><span class="intake-file-index">{{ index + 1 }}</span><span v-if="intakeFilePreviews[fileKey(file)]" class="file-thumb"><img :src="intakeFilePreviews[fileKey(file)]" :alt="file.name" /></span><span v-else class="file-type-icon" aria-hidden="true">{{ fileIcon(file) }}</span><span class="sr-only">{{ file.name }}</span><button type="button" class="icon-button" :aria-label="`移除附件 ${file.name}`" @click="removeIntakeFile(index)"><X :size="14" /></button></div></div>
-            <div v-if="workspaceView === 'design-agent' && isRunningTask" class="composer-run-mode"><label><span class="sr-only">运行中发送方式</span><select v-model="composerRunMode" aria-label="运行中发送方式"><option value="supplement">补充当前任务</option><option value="queue">加入下一项</option></select></label><small>{{ composerRunMode === 'supplement' ? '文字补充在下一次判断前生效；已提交请求保留' : '当前交付通过后发送' }}</small></div>
             <label class="intake-label intake-main-label intake-mention-anchor">
               <span class="sr-only">输入需求</span>
               <div ref="intakeComposerRef" class="intake-composer-editor" contenteditable="true" role="textbox" aria-label="输入需求" aria-multiline="true" :aria-activedescendant="intakeSkillQuery ? intakeSkillMenu?.activeId : undefined" :aria-controls="intakeSkillQuery ? 'skill-mention-options' : undefined" :aria-haspopup="intakeSkillQuery ? 'listbox' : undefined" :aria-expanded="!!intakeSkillQuery" :data-placeholder="composerPlaceholders[activePlaceholderIndex]" @pointerdown="confirmCanvasReferences" @focus="confirmCanvasReferences" @input="handleIntakeComposerInput" @paste="handleIntakePaste" @keydown="handleIntakeComposerKeydown" @keyup.left="refreshComposerMentionCaret" @keyup.right="refreshComposerMentionCaret" @click="refreshComposerMentionCaret" @compositionstart="handleIntakeComposerCompositionStart" @compositionend="handleIntakeComposerCompositionEnd" @pointerover="showInlineReferencePreview" @pointerout="hideInlineReferencePreview" @focusin="showInlineReferencePreview" @focusout="hideInlineReferencePreview" @scroll="referencePreview = null"></div>
@@ -3686,15 +3736,14 @@ onUnmounted(() => {
               <div class="composer-popover-wrap composer-agent-wrap">
                 <button ref="composerModelButton" type="button" class="composer-tool" title="快速切换文本 / 图像 / 视频 / 音频模型" aria-haspopup="dialog" :aria-expanded="showComposerAgentMenu" @click="toggleComposerAgentMenu"><span class="model-status-light composer-model-status" :class="modelConnection" role="img" :aria-label="modelConnectionHint" :title="modelConnectionHint" /><Bot :size="17" /><span>模型</span><ChevronDown :size="14" /></button>
                 <AnchoredPopover v-if="showComposerAgentMenu" :anchor="composerModelButton" :top-inset="isDesktopApp ? 42 : 12" @close="showComposerAgentMenu = false">
-                  <div class="popover-heading"><strong>{{ routingLabel }}</strong><small>{{ selectedTextProviderLabel }} · 设计 Agent</small></div>
                   <div class="agent-model-tabs"><button v-for="tab in agentModelTabs" :key="tab.key" :class="{ active: agentModelTab === tab.key }" @click="agentModelTab = tab.key"><Bot v-if="tab.key === 'text'" :size="16" /><Images v-else-if="tab.key === 'image'" :size="16" /><Play v-else-if="tab.key === 'video'" :size="16" /><Volume2 v-else :size="16" /><span>{{ tab.label }}</span></button></div>
-          <p class="model-catalog-summary" role="status">{{ modelCatalogMessage }}</p>
+                  <p v-if="isDetectingModels || liveModelCatalog.error.value" class="model-select-hint" role="status">{{ isDetectingModels ? '正在读取模型…' : liveModelCatalog.error.value }}</p>
                   <div class="agent-model-list">
-                    <div v-if="agentModelTab === 'text'" class="routing-choices"><button v-for="choice in routingChoices" :key="choice.id" type="button" class="popover-option" :class="{ selected: routingMode === choice.id }" @click="routingMode = choice.id"><span><strong>{{ choice.label }}</strong><small>{{ choice.detail }}</small></span></button><small>高级 · 手动选择模型</small></div>
-                    <button v-for="model in composerModelOptions" :key="`${agentModelTab}-${model}`" type="button" class="popover-option model-option" :class="{ selected: composerSelectedModel === model && (agentModelTab !== 'text' || routingMode === 'manual') }" @click="selectComposerModel(agentModelTab, model)"><span class="popover-icon"><Bot v-if="agentModelTab === 'text'" :size="16" /><Images v-else-if="agentModelTab === 'image'" :size="16" /><Play v-else-if="agentModelTab === 'video'" :size="16" /><Volume2 v-else :size="16" /></span><span class="model-option-copy"><strong :title="modelDisplayName(model)">{{ modelDisplayName(model) }}</strong><small :title="isOllamaProvider && agentModelTab === 'text' ? '本地运行 · 无 API 费用' : modelPriceLabel(model)">{{ isOllamaProvider && agentModelTab === 'text' ? '本地运行 · 无 API 费用' : modelPriceLabel(model) }}</small></span><i v-if="composerSelectedModel === model && (agentModelTab !== 'text' || routingMode === 'manual')">当前</i></button>
+                    <div v-if="agentModelTab === 'text'" class="routing-choices"><button v-for="choice in routingChoices" :key="choice.id" type="button" class="popover-option model-option" :class="{ selected: routingMode === choice.id }" :aria-pressed="routingMode === choice.id" @click="routingMode = choice.id"><Bot :size="20" /><span class="model-option-copy"><strong>{{ choice.label }}</strong></span></button></div>
+                    <button v-for="model in composerModelOptions" :key="`${agentModelTab}-${model}`" type="button" class="popover-option model-option" :class="{ selected: composerSelectedModel === model && (agentModelTab !== 'text' || routingMode === 'manual') }" :aria-pressed="composerSelectedModel === model && (agentModelTab !== 'text' || routingMode === 'manual')" @click="selectComposerModel(agentModelTab, model)"><ModelBrandIcon :model="model" /><span class="model-option-copy"><strong :title="modelDisplayName(model)">{{ modelDisplayName(model) }}</strong></span></button>
                     <p v-if="hasDetectedModelCatalog && !composerModelOptions.length" class="model-select-hint">中转站 API 未返回此类模型。</p>
                   </div>
-                  <button v-if="agentModelTab === 'image'" type="button" class="popover-settings image-default-action" @click="useDefaultImageModel">使用{{ IMAGE_ROUTE_LABEL }}</button>
+                  <button v-if="agentModelTab === 'image'" type="button" class="popover-settings image-default-action" @click="useDefaultImageModel">自动选择模型</button>
                   <button type="button" class="popover-settings" @click="openProviderSettings">管理本地模型目录</button>
                 </AnchoredPopover>
               </div>
@@ -3707,7 +3756,7 @@ onUnmounted(() => {
               <button v-if="workspaceView === 'design-agent' && isRunningTask" type="button" class="composer-send composer-queue-submit" :disabled="sendingSupplement || (!intakeBrief.trim() && !intakeFiles.length)" :aria-label="composerRunMode === 'supplement' ? '补充当前任务' : '加入待发送队列'" :title="composerRunMode === 'supplement' ? '补充当前任务' : '加入待发送队列'" @click="submitComposer"><ListPlus :size="18" /></button>
               <button v-else type="button" class="composer-send" :disabled="isCreatingIntake || (!intakeBrief.trim() && !intakeFiles.length)" :aria-label="workspaceView === 'design-agent' ? (activeQueuedMessages.length ? '加入队列并继续执行' : '发送消息') : isCreatingIntake ? '正在连接本地 API' : intakeReady ? '交给 Agent 分析' : '解析并创建记录'" :title="isCreatingIntake ? '正在连接本地 API…' : ''" @click="submitComposer"><LoaderCircle v-if="isCreatingIntake" :size="19" class="spin-icon" /><ArrowUp v-else :size="19" /></button>
             </div>
-            <div class="composer-caption"><span>{{ draftSaveLabel || '支持粘贴或拖拽图片与文件' }} · @ 引用资料 · # 选择技能</span><span>{{ composerShortcut }} {{ isCreatingIntake ? '连接中…' : workspaceView === 'design-agent' && isRunningTask ? '加入队列' : intakeReady ? '继续' : '开始' }}</span></div>
+            <div class="composer-caption"><span>{{ draftSaveLabel || '支持粘贴或拖拽图片与文件' }} · @ 引用资料 · # 选择技能</span><span>{{ composerShortcut }} {{ isCreatingIntake ? '连接中…' : workspaceView === 'design-agent' && isRunningTask ? (queueMessagesByDefault || intakeFiles.length || intakeMentionAssets.length || intakeSkills.length ? '加入队列' : '补充当前任务') : intakeReady ? '继续' : '开始' }}</span></div>
             <div v-if="intakeFileResults.length" class="intake-results"><div v-for="result in intakeFileResults" :key="result.filename" class="intake-result-row"><span class="status-dot" :class="{ warning: Boolean(result.warning) }" /><strong>{{ result.filename }}</strong><span>{{ result.parser || result.status || '已解析' }}</span><small v-if="result.warning">{{ result.warning }}</small></div></div>
             <div v-if="intakeReady && workspaceView === 'intake'" class="intake-ready-note"><span class="status-dot" />资料已解析，点击箭头交给MxinspireX</div>
             </div>
@@ -3754,7 +3803,8 @@ onUnmounted(() => {
     </div>
     <Teleport v-if="isProviderSettingsOpen && settingsHostReady && !['account', 'help'].includes(settingsTab)" defer to="#settings-content-host">
       <form class="settings-workspace-form" @submit.prevent="handleSettingsSubmit" @click="handleSettingsConfettiClick">
-        <section v-if="settingsTab === 'text'" class="settings-pane">
+        <GeneralSettings v-if="settingsTab === 'general'" v-model:queue="queueMessagesByDefault" :api-base-url="apiBaseUrl" />
+        <section v-else-if="settingsTab === 'text'" class="settings-pane">
           <div class="provider-auto-note"><span class="status-dot" :class="{ unconfigured: !activeTextProvider }" /><div><strong>{{ isOllamaProvider ? 'Ollama · 本地 Agent 测试' : credentialTargetProvider === 'evolink' ? 'EvoLink · 设计 Agent 与多媒体生成' : isCloseAIEndpoint ? 'CloseAI · 完整模型目录与路由' : credentialTargetProvider === 'openai-compatible' ? '中转站 · 设计 Agent 模型路由' : 'OpenRouter · 设计 Agent 默认模型路由' }}</strong><small>{{ isOllamaProvider ? '连接本机 Ollama，无需 API Key；同步后自动使用手动模型模式，本地运行不产生 API 费用。' : credentialTargetProvider === 'evolink' ? '一个 API Key 连接文本、图像、视频和已接入的语音模型。保存后同步可用模型，首页与项目画布共用选择。' : isCloseAIEndpoint ? '普通 API Key 用于生成；可选目录管理密钥只在手动同步完整模型目录时使用。' : credentialTargetProvider === 'openai-compatible' ? '填写兼容服务 URL 和 API Key，保存时同步一次模型目录。' : '保存 API Key 时同步一次模型目录，之后从本地读取。' }}</small></div></div>
           <div class="provider-mode-control">
             <div class="provider-mode-heading"><span>Provider 模式</span><small>{{ isOllamaProvider ? '使用本机 Ollama' : credentialTargetProvider === 'evolink' ? '使用 EvoLink 官方入口' : credentialTargetProvider === 'openai-compatible' ? '使用 OpenAI 兼容服务' : '使用 OpenRouter 官方入口' }}</small></div>
@@ -3775,7 +3825,7 @@ onUnmounted(() => {
           <ThreeDSettings :api-base-url="apiBaseUrl" :provider="threeDConfigProvider" :endpoint="threeDConfigEndpoint" :model="threeDConfigModel" @saved="config => { threeDConfigProvider = config.provider; threeDConfigEndpoint = config.endpoint; threeDConfigModel = config.model; }" />
         </section>
         <ModelRouterSettings v-else-if="settingsTab === 'routing'" :api-base-url="apiBaseUrl" />
-        <section v-else-if="settingsTab === 'appearance'" class="settings-pane"><div class="provider-config-heading"><span>外观与设计偏好</span><small>默认跟随电脑系统，也可以手动覆盖</small></div><div class="appearance-choice"><button type="button" :class="{ selected: themeMode === 'system' }" @click="themeMode = 'system'">跟随系统</button><button type="button" :class="{ selected: themeMode === 'dark' }" @click="themeMode = 'dark'">深色模式</button><button type="button" :class="{ selected: themeMode === 'light' }" @click="themeMode = 'light'">浅色模式</button></div><label class="settings-switch toggle-control"><input v-model="reduceAnimations" type="checkbox" role="switch" /><span class="toggle-track" /><span>减少动画 <small>MxinspireX保持静止表情，减少画布和对话中的装饰动画；也尊重系统设置</small></span></label><label class="settings-switch toggle-control"><input v-model="allowExternalNetwork" type="checkbox" role="switch" /><span class="toggle-track" /><span>允许联网研究 <small>Agent 可调用 OpenAI 联网搜索并提供来源，可随时关闭</small></span></label><MascotSettings :provider="taskMediaProvider('image')" :model-options="imageModelOptions" /><button type="button" class="about-link" @click="switchSettingsTab('about')">关于灵矩绘境 →</button></section>
+        <section v-else-if="settingsTab === 'appearance'" class="settings-pane"><AppearanceSettings v-model="themeMode" :resolved="resolvedTheme" /><label class="settings-switch toggle-control"><input v-model="reduceAnimations" type="checkbox" role="switch" /><span class="toggle-track" /><span>减少动画 <small>MxinspireX保持静止表情，减少画布和对话中的装饰动画；也尊重系统设置</small></span></label><label class="settings-switch toggle-control"><input v-model="allowExternalNetwork" type="checkbox" role="switch" /><span class="toggle-track" /><span>允许联网研究 <small>Agent 可调用 OpenAI 联网搜索并提供来源，可随时关闭</small></span></label><MascotSettings :provider="taskMediaProvider('image')" :model-options="imageModelOptions" /><button type="button" class="about-link" @click="switchSettingsTab('about')">关于灵矩绘境 →</button></section>
         <section v-else-if="settingsTab === 'components'" class="settings-pane runtime-components-pane"><div class="provider-config-heading"><span>按需能力组件</span><small>只在使用时安装，不包含项目或个人数据</small></div><article v-for="component in runtimeComponents" :key="component.id" class="runtime-component-card"><div class="runtime-component-icon"><Box :size="18" /></div><div><strong>{{ component.label }}</strong><p>{{ component.description }}</p><small>{{ formatComponentSize(component.bytes) }} · {{ component.installed ? '已安装' : component.available ? '可在线下载' : '从能力包安装' }}</small></div><button type="button" :disabled="component.installed || !!runtimeComponentLoading" @click="installRuntimeComponent(component)">{{ component.installed ? '已安装' : runtimeComponentLoading === component.id ? '安装中…' : '按需安装' }}</button></article><p v-if="runtimeComponentMessage" class="runtime-component-message" role="status">{{ runtimeComponentMessage }}</p></section>
         <section v-else class="settings-pane about-pane" @click="handleAboutClick"><div class="about-mark"><img class="about-logo" :src="brandLogoSrc" alt="灵矩绘境 logo" /></div><p class="eyebrow">MxinspireX · 灵矩绘境</p><h3>与你一起推进设计的 AI Agent</h3><p>MxinspireX 将需求理解、资料检索、视觉生成与画布编辑整合在同一个工作区。从品牌视觉、产品概念到内容设计，让想法形成方案，让方案持续迭代。</p><p>由灵矩绘境研发，为设计师与创意团队提供从探索到交付的智能协作支持。</p><p>联系邮箱：<a class="help-contact-link" href="mailto:ziguishian@foxmail.com">ziguishian@foxmail.com</a></p><p>开发者：<strong>AlexiShi</strong></p><small>版本 {{ appVersion }} · 内部测试构建</small><BetaTestingAbout :api-base-url="apiBaseUrl" /><div class="about-footer-meta"><span>© 2026 灵矩绘境 · MxinspireX</span><span>需求梳理 · 方案生成 · 持续迭代</span></div></section>
         <p v-if="providerTestResult && settingsTab !== 'about'" class="provider-test-result" role="status" aria-live="polite">{{ providerTestResult }}</p><p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>

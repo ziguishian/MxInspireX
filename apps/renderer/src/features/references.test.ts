@@ -14,6 +14,7 @@ describe('visual references', () => {
   it('never reopens a historical or unfinished selection', () => {
     const message = {role:'assistant',status:'succeeded',referenceSelection:card};
     expect(pendingReferenceSelection([message])).toBe(card);
+    expect(pendingReferenceSelection([{ ...message, referenceSelection: { ...card, items: [] } }])).toBeUndefined();
     expect(pendingReferenceSelection([message,{role:'user'}])).toBeUndefined();
     expect(pendingReferenceSelection([{...message,status:'running'}])).toBeUndefined();
   });

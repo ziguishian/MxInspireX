@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { editableModelPrice, formatModelPrice } from '../modelEconomy';
+import { editableModelPrice, formatModelPrice, formatCny, usdToCny } from '../modelEconomy';
 const props = defineProps<{ apiBaseUrl: string }>();
-type Quote = { provider: string; baseUrl: string; model: string; kinds: string[]; price: Record<string, unknown> };
+type PublicRate = { label: string; usd: number; unit: string };
+type Quote = { provider: string; baseUrl: string; model: string; name?: string; publicCatalogOnly?: boolean; kinds: string[]; price: Record<string, unknown> };
 const quotes = ref<Quote[]>([]);
 const kinds = [{ id:'text', label:'文本' }, { id:'image', label:'图像' }, { id:'video', label:'视频' }, { id:'audio', label:'音频' }, { id:'search', label:'联网搜索' }, { id:'embedding', label:'知识检索' }, { id:'3d', label:'3D' }];
 const selectedKind = ref('text');
 const selectedKey = ref('');
 const key = (q: Quote) => JSON.stringify([q.provider, q.baseUrl, q.model]);
 const host = (q: Quote) => { try { return new URL(q.baseUrl).host; } catch { return q.baseUrl || '本地服务'; } };
-const options = computed(() => quotes.value.filter(q => q.kinds.includes(selectedKind.value === 'search' ? 'text' : selectedKind.value)));
+const search = ref('');
+const options = computed(() => quotes.value.filter(q => q.kinds.includes(selectedKind.value === 'search' ? 'text' : selectedKind.value) && `${q.model} ${q.name || ''} ${q.provider}`.toLowerCase().includes(search.value.trim().toLowerCase())));
 const selected = computed(() => options.value.find(q => key(q) === selectedKey.value));
+const publicRates = computed(() => (selected.value?.price.publicRates || []) as PublicRate[]);
+const rateLabel = (label: string) => ({ 'Image input': '图像输入', 'Cached image input': '图像缓存输入', 'Image output': '图像输出', 'Text input': '文本输入', 'Cached text input': '文本缓存输入', 'Video output': '视频输出', 'Input image': '参考图输入', 'Image generation': '图像生成' }[label] || label.replace('Image generation', '图像生成'));
+const unitLabel = (unit: string) => ({ image: '/ 张', '/image': '/ 张', second: '/ 秒', '1 second': '/ 秒', video: '/ 条视频', '/video': '/ 条视频', '/input + output sec': '/ 输入与输出合计秒', '/input sec': '/ 输入秒', '/output sec': '/ 输出秒', '/input audio sec': '/ 输入音频秒', '/1K tokens': '/ 千 Token', '4 imgs': '/ 组（4 张）', '2 tracks': '/ 组（2 首）', voice: '/ 音色', '1M output tokens': '/ 百万输出 Token' }[unit] || unit);
 const editing = ref(false), saving = ref(false), message = ref('');
 const draft = ref<Record<string, unknown>>({});
 const fields = [
@@ -21,7 +26,12 @@ const fields = [
 watch(options, value => { if (!value.some(q => key(q) === selectedKey.value)) selectedKey.value = value[0] ? key(value[0]) : ''; editing.value = false; });
 watch(selectedKey, () => { editing.value = false; message.value = ''; });
 async function load() {
-  try { const r = await fetch(`${props.apiBaseUrl}/api/credits/prices`); if (!r.ok) throw new Error('报价目录暂时不可用'); quotes.value = await r.json(); }
+  try {
+    const [r, config] = await Promise.all([fetch(`${props.apiBaseUrl}/api/credits/prices`), fetch(`${props.apiBaseUrl}/api/model-settings`)]);
+    if (!r.ok || !config.ok) throw new Error('报价目录或记账汇率暂时不可用');
+    usdToCny.value = (await config.json()).credits.usdToCny;
+    quotes.value = await r.json();
+  }
   catch (error) { message.value = error instanceof Error ? error.message : '读取失败'; }
 }
 function edit() { draft.value = editableModelPrice(selected.value?.price); editing.value = true; message.value = ''; }
@@ -44,8 +54,20 @@ onMounted(load);
   <section class="credit-pricing" aria-label="分类估价与模型单价">
     <header><h3>分类估价</h3><small>参考单价 × 实际用量；不代表预扣费或服务商账单</small></header>
     <div class="credit-price-tabs" role="group" aria-label="计费类别"><button v-for="kind in kinds" :key="kind.id" :aria-pressed="selectedKind === kind.id" @click="selectedKind = kind.id">{{ kind.label }}</button></div>
-    <label>模型与服务<select v-model="selectedKey" aria-label="估价模型"><option v-if="!options.length" value="">当前未配置此类模型</option><option v-for="q in options" :key="key(q)" :value="key(q)">{{ q.model }} · {{ q.provider }} · {{ host(q) }}</option></select></label>
-    <div v-if="selected" class="credit-quote"><strong>{{ formatModelPrice(selected.price) }}</strong><small>{{ selected.price.source === 'manual' ? '你填写的服务报价' : selected.price.source === 'gateway' ? '来自当前服务模型目录' : selected.price.source === 'default' ? '公开参考价格，实际结算可能不同' : '服务未返回单价；请同步完整价格目录或填写当前服务报价。' }}</small><small v-if="selectedKind === 'search'">搜索工具附加费与文本用量分别计算；缺少搜索单价时不能估算完整搜索费用。</small><small v-if="selected.price.checkedAt">价格核对日期：{{ selected.price.checkedAt }}</small><button class="ghost-button" type="button" @click="edit">{{ editing ? '重新读取报价' : '填写服务报价' }}</button></div>
+    <small>人民币参考价按记账汇率 1 USD = {{ usdToCny }} CNY 换算，非实时外汇报价。</small>
+    <input v-model="search" type="search" aria-label="搜索报价模型" placeholder="搜索模型或服务商" />
+    <label>模型与服务<select v-model="selectedKey" aria-label="估价模型"><option v-if="!options.length" value="">暂无匹配的模型报价</option><option v-for="q in options" :key="key(q)" :value="key(q)">{{ q.model }} · {{ q.publicCatalogOnly ? 'EvoLink 官网目录' : `${q.provider} · ${host(q)}` }}</option></select></label>
+    <div v-if="selected" class="credit-quote">
+      <template v-if="selected.price.source === 'evolink_public'">
+        <strong>{{ selected.name || selected.model }} · EvoLink 公开参考价</strong>
+        <small>{{ selected.price.priceNote }}</small>
+        <div class="public-rates"><table v-if="publicRates.length"><thead><tr><th>计费项目</th><th>人民币</th><th>美元原价</th></tr></thead><tbody><tr v-for="(rate, index) in publicRates" :key="index"><td>{{ rateLabel(rate.label) }}<small>{{ unitLabel(rate.unit) }}</small></td><td>{{ formatCny(rate.usd * usdToCny) }}</td><td>${{ Number(rate.usd.toPrecision(7)) }}</td></tr></tbody></table><small v-else>官网未提供可确认的单价。</small></div>
+        <small v-if="selected.publicCatalogOnly">仅展示官网报价，不表示当前工作区已配置或可调用此模型。</small>
+        <a href="https://evolink.ai/zh/pricing" target="_blank" rel="noopener noreferrer">查看 EvoLink 官方价格表 ↗</a>
+      </template>
+      <template v-else><strong>{{ formatModelPrice(selected.price) }}</strong><small>{{ selected.price.source === 'manual' ? '你填写的服务报价' : selected.price.source === 'gateway' ? '来自当前服务模型目录' : selected.price.source === 'default' ? '公开参考价格，实际结算可能不同' : '服务未返回单价；请同步完整价格目录或填写当前服务报价。' }}</small></template>
+      <small v-if="selectedKind === 'search'">搜索工具附加费与文本用量分别计算；缺少搜索单价时不能估算完整搜索费用。</small><small v-if="selected.price.checkedAt">价格核对日期：{{ selected.price.checkedAt }}</small><button v-if="!selected.publicCatalogOnly" class="ghost-button" type="button" @click="edit">{{ editing ? '重新读取报价' : '填写服务报价' }}</button>
+    </div>
     <form v-if="editing && selected" class="credit-price-editor" @submit.prevent="save">
       <p>填写服务商实际费率。留空表示未知，0 表示明确免费；不会修改服务商账户或余额。</p>
       <label>计价币种<select v-model="draft.currency"><option>CNY</option><option>USD</option></select></label>
@@ -66,6 +88,10 @@ label { display:grid; gap:6px; min-width:0; font-size:var(--ui-font-control); }
 .credit-quote { display:grid; gap:8px; padding:14px; border-radius:var(--ui-radius-card); background:var(--theme-surface); overflow-wrap:anywhere; }
 .credit-quote strong { font-size:var(--ui-font-control); line-height:1.8; font-weight:500; }
 .credit-quote button { justify-self:start; }
+.public-rates { overflow-x:auto; }
+.public-rates table { width:100%; border-collapse:collapse; font-size:var(--ui-font-control); }
+.public-rates th,.public-rates td { padding:9px 6px; text-align:left; border-bottom:1px solid var(--theme-border); }
+.public-rates td small { display:block; }
 .credit-price-editor { display:grid; gap:12px; }
 .credit-price-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .credit-price-editor button + button { margin-left:8px; }

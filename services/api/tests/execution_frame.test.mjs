@@ -2,6 +2,12 @@ import {it,expect} from 'vitest';
 import {executionFrame} from '../app/execution_frame.mjs';
 import {prepareModelInput} from '../app/sdk_context.mjs';
 
+it('makes unresolved scope explicit before the first write, without changing legacy tasks',()=>{
+  expect(executionFrame({executionPolicyVersion:3},[]).next).toBe('register_deliveries');
+  expect(executionFrame({executionPolicyVersion:2},[])).toBeUndefined();
+  expect(executionFrame({executionPolicyVersion:3,singleDeliveryTarget:{kind:'image',count:1}},[])).toBeUndefined();
+});
+
 it('retains six real assets and one unknown operation through aggressive context trimming',()=>{
   const ids=['box','display','notebook','pillow','tea','cup','silk'];
   const constraints={designPlan:{ready:true,scopeId:'gift',revision:3,deliverables:ids.map(id=>({id,kind:'image',dependsOn:[]}))}};

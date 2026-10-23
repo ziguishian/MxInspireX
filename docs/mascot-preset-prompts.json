@@ -3,6 +3,12 @@
   "transparent_background": true,
   "assets": [
     {
+      "id": "robot",
+      "image": "mascots/robot-soft.png",
+      "references": ["mxinspirex-robot-states.png", "mascots/cream-cat.png", "mascots/sprout.png"],
+      "prompt": "Redesign the original dot-matrix robot into the same soft rounded full-body seated toy family as the cream cat and sprout references. Preserve warm gray shell, charcoal rounded-square face screen and warm white LED dot-matrix expressions. Replace metallic realism and half-body cropping with satin silicone/clay fine grain, a compact seated body and tiny rounded hands and feet. Exact 1536x1024 transparent PNG, 3 columns x 2 rows, same scale, camera, silhouette and lighting in all cells. Row-major: idle, thinking gaze up, happy smile, wink, calm patient, sleepy with both eyes closed. Clear transparent margins, no text, grid lines, cast shadow plane or background."
+    },
+    {
       "id": "cream-cat",
       "prompt": "Use case: stylized-concept. Asset type: production sprite atlas for a small desktop app mascot. Make ONE PNG with a truly transparent alpha background, canvas EXACT 1536x1024 (3:2 aspect), divided into EXACTLY 3 equal columns and 2 equal rows, each cell 512x512. There must be six separate renderings of the SAME character, front-facing, identical camera, scale, lighting, material and silhouette. Each character fully inside its own cell with at least 40px transparent margin. Center each at x=256 within cell, bottom baseline at y=465 within cell. Full compact seated body, small hands/paws resting together in front, no props outside silhouette. Character height approx 360px, no oversize head cropping. Row-major expressions: (1) idle open friendly eyes, (2) thinking eyes glance upwards, (3) happy smile with open eyes, (4) winking one eye closed, (5) calm patient eyes open, (6) sleepy BOTH EYES CLOSED. Premium adorable soft 3D collectible figurine, rounded minimal shapes, satin clay/silicone, subtle surface grain, soft even studio illumination, readable at 100px. Six isolated copies only. No text, numbers, cell borders, background, checkered texture, decorative particles, extra character, cast shadow plane or watermark. Character: a cream ivory kitten, chubby round head, short soft triangular ears with muted peach interior, tiny gray nose, dark graphite bead eyes, tiny gentle mouth, short plump seated body, small front paws and curled tail tucked close, a short muted sage scarf without long ends. Warm, intelligent, soothing."
     },

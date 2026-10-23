@@ -83,6 +83,12 @@ describe('workspace page navigation', () => {
     expect(router.currentRoute.value.path).toBe('/settings/account');
     expect(state.workspaceView.value).toBe('settings');
   });
+  it('opens general settings from a deep link', async () => {
+    const { router, state } = await setup('/settings/general');
+    expect(router.currentRoute.value.name).toBe('settings');
+    expect(router.currentRoute.value.params.section).toBe('general');
+    expect(state.workspaceView.value).toBe('settings');
+  });
   it('keeps settings deep links while loading and restores the project on Back', async () => {
     const { router, state } = await setup('/projects/first');
     await router.push('/settings/text'); await settle();

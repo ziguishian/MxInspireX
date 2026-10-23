@@ -1,0 +1,19 @@
+<html lang="zh-CN"><meta charset="utf-8"><body><div id="app"></div>
+<script type="module">
+import { createApp, reactive, h } from 'vue';
+import Inspector from '/src/components/TaskRequestInspector.vue';
+const state = reactive({ status: 'failed', epoch: 0 });
+window.state = state; window.posts = []; window.saved = false; window.recovered = 0;
+window.fetch = async (url, options = {}) => {
+  if (options.method === 'POST') {
+    window.posts.push(url);
+    await new Promise(resolve => setTimeout(resolve, 200));
+    window.saved = true;
+    return new Response(JSON.stringify({ state: 'saved', message: '原结果已保存' }));
+  }
+  return new Response(JSON.stringify({ task: { status: state.status }, nodes: [], billing: [], receipts: [],
+    recoverableImages: [{ id: 'original', model: 'fixture', providerTaskId: 'job', saved: window.saved }] }));
+};
+createApp({ setup: () => () => h(Inspector, { key: state.epoch, apiBaseUrl: 'http://fixture.invalid',
+  projectId: 'fixture', taskId: 'task', onRecovered: () => window.recovered++ }) }).mount('#app');
+</script></body></html>

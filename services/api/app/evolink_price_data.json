@@ -1,0 +1,3936 @@
+{
+  "rows": [
+    {
+      "id": "nano-banana-2",
+      "name": "Nano Banana 2",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.03529411764705882,
+      "comingSoon": false,
+      "apiName": "gemini-3.1-flash-image-preview",
+      "skuId": "1540",
+      "creditPrice": 2.4,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1540",
+        "fallbackCredits": 2.4,
+        "officialUSD": 0.067
+      }
+    },
+    {
+      "id": "nano-banana-2-1",
+      "name": "Nano Banana 2.1",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.0306,
+      "comingSoon": false,
+      "minUSD": 0.0306,
+      "maxUSD": 0.10206029411764705,
+      "apiName": "gemini-nano-banana-2.1",
+      "skuId": "1565",
+      "creditPrice": 2.0808,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1565",
+        "fallbackCredits": 2.0808,
+        "officialUSD": 0.034
+      }
+    },
+    {
+      "id": "nano-banana-2-lite",
+      "name": "Nano Banana 2 Lite",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.01764705882352941,
+      "comingSoon": false,
+      "minUSD": 0.01764705882352941,
+      "maxUSD": 0.02856029411764706,
+      "apiName": "gemini-3.1-flash-lite-image",
+      "skuId": "1550",
+      "creditPrice": 1.2,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1550",
+        "fallbackCredits": 1.2,
+        "officialUSD": 0.0336
+      }
+    },
+    {
+      "id": "seedance-1-5-pro",
+      "name": "Seedance 1.5 Pro",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.0262,
+      "comingSoon": false,
+      "minUSD": 0.012030352941176471,
+      "maxUSD": 0.11664211764705881,
+      "apiName": "seedance-1.5-pro",
+      "skuId": "1730",
+      "creditPrice": 1.7784,
+      "displayHeadline": {
+        "label": "视频生成 · 480p · no audio",
+        "usd": 0.013,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "seedance-2-0-text-to-video",
+      "name": "Seedance 2.0",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.198,
+      "comingSoon": false,
+      "minUSD": 0.03340823676470589,
+      "maxUSD": 1.0125,
+      "fromUSD": 0.057,
+      "apiName": "seedance-2.0-reference-to-video",
+      "skuId": "4000",
+      "creditPrice": 13.5,
+      "displayHeadline": {
+        "label": "视频生成 · 480p · with video input",
+        "usd": 0.057,
+        "unit": "/input + output sec"
+      }
+    },
+    {
+      "id": "seedance-2-0-fast-text-to-video",
+      "name": "Seedance 2.0 Fast",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.1206,
+      "comingSoon": false,
+      "minUSD": 0.03340823676470589,
+      "maxUSD": 0.12060735294117647,
+      "fromUSD": 0.034,
+      "apiName": "seedance-2.0-fast-reference-to-video",
+      "skuId": "4003",
+      "creditPrice": 8.2013,
+      "displayHeadline": {
+        "label": "视频生成 · 480p · with video input",
+        "usd": 0.034,
+        "unit": "/input + output sec"
+      }
+    },
+    {
+      "id": "seedance-2-5-text-to-video",
+      "name": "Seedance 2.5",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.295,
+      "comingSoon": false,
+      "minUSD": 0.08390529411764705,
+      "maxUSD": 0.7386029411764706,
+      "fromUSD": 0.084,
+      "apiName": "seedance-2.5-reference-to-video",
+      "skuId": "4011",
+      "creditPrice": 20.09,
+      "displayHeadline": {
+        "label": "视频生成 · 480p · with video input",
+        "usd": 0.084,
+        "unit": "/input + output sec"
+      }
+    },
+    {
+      "id": "seedance-2-0-mini-text-to-video",
+      "name": "Seedance 2.0 Mini",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.0397,
+      "comingSoon": false,
+      "minUSD": 0.011276470588235294,
+      "maxUSD": 0.03970588235294118,
+      "fromUSD": 0.012,
+      "apiName": "seedance-2.0-mini-reference-to-video",
+      "skuId": "4007",
+      "creditPrice": 2.7,
+      "displayHeadline": {
+        "label": "视频生成 · 480p · with video input",
+        "usd": 0.012,
+        "unit": "/input + output sec"
+      }
+    },
+    {
+      "id": "sora-2",
+      "name": "Sora 2",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.0847,
+      "comingSoon": false,
+      "skuId": "1409",
+      "creditPrice": 5.76,
+      "apiName": "sora-2-preview",
+      "displayHeadline": {
+        "label": "视频生成",
+        "usd": 0.085,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "omnihuman-1.5",
+      "name": "OmniHuman 1.5",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.1765,
+      "comingSoon": false,
+      "apiName": "omnihuman-1.5",
+      "skuId": "1313",
+      "creditPrice": 12,
+      "displayHeadline": {
+        "label": "Digital human generation",
+        "usd": 0.177,
+        "unit": "/input audio sec"
+      }
+    },
+    {
+      "id": "doubao-seed-audio-1-0",
+      "name": "Doubao Seed Audio 1.0",
+      "modality": "audio",
+      "unit": "1 second",
+      "evolinkPrice": 0.003,
+      "comingSoon": false,
+      "apiName": "doubao-seed-audio-1-0",
+      "skuId": "4300",
+      "creditPrice": 0.204
+    },
+    {
+      "id": "qwen-audio-3.1-tts-flash",
+      "name": "Qwen Audio 3.1 TTS Flash",
+      "modality": "audio",
+      "unit": "1M output tokens",
+      "evolinkPrice": 1.7647058823529411,
+      "comingSoon": false,
+      "fromUSD": 1.7647058823529411,
+      "apiName": "qwen-audio-3.1-tts-flash",
+      "skuId": "3214",
+      "creditPrice": 120
+    },
+    {
+      "id": "voice-enrollment",
+      "name": "Voice Enrollment",
+      "modality": "audio",
+      "unit": "voice",
+      "evolinkPrice": 1.4705882352941177e-05,
+      "comingSoon": false,
+      "apiName": "voice-enrollment",
+      "skuId": "3213",
+      "creditPrice": 0.001
+    },
+    {
+      "id": "gpt-5.2",
+      "name": "GPT-5.2",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0014823529411764707,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0014823529411764707,
+        "output": 0.011858823529411765,
+        "cacheHit": 0.00014852941176470588
+      },
+      "apiName": "gpt-5.2",
+      "skuId": "2530",
+      "creditPrice": 0.1008,
+      "tierSkus": {
+        "input": "2530",
+        "output": "2531",
+        "cacheHit": "2532"
+      }
+    },
+    {
+      "id": "gpt-6-luna-decisions",
+      "name": "GPT-6 Luna Decisions",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0001,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0001,
+        "output": 0
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0136,
+          "officialUsdPer1K": 0.0002
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0,
+          "officialUsdPer1K": 0
+        }
+      },
+      "apiName": "gpt-6-luna-decisions",
+      "skuId": "2760",
+      "creditPrice": 0.0068,
+      "tierSkus": {
+        "input": "2760",
+        "output": "2761"
+      }
+    },
+    {
+      "id": "gpt-5.5",
+      "name": "GPT-5.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0045,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0045,
+        "output": 0.027,
+        "cacheHit": 0.00045
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.612,
+          "officialUsdPer1K": 0.01
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 2.754,
+          "officialUsdPer1K": 0.045
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0612,
+          "officialUsdPer1K": 0.001
+        }
+      },
+      "apiName": "gpt-5.5",
+      "skuId": "2580",
+      "creditPrice": 0.306,
+      "tierSkus": {
+        "input": "2580",
+        "output": "2581",
+        "cacheHit": "2582"
+      }
+    },
+    {
+      "id": "gpt-5.4",
+      "name": "GPT-5.4",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00225,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00225,
+        "output": 0.0135,
+        "cacheHit": 0.000225
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.306,
+          "officialUsdPer1K": 0.005
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 1.377,
+          "officialUsdPer1K": 0.0225
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0306,
+          "officialUsdPer1K": 0.0005
+        }
+      },
+      "apiName": "gpt-5.4",
+      "skuId": "2570",
+      "creditPrice": 0.153,
+      "tierSkus": {
+        "input": "2570",
+        "output": "2571",
+        "cacheHit": "2572"
+      }
+    },
+    {
+      "id": "gpt-image-1.5",
+      "name": "GPT Image 1.5",
+      "modality": "image",
+      "unit": "/1K tokens",
+      "evolinkPrice": 0.0288,
+      "comingSoon": false,
+      "minUSD": 0.0288,
+      "maxUSD": 0.0288,
+      "apiName": "gpt-image-1.5",
+      "skuId": "4122",
+      "creditPrice": 1.9584
+    },
+    {
+      "id": "gpt-image-2",
+      "name": "GPT Image 2",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.015,
+      "comingSoon": false,
+      "apiName": "gpt-image-2",
+      "skuId": "4105",
+      "creditPrice": 1.02,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "4105",
+        "fallbackCredits": 1.02,
+        "officialUSD": 0.053
+      },
+      "expandedRates": [
+        {
+          "label": "Image input",
+          "unit": "/1K tokens",
+          "skuId": "4110",
+          "fallbackCredits": 0.4896,
+          "officialUSD": 0.008
+        },
+        {
+          "label": "Cached image input",
+          "unit": "/1K tokens",
+          "skuId": "4111",
+          "fallbackCredits": 0.1224,
+          "officialUSD": 0.002
+        },
+        {
+          "label": "Image output",
+          "unit": "/1K tokens",
+          "skuId": "4112",
+          "fallbackCredits": 1.836,
+          "officialUSD": 0.03
+        },
+        {
+          "label": "Text input",
+          "unit": "/1K tokens",
+          "skuId": "4113",
+          "fallbackCredits": 0.306,
+          "officialUSD": 0.005
+        },
+        {
+          "label": "Cached text input",
+          "unit": "/1K tokens",
+          "skuId": "4114",
+          "fallbackCredits": 0.0765,
+          "officialUSD": 0.00125
+        }
+      ]
+    },
+    {
+      "id": "gpt-image-2-5-sunburst",
+      "name": "GPT Image 2.5 Sunburst",
+      "modality": "image",
+      "unit": "/1K tokens",
+      "evolinkPrice": 0.027,
+      "comingSoon": false,
+      "minUSD": 0.027,
+      "maxUSD": 0.027,
+      "apiName": "gpt-image-2.5-sunburst",
+      "skuId": "4142",
+      "creditPrice": 1.836,
+      "expandedRates": [
+        {
+          "label": "Image input",
+          "unit": "/1K tokens",
+          "skuId": "4140",
+          "fallbackCredits": 0.4896,
+          "officialUSD": 0.008
+        },
+        {
+          "label": "Cached image input",
+          "unit": "/1K tokens",
+          "skuId": "4141",
+          "fallbackCredits": 0.1224,
+          "officialUSD": 0.002
+        },
+        {
+          "label": "Image output",
+          "unit": "/1K tokens",
+          "skuId": "4142",
+          "fallbackCredits": 1.836,
+          "officialUSD": 0.03
+        },
+        {
+          "label": "Text input",
+          "unit": "/1K tokens",
+          "skuId": "4143",
+          "fallbackCredits": 0.306,
+          "officialUSD": 0.005
+        },
+        {
+          "label": "Cached text input",
+          "unit": "/1K tokens",
+          "skuId": "4144",
+          "fallbackCredits": 0.0765,
+          "officialUSD": 0.00125
+        }
+      ]
+    },
+    {
+      "id": "gpt-image-2-5",
+      "name": "GPT Image 2.5 Flare",
+      "modality": "image",
+      "unit": "/1K tokens",
+      "evolinkPrice": 0.027,
+      "comingSoon": false,
+      "minUSD": 0.027,
+      "maxUSD": 0.027,
+      "apiName": "gpt-image-2.5-flare",
+      "skuId": "4152",
+      "creditPrice": 1.836,
+      "expandedRates": [
+        {
+          "label": "Image input",
+          "unit": "/1K tokens",
+          "skuId": "4150",
+          "fallbackCredits": 0.4896,
+          "officialUSD": 0.008
+        },
+        {
+          "label": "Cached image input",
+          "unit": "/1K tokens",
+          "skuId": "4151",
+          "fallbackCredits": 0.1224,
+          "officialUSD": 0.002
+        },
+        {
+          "label": "Image output",
+          "unit": "/1K tokens",
+          "skuId": "4152",
+          "fallbackCredits": 1.836,
+          "officialUSD": 0.03
+        },
+        {
+          "label": "Text input",
+          "unit": "/1K tokens",
+          "skuId": "4153",
+          "fallbackCredits": 0.306,
+          "officialUSD": 0.005
+        },
+        {
+          "label": "Cached text input",
+          "unit": "/1K tokens",
+          "skuId": "4154",
+          "fallbackCredits": 0.0765,
+          "officialUSD": 0.00125
+        }
+      ]
+    },
+    {
+      "id": "mj-v7",
+      "name": "Midjourney V7",
+      "modality": "image",
+      "unit": "4 imgs",
+      "evolinkPrice": 0.03970588235294118,
+      "comingSoon": false,
+      "minUSD": 0.03970588235294118,
+      "maxUSD": 0.15882352941176472,
+      "apiName": "mj-v7",
+      "skuId": "1810",
+      "creditPrice": 2.7
+    },
+    {
+      "id": "mj-v8.1",
+      "name": "Midjourney V8.1",
+      "modality": "image",
+      "unit": "4 imgs",
+      "evolinkPrice": 0.07941176470588236,
+      "comingSoon": false,
+      "minUSD": 0.07941176470588236,
+      "maxUSD": 0.11911764705882352,
+      "apiName": "mj-v8.1",
+      "skuId": "1830",
+      "creditPrice": 5.4
+    },
+    {
+      "id": "mj-v8.2",
+      "name": "Midjourney V8.2",
+      "modality": "image",
+      "unit": "4 imgs",
+      "evolinkPrice": 0.07941176470588236,
+      "comingSoon": false,
+      "minUSD": 0.07941176470588236,
+      "maxUSD": 0.11911764705882352,
+      "apiName": "mj-v8.2",
+      "skuId": "1840",
+      "creditPrice": 5.4
+    },
+    {
+      "id": "wan2.6-video",
+      "name": "Wan 2.6",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.07,
+      "comingSoon": false,
+      "minUSD": 0.07,
+      "maxUSD": 0.105,
+      "skuId": "1327",
+      "creditPrice": 4.76,
+      "apiName": "wan2.6-text-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 720p",
+        "usd": 0.07,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "wan3.0-video",
+      "name": "Wan 3.0",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.0375,
+      "comingSoon": false,
+      "minUSD": 0.0375,
+      "maxUSD": 0.15,
+      "fromUSD": 0.0375,
+      "apiName": "wan3.0-text-to-video",
+      "skuId": "1360",
+      "creditPrice": 2.55,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.038,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "wan3.0-video-prime",
+      "name": "Wan 3.0 Prime",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.0578,
+      "comingSoon": false,
+      "minUSD": 0.0578,
+      "maxUSD": 0.2381,
+      "fromUSD": 0.057800000000000004,
+      "apiName": "wan3.0-prime-text-to-video",
+      "skuId": "1363",
+      "creditPrice": 3.9304,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.058,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "wan2.7-video",
+      "name": "Wan 2.7",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.08,
+      "comingSoon": false,
+      "minUSD": 0.08,
+      "maxUSD": 0.12,
+      "skuId": "1350",
+      "creditPrice": 5.44,
+      "apiName": "wan2.7-text-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 720p",
+        "usd": 0.08,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "kling-o1-video-edit",
+      "name": "Kling O1",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.09999999999999999,
+      "comingSoon": false,
+      "minUSD": 0.09999999999999999,
+      "maxUSD": 0.17647058823529413,
+      "fromUSD": 0.09999999999999999,
+      "skuId": "1601",
+      "creditPrice": 6.8,
+      "apiName": "kling-o1-video-edit-fast",
+      "displayHeadline": {
+        "label": "Video edit · Fast",
+        "usd": 0.1,
+        "unit": "/input sec"
+      }
+    },
+    {
+      "id": "kling-o3-text-to-video",
+      "name": "Kling O3",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.0794,
+      "comingSoon": false,
+      "minUSD": 0.07941176470588236,
+      "maxUSD": 0.39705882352941174,
+      "skuId": "1610",
+      "creditPrice": 5.4,
+      "apiName": "kling-o3-text-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 720p · no sound",
+        "usd": 0.08,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "kling-v3-text-to-video",
+      "name": "Kling 3.0",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.0794,
+      "comingSoon": false,
+      "minUSD": 0.07941176470588236,
+      "maxUSD": 0.39705882352941174,
+      "skuId": "1620",
+      "creditPrice": 5.4,
+      "apiName": "kling-v3-text-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 720p · no sound",
+        "usd": 0.08,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "kling-v3-turbo-text-to-video",
+      "name": "Kling 3.0 Turbo",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.1059,
+      "comingSoon": false,
+      "minUSD": 0.10588235294117647,
+      "maxUSD": 0.1323529411764706,
+      "skuId": "1630",
+      "creditPrice": 7.2,
+      "apiName": "kling-v3-turbo-text-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 720p",
+        "usd": 0.106,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "kling-v3-motion-control",
+      "name": "Kling 3.0 Motion Control",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.1201,
+      "comingSoon": false,
+      "minUSD": 0.12007058823529411,
+      "maxUSD": 0.16017416470588236,
+      "skuId": "1622",
+      "creditPrice": 8.1648,
+      "apiName": "kling-v3-motion-control",
+      "displayHeadline": {
+        "label": "Motion control · 720p",
+        "usd": 0.121,
+        "unit": "/input sec"
+      }
+    },
+    {
+      "id": "kling-v2-6-motion-control",
+      "name": "Kling 2.6 Motion Control",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.0662,
+      "comingSoon": false,
+      "minUSD": 0.0661764705882353,
+      "maxUSD": 0.10588235294117647,
+      "apiName": "kling-v2.6-motion-control",
+      "skuId": "1623",
+      "creditPrice": 4.5,
+      "displayHeadline": {
+        "label": "Motion control · 720p",
+        "usd": 0.067,
+        "unit": "/input sec"
+      }
+    },
+    {
+      "id": "doubao-seedream-4.5",
+      "name": "Seedream 4.5",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.03,
+      "comingSoon": false,
+      "apiName": "doubao-seedream-4.5",
+      "skuId": "1314",
+      "creditPrice": 2.04
+    },
+    {
+      "id": "seedream-5.0",
+      "name": "Seedream 5.0 Lite",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.027999999999999997,
+      "comingSoon": false,
+      "minUSD": 0.027999999999999997,
+      "maxUSD": 0.027999999999999997,
+      "apiName": "doubao-seedream-5.0-lite",
+      "skuId": "1329",
+      "creditPrice": 1.904
+    },
+    {
+      "id": "doubao-seedream-5.0-pro",
+      "name": "Seedream 5.0 Pro",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.03375,
+      "comingSoon": false,
+      "minUSD": 0.03375,
+      "maxUSD": 0.0675,
+      "apiName": "doubao-seedream-5.0-pro",
+      "skuId": "1336",
+      "creditPrice": 2.295,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1336",
+        "fallbackCredits": 2.295,
+        "officialUSD": 0.045
+      },
+      "expandedRates": [
+        {
+          "label": "Input image",
+          "unit": "/image",
+          "skuId": "1335",
+          "fallbackCredits": 0.153,
+          "officialUSD": 0.003
+        },
+        {
+          "label": "Image generation · 1K",
+          "unit": "/image",
+          "skuId": "1336",
+          "fallbackCredits": 2.295,
+          "officialUSD": 0.045
+        },
+        {
+          "label": "Image generation · 2K",
+          "unit": "/image",
+          "skuId": "1337",
+          "fallbackCredits": 4.59,
+          "officialUSD": 0.09
+        }
+      ]
+    },
+    {
+      "id": "doubao-seedream-5.0-pro-layerize",
+      "name": "Seedream 5.0 Pro Layerize",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.018,
+      "comingSoon": false,
+      "minUSD": 0.018,
+      "maxUSD": 0.036,
+      "apiName": "doubao-seedream-5.0-pro-layerize",
+      "skuId": "1342",
+      "creditPrice": 1.224,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1342",
+        "fallbackCredits": 1.224,
+        "officialUSD": 0.0225
+      },
+      "expandedRates": [
+        {
+          "label": "Input image",
+          "unit": "/image",
+          "skuId": "1341",
+          "fallbackCredits": 0.1632,
+          "officialUSD": 0.003
+        },
+        {
+          "label": "Image generation · 1K",
+          "unit": "/image",
+          "skuId": "1342",
+          "fallbackCredits": 1.224,
+          "officialUSD": 0.0225
+        },
+        {
+          "label": "Image generation · 2K",
+          "unit": "/image",
+          "skuId": "1343",
+          "fallbackCredits": 2.448,
+          "officialUSD": 0.045
+        }
+      ]
+    },
+    {
+      "id": "doubao-seedream-5.0-flash",
+      "name": "Seedream 5.0 Flash",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.0162,
+      "comingSoon": false,
+      "apiName": "doubao-seedream-5.0-flash",
+      "skuId": "1344",
+      "creditPrice": 1.1016,
+      "headlineRate": {
+        "label": "Image generation",
+        "unit": "/image",
+        "skuId": "1344",
+        "fallbackCredits": 1.1016,
+        "officialUSD": 0.018
+      },
+      "expandedRates": [
+        {
+          "label": "Image generation",
+          "unit": "/image",
+          "skuId": "1344",
+          "fallbackCredits": 1.1016,
+          "officialUSD": 0.018
+        }
+      ]
+    },
+    {
+      "id": "doubao-seedream-5.0-flash-layerize",
+      "name": "Seedream 5.0 Flash Layerize",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.0162,
+      "comingSoon": false,
+      "apiName": "doubao-seedream-5.0-flash-layerize",
+      "skuId": "1345",
+      "creditPrice": 1.1016,
+      "headlineRate": {
+        "label": "Image generation",
+        "unit": "/image",
+        "skuId": "1345",
+        "fallbackCredits": 1.1016,
+        "officialUSD": 0.018
+      },
+      "expandedRates": [
+        {
+          "label": "Image generation",
+          "unit": "/image",
+          "skuId": "1345",
+          "fallbackCredits": 1.1016,
+          "officialUSD": 0.018
+        }
+      ]
+    },
+    {
+      "id": "qwen-image-3.0",
+      "name": "Qwen Image 3.0",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.027,
+      "comingSoon": false,
+      "apiName": "qwen-image-3.0",
+      "skuId": "5003",
+      "creditPrice": 1.836,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "5003",
+        "fallbackCredits": 1.836,
+        "officialUSD": 0.03
+      },
+      "expandedRates": [
+        {
+          "label": "Input image",
+          "unit": "/image",
+          "skuId": "5005",
+          "fallbackCredits": 0.1836,
+          "officialUSD": 0.003
+        },
+        {
+          "label": "Image generation · 1K",
+          "unit": "/image",
+          "skuId": "5003",
+          "fallbackCredits": 1.836,
+          "officialUSD": 0.03
+        },
+        {
+          "label": "Image generation · 2K",
+          "unit": "/image",
+          "skuId": "5004",
+          "fallbackCredits": 1.836,
+          "officialUSD": 0.03
+        }
+      ]
+    },
+    {
+      "id": "qwen-image-3.0-pro",
+      "name": "Qwen Image 3.0 Pro",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.036,
+      "comingSoon": false,
+      "minUSD": 0.036,
+      "maxUSD": 0.0675,
+      "apiName": "qwen-image-3.0-pro",
+      "skuId": "5000",
+      "creditPrice": 2.448,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "5000",
+        "fallbackCredits": 2.448,
+        "officialUSD": 0.04
+      },
+      "expandedRates": [
+        {
+          "label": "Input image",
+          "unit": "/image",
+          "skuId": "5002",
+          "fallbackCredits": 0.1836,
+          "officialUSD": 0.003
+        },
+        {
+          "label": "Image generation · 1K",
+          "unit": "/image",
+          "skuId": "5000",
+          "fallbackCredits": 2.448,
+          "officialUSD": 0.04
+        },
+        {
+          "label": "Image generation · 2K",
+          "unit": "/image",
+          "skuId": "5001",
+          "fallbackCredits": 4.59,
+          "officialUSD": 0.075
+        }
+      ]
+    },
+    {
+      "id": "z-image-turbo",
+      "name": "Z Image Turbo",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.003823529411764706,
+      "comingSoon": false,
+      "apiName": "z-image-turbo",
+      "skuId": "1110",
+      "creditPrice": 0.26
+    },
+    {
+      "id": "krea-2-turbo",
+      "name": "Krea 2 Turbo",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.006617647058823529,
+      "comingSoon": false,
+      "minUSD": 0.006617647058823529,
+      "maxUSD": 0.026470588235294117,
+      "apiName": "krea-2-turbo",
+      "skuId": "1111",
+      "creditPrice": 0.45
+    },
+    {
+      "id": "nano-banana-pro",
+      "name": "Nano Banana Pro",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.04558823529411765,
+      "comingSoon": false,
+      "apiName": "gemini-3-pro-image-preview",
+      "skuId": "1510",
+      "creditPrice": 3.1,
+      "headlineRate": {
+        "label": "Image generation · 1K",
+        "unit": "/image",
+        "skuId": "1510",
+        "fallbackCredits": 3.1,
+        "officialUSD": 0.1344
+      }
+    },
+    {
+      "id": "gemini-omni",
+      "name": "Gemini Omni Flash",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 0.266,
+      "comingSoon": false,
+      "minUSD": 0.266,
+      "maxUSD": 0.943,
+      "fromUSD": 0.267,
+      "apiName": "gemini-omni-flash-text-to-video",
+      "skuId": "4400",
+      "creditPrice": 18.0961,
+      "headlineRate": {
+        "label": "Video output",
+        "unit": "/1K tokens",
+        "skuId": "4400",
+        "fallbackCredits": 1.0115,
+        "officialUSD": 0.0175
+      },
+      "displayHeadline": {
+        "label": "视频输出",
+        "usd": 0.015,
+        "unit": "/1K tokens"
+      }
+    },
+    {
+      "id": "gemini-omni-1-1-flash-text-to-video",
+      "name": "Gemini Omni 1.1 Flash",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 0.094,
+      "comingSoon": false,
+      "minUSD": 0.094,
+      "maxUSD": 2.593,
+      "fromUSD": 0.09382087500000001,
+      "apiName": "gemini-omni-1.1-flash-text-to-video",
+      "skuId": "4440",
+      "creditPrice": 6.38,
+      "headlineRate": {
+        "label": "Video output",
+        "unit": "/1K tokens",
+        "skuId": "4440",
+        "fallbackCredits": 1.0115,
+        "officialUSD": 0.0175
+      },
+      "displayHeadline": {
+        "label": "视频输出",
+        "usd": 0.015,
+        "unit": "/1K tokens"
+      }
+    },
+    {
+      "id": "veo3.1-fast",
+      "name": "Veo 3.1 Fast",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 0.3176,
+      "comingSoon": false,
+      "apiName": "veo3.1-fast-beta",
+      "skuId": "1400",
+      "creditPrice": 21.6,
+      "displayHeadline": {
+        "label": "视频生成 · 720p · 8s",
+        "usd": 0.318,
+        "unit": "/video"
+      }
+    },
+    {
+      "id": "veo3.1-pro",
+      "name": "Veo 3.1 Pro",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 2.3824,
+      "comingSoon": false,
+      "apiName": "veo3.1-pro-beta",
+      "skuId": "1401",
+      "creditPrice": 162,
+      "displayHeadline": {
+        "label": "视频生成 · 720p · 8s",
+        "usd": 2.383,
+        "unit": "/video"
+      }
+    },
+    {
+      "id": "veo-3.1-lite-generate-preview",
+      "name": "Veo 3.1 Lite",
+      "modality": "video",
+      "unit": "1 second",
+      "evolinkPrice": 0.027,
+      "comingSoon": false,
+      "minUSD": 0.027,
+      "maxUSD": 0.072,
+      "apiName": "veo-3.1-lite-generate-preview",
+      "skuId": "1522",
+      "creditPrice": 1.836,
+      "displayHeadline": {
+        "label": "视频生成 · 720p · no audio",
+        "usd": 0.027,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "nano-banana",
+      "name": "Nano Banana",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.023529411764705882,
+      "comingSoon": false,
+      "apiName": "nano-banana-beta",
+      "skuId": "1316",
+      "creditPrice": 1.6
+    },
+    {
+      "id": "gemini-3-pro-preview",
+      "name": "Gemini 3 Pro Preview",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.001864705882352941,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.001864705882352941,
+        "output": 0.01118235294117647,
+        "cacheHit": 0.00018676470588235294
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2536,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 1.1406,
+          "officialUsdPer1K": 0.018000000000000002
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0254,
+          "officialUsdPer1K": 0.00039999999999999996
+        }
+      },
+      "apiName": "gemini-3-pro-preview",
+      "creditPrice": 0.1268,
+      "tierSkus": {
+        "input": "2300",
+        "output": "2301",
+        "cacheHit": "2303"
+      }
+    },
+    {
+      "id": "gemini-3.1-pro-preview",
+      "name": "Gemini 3.1 Pro Preview",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.001864705882352941,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.001864705882352941,
+        "output": 0.01118235294117647,
+        "cacheHit": 0.00018676470588235294
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2536,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 1.1406,
+          "officialUsdPer1K": 0.018000000000000002
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0254,
+          "officialUsdPer1K": 0.00039999999999999996
+        }
+      },
+      "apiName": "gemini-3.1-pro-preview",
+      "creditPrice": 0.1268,
+      "tierSkus": {
+        "input": "2320",
+        "output": "2321",
+        "cacheHit": "2323"
+      }
+    },
+    {
+      "id": "gemini-3-flash-preview",
+      "name": "Gemini 3 Flash Preview",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00046617647058823527,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00046617647058823527,
+        "output": 0.0027955882352941174,
+        "cacheHit": 4.705882352941177e-05,
+        "audioInput": 0.0009323529411764705
+      },
+      "apiName": "gemini-3-flash-preview",
+      "creditPrice": 0.0317,
+      "tierSkus": {
+        "input": "2310",
+        "output": "2311",
+        "cacheHit": "2313",
+        "audioInput": "2314"
+      }
+    },
+    {
+      "id": "gemini-3.1-flash-lite-preview",
+      "name": "Gemini 3.1 Flash Lite Preview",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00023382352941176473,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00023382352941176473,
+        "output": 0.001398529411764706,
+        "cacheHit": 2.3529411764705884e-05,
+        "audioInput": 0.00046617647058823527
+      },
+      "apiName": "gemini-3.1-flash-lite-preview",
+      "creditPrice": 0.0159,
+      "tierSkus": {
+        "input": "2340",
+        "output": "2341",
+        "cacheHit": "2343",
+        "audioInput": "2344"
+      }
+    },
+    {
+      "id": "gemini-3.5-flash",
+      "name": "Gemini 3.5 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00135,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00135,
+        "output": 0.0081,
+        "cacheHit": 0.0001352941176470588,
+        "audioInput": 0.00135
+      },
+      "apiName": "gemini-3.5-flash",
+      "creditPrice": 0.0918,
+      "tierSkus": {
+        "input": "2350",
+        "output": "2351",
+        "cacheHit": "2353",
+        "audioInput": "2354"
+      }
+    },
+    {
+      "id": "kling-4",
+      "name": "Kling 4.0",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.157,
+      "comingSoon": false,
+      "minUSD": 0.157,
+      "maxUSD": 0.235,
+      "fromUSD": 0.157,
+      "apiName": "kling-v4-text-to-video",
+      "skuId": "1640",
+      "creditPrice": 10.676,
+      "displayHeadline": {
+        "label": "视频生成 · 720p",
+        "usd": 0.157,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "gemini-4",
+      "name": "Gemini 4 Argon",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0018,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0018,
+        "output": 0.009,
+        "cacheHit": 9.11764705882353e-05,
+        "audioInput": 0.0018
+      },
+      "apiName": "gemini-4-argon",
+      "skuId": "5030",
+      "creditPrice": 0.1224,
+      "tierSkus": {
+        "input": "5030",
+        "output": "5031",
+        "cacheHit": "5033",
+        "audioInput": "5034"
+      }
+    },
+    {
+      "id": "gemini-3.8-flash",
+      "name": "Gemini 3.8 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.000675,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.000675,
+        "output": 0.003375,
+        "cacheHit": 6.76470588235294e-05,
+        "audioInput": 0.000675
+      },
+      "apiName": "gemini-3.8-flash",
+      "skuId": "5025",
+      "creditPrice": 0.0459,
+      "tierSkus": {
+        "input": "5025",
+        "output": "5026",
+        "cacheHit": "5028",
+        "audioInput": "5029"
+      }
+    },
+    {
+      "id": "gemini-3.7-flash",
+      "name": "Gemini 3.7 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.000675,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.000675,
+        "output": 0.003375,
+        "cacheHit": 6.76470588235294e-05,
+        "audioInput": 0.000675
+      },
+      "apiName": "gemini-3.7-flash",
+      "skuId": "5020",
+      "creditPrice": 0.0459,
+      "tierSkus": {
+        "input": "5020",
+        "output": "5021",
+        "cacheHit": "5023",
+        "audioInput": "5024"
+      }
+    },
+    {
+      "id": "gemini-3.6-flash",
+      "name": "Gemini 3.6 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.000675,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.000675,
+        "output": 0.003375,
+        "cacheHit": 6.76470588235294e-05,
+        "audioInput": 0.000675
+      },
+      "apiName": "gemini-3.6-flash",
+      "skuId": "5010",
+      "creditPrice": 0.0459,
+      "tierSkus": {
+        "input": "5010",
+        "output": "5011",
+        "cacheHit": "5013",
+        "audioInput": "5014"
+      }
+    },
+    {
+      "id": "gemini-3.5-flash-lite",
+      "name": "Gemini 3.5 Flash Lite",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0002705882352941176,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0002705882352941176,
+        "output": 0.00225,
+        "cacheHit": 2.7941176470588236e-05
+      },
+      "apiName": "gemini-3.5-flash-lite",
+      "skuId": "5015",
+      "creditPrice": 0.0184,
+      "tierSkus": {
+        "input": "5015",
+        "output": "5016",
+        "cacheHit": "5018"
+      }
+    },
+    {
+      "id": "gemini-3.1-pro-preview-customtools",
+      "name": "Gemini 3.1 Pro CustomTools",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.001864705882352941,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.001864705882352941,
+        "output": 0.01118235294117647,
+        "cacheHit": 0.00018676470588235294
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2536,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 1.1406,
+          "officialUsdPer1K": 0.018000000000000002
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0254,
+          "officialUsdPer1K": 0.0004
+        }
+      },
+      "apiName": "gemini-3.1-pro-preview-customtools",
+      "creditPrice": 0.1268,
+      "tierSkus": {
+        "input": "2330",
+        "output": "2331",
+        "cacheHit": "2333"
+      }
+    },
+    {
+      "id": "grok-4.5",
+      "name": "Grok 4.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0017,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0017,
+        "output": 0.0051,
+        "cacheHit": 0.0002558823529411765
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2312,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.6936,
+          "officialUsdPer1K": 0.012
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0348,
+          "officialUsdPer1K": 0.0006
+        }
+      },
+      "apiName": "grok-4.5",
+      "skuId": "5100",
+      "creditPrice": 0.1156,
+      "tierSkus": {
+        "input": "5100",
+        "output": "5101",
+        "cacheHit": "5102"
+      }
+    },
+    {
+      "id": "kimi-k3",
+      "name": "Kimi K3",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00285,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00285,
+        "output": 0.01425,
+        "cacheHit": 0.0002852941176470588
+      },
+      "apiName": "kimi-k3",
+      "skuId": "4500",
+      "creditPrice": 0.1938,
+      "tierSkus": {
+        "input": "4500",
+        "output": "4501",
+        "cacheHit": "4502"
+      }
+    },
+    {
+      "id": "doubao-seedream-4.0",
+      "name": "Seedream 4.0",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.0225,
+      "comingSoon": false,
+      "apiName": "doubao-seedream-4.0",
+      "skuId": "1319",
+      "creditPrice": 1.53
+    },
+    {
+      "id": "wan2.5-video",
+      "name": "Wan 2.5",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.075,
+      "comingSoon": false,
+      "minUSD": 0.0375,
+      "maxUSD": 0.12525,
+      "skuId": "1322",
+      "creditPrice": 5.1,
+      "apiName": "wan2.5-image-to-video",
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.038,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "wan2.5-image",
+      "name": "Wan Image",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.0221,
+      "comingSoon": false,
+      "minUSD": 0.0221,
+      "maxUSD": 0.0221,
+      "skuId": "1323",
+      "creditPrice": 1.5
+    },
+    {
+      "id": "doubao-seedance-1.0-pro-fast",
+      "name": "Seedance 1.0 Pro Fast",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.0133,
+      "comingSoon": false,
+      "minUSD": 0.006,
+      "maxUSD": 0.0292,
+      "skuId": "1404",
+      "creditPrice": 0.9,
+      "apiName": "doubao-seedance-1.0-pro-fast",
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.006,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "topaz-video-upscale",
+      "name": "Topaz Video Upscale",
+      "modality": "video",
+      "unit": "second",
+      "comingSoon": false,
+      "minUSD": 0.054411764705882354,
+      "maxUSD": 0.08705882352941177,
+      "apiName": "topaz-video-upscale",
+      "skuId": "3106",
+      "creditPrice": 3.7,
+      "displayHeadline": {
+        "label": "Video upscale · 1×",
+        "usd": 0.055,
+        "unit": "/input sec"
+      }
+    },
+    {
+      "id": "tencent-video-upscale",
+      "name": "Tencent Video Upscale",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.008,
+      "comingSoon": false,
+      "minUSD": 0.0035,
+      "maxUSD": 0.128,
+      "apiName": "tencent-video-upscale",
+      "skuId": "3107",
+      "creditPrice": 0.544,
+      "displayHeadline": {
+        "label": "Video upscale · 720p · ≤30 fps",
+        "usd": 0.0035,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "hailuo-3",
+      "name": "MiniMax H3",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.1235,
+      "comingSoon": false,
+      "minUSD": 0.076,
+      "maxUSD": 0.1235,
+      "fromUSD": 0.076,
+      "apiName": "minimax-h3-text-to-video",
+      "skuId": "5200",
+      "creditPrice": 8.398,
+      "displayHeadline": {
+        "label": "视频生成 · 768p",
+        "usd": 0.076,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "minimax-h3-max",
+      "name": "MiniMax H3 Max",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.076,
+      "comingSoon": false,
+      "minUSD": 0.0475,
+      "maxUSD": 0.076,
+      "fromUSD": 0.048,
+      "apiName": "minimax-h3-max-text-to-video",
+      "skuId": "5210",
+      "creditPrice": 5.168,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.048,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "minimax-h3-max-turbo",
+      "name": "MiniMax H3 Max Turbo",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.038,
+      "comingSoon": false,
+      "minUSD": 0.02375,
+      "maxUSD": 0.038,
+      "fromUSD": 0.024,
+      "apiName": "minimax-h3-max-turbo-text-to-video",
+      "skuId": "5220",
+      "creditPrice": 2.584,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.024,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "hailuo-2-3",
+      "name": "Hailuo 2.3",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 0.1765,
+      "comingSoon": false,
+      "skuId": "1700",
+      "creditPrice": 12,
+      "apiName": "MiniMax-Hailuo-2.3-Fast",
+      "displayHeadline": {
+        "label": "视频生成 · 768p · 6s",
+        "usd": 0.177,
+        "unit": "/video"
+      }
+    },
+    {
+      "id": "hailuo-02",
+      "name": "Hailuo 02",
+      "modality": "video",
+      "unit": "video",
+      "evolinkPrice": 0.2647,
+      "comingSoon": false,
+      "minUSD": 0.0794,
+      "maxUSD": 0.5294,
+      "skuId": "1702",
+      "creditPrice": 18,
+      "apiName": "MiniMax-Hailuo-02",
+      "displayHeadline": {
+        "label": "视频生成 · 512p · 6s",
+        "usd": 0.08,
+        "unit": "/video"
+      }
+    },
+    {
+      "id": "claude-haiku-4-5-20251001",
+      "name": "Claude Haiku 4.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0009,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0009,
+        "output": 0.0045,
+        "cacheWrite": 0.001125,
+        "cacheHit": 9.117647058823529e-05
+      },
+      "apiName": "claude-haiku-4-5-20251001",
+      "skuId": "2210",
+      "creditPrice": 0.0612,
+      "tierSkus": {
+        "input": "2210",
+        "output": "2211",
+        "cacheWrite": "2212",
+        "cacheHit": "2213"
+      }
+    },
+    {
+      "id": "claude-sonnet-4-5-20250929",
+      "name": "Claude Sonnet 4.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0027,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0027,
+        "output": 0.0135,
+        "cacheWrite": 0.003375,
+        "cacheHit": 0.0002705882352941176
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.3672,
+          "officialUsdPer1K": 0.006
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 1.377,
+          "officialUsdPer1K": 0.0225
+        },
+        "cacheWrite": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.459,
+          "officialUsdPer1K": 0.0075
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0368,
+          "officialUsdPer1K": 0.0006
+        }
+      },
+      "apiName": "claude-sonnet-4-5-20250929",
+      "skuId": "2220",
+      "creditPrice": 0.1836,
+      "tierSkus": {
+        "input": "2220",
+        "output": "2221",
+        "cacheWrite": "2222",
+        "cacheHit": "2223"
+      }
+    },
+    {
+      "id": "gpt-5.1",
+      "name": "GPT-5.1",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0010588235294117646,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0010588235294117646,
+        "output": 0.008470588235294117,
+        "cacheHit": 0.00011029411764705881
+      },
+      "apiName": "gpt-5.1",
+      "skuId": "2510",
+      "creditPrice": 0.072,
+      "tierSkus": {
+        "input": "2510",
+        "output": "2511",
+        "cacheHit": "2512"
+      }
+    },
+    {
+      "id": "claude-opus-4-5-20250514",
+      "name": "Claude Opus 4.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0045,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0045,
+        "output": 0.0225,
+        "cacheWrite": 0.005625,
+        "cacheHit": 0.00045
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.612,
+          "officialUsdPer1K": 0.01
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 1.5,
+          "fallbackCreditsPer1K": 2.295,
+          "officialUsdPer1K": 0.037500000000000006
+        },
+        "cacheWrite": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.765,
+          "officialUsdPer1K": 0.0125
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0612,
+          "officialUsdPer1K": 0.001
+        }
+      },
+      "apiName": "claude-opus-4-5-20250514",
+      "skuId": "2250",
+      "creditPrice": 0.306,
+      "tierSkus": {
+        "input": "2250",
+        "output": "2251",
+        "cacheWrite": "2252",
+        "cacheHit": "2253"
+      }
+    },
+    {
+      "id": "claude-opus-4-6",
+      "name": "Claude Opus 4.6",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0045,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0045,
+        "output": 0.0225,
+        "cacheWrite": 0.005625,
+        "cacheHit": 0.00045
+      },
+      "apiName": "claude-opus-4-6",
+      "skuId": "2260",
+      "creditPrice": 0.306,
+      "tierSkus": {
+        "input": "2260",
+        "output": "2261",
+        "cacheWrite": "2262",
+        "cacheHit": "2263"
+      }
+    },
+    {
+      "id": "claude-fable-5",
+      "name": "Claude Fable 5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.009,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.009,
+        "output": 0.045,
+        "cacheWrite": 0.01125,
+        "cacheHit": 0.0009
+      },
+      "apiName": "claude-fable-5",
+      "skuId": "3790",
+      "creditPrice": 0.612,
+      "tierSkus": {
+        "input": "3790",
+        "output": "3791",
+        "cacheWrite": "3792",
+        "cacheHit": "3793"
+      }
+    },
+    {
+      "id": "claude-opus-5-5",
+      "name": "Claude Opus 5.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0038,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0038,
+        "output": 0.019,
+        "cacheWrite": 0.00475,
+        "cacheHit": 0.0001911764705882353
+      },
+      "apiName": "claude-opus-5-5",
+      "skuId": "3820",
+      "creditPrice": 0.2584,
+      "tierSkus": {
+        "input": "3820",
+        "output": "3821",
+        "cacheWrite": "3822",
+        "cacheHit": "3823"
+      }
+    },
+    {
+      "id": "claude-fable-5-1",
+      "name": "Claude Fable 5.1",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0095,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0095,
+        "output": 0.0475,
+        "cacheWrite": 0.011875,
+        "cacheHit": 0.00023823529411764707
+      },
+      "apiName": "claude-fable-5-1",
+      "skuId": "3810",
+      "creditPrice": 0.646,
+      "tierSkus": {
+        "input": "3810",
+        "output": "3811",
+        "cacheWrite": "3812",
+        "cacheHit": "3813"
+      }
+    },
+    {
+      "id": "claude-opus-5",
+      "name": "Claude Opus 5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00475,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00475,
+        "output": 0.02375,
+        "cacheWrite": 0.005938235294117647,
+        "cacheHit": 0.000475
+      },
+      "apiName": "claude-opus-5",
+      "skuId": "3800",
+      "creditPrice": 0.323,
+      "tierSkus": {
+        "input": "3800",
+        "output": "3801",
+        "cacheWrite": "3802",
+        "cacheHit": "3803"
+      }
+    },
+    {
+      "id": "qwen-3-8-max",
+      "name": "Qwen3.8 Max",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0019,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0019,
+        "output": 0.0057,
+        "cacheWrite": 0.002375,
+        "cacheHit": 0.0003808823529411765,
+        "cacheHitExplicit": 0.0001911764705882353
+      },
+      "apiName": "qwen3.8-max",
+      "skuId": "3114",
+      "creditPrice": 0.1292,
+      "tierSkus": {
+        "input": "3114",
+        "output": "3115",
+        "cacheWrite": "3116",
+        "cacheHit": "3117",
+        "cacheHitExplicit": "3118"
+      }
+    },
+    {
+      "id": "glm-5-3",
+      "name": "GLM-5.3",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0010588235294117646,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0010588235294117646,
+        "output": 0.0037058823529411765,
+        "cacheHit": 0.00026470588235294115
+      },
+      "apiName": "glm-5.3",
+      "skuId": "3150",
+      "creditPrice": 0.072,
+      "tierSkus": {
+        "input": "3150",
+        "output": "3151",
+        "cacheHit": "3152"
+      }
+    },
+    {
+      "id": "glm-5-3-flash",
+      "name": "GLM-5.3 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00010588235294117646,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00010588235294117647,
+        "output": 0.00037058823529411767,
+        "cacheHit": 3.088235294117647e-05
+      },
+      "apiName": "glm-5.3-flash",
+      "skuId": "3160",
+      "creditPrice": 0.0072,
+      "tierSkus": {
+        "input": "3160",
+        "output": "3161",
+        "cacheHit": "3162"
+      }
+    },
+    {
+      "id": "glm-5-3-flashx",
+      "name": "GLM-5.3 FlashX",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00026470588235294115,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00026470588235294115,
+        "output": 0.0009264705882352941,
+        "cacheHit": 7.647058823529411e-05
+      },
+      "apiName": "glm-5.3-flashx",
+      "skuId": "3170",
+      "creditPrice": 0.018,
+      "tierSkus": {
+        "input": "3170",
+        "output": "3171",
+        "cacheHit": "3172"
+      }
+    },
+    {
+      "id": "grok-4-7",
+      "name": "Grok 4.7",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0017,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0017,
+        "output": 0.0051,
+        "cacheHit": 0.000425
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2312,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.6936,
+          "officialUsdPer1K": 0.012
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0578,
+          "officialUsdPer1K": 0.001
+        }
+      },
+      "apiName": "grok-4.7",
+      "skuId": "5120",
+      "creditPrice": 0.1156,
+      "tierSkus": {
+        "input": "5120",
+        "output": "5121",
+        "cacheHit": "5122"
+      }
+    },
+    {
+      "id": "grok-4-6",
+      "name": "Grok 4.6",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0017,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0017,
+        "output": 0.0051,
+        "cacheHit": 0.000425
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.2312,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.6936,
+          "officialUsdPer1K": 0.012
+        },
+        "cacheHit": {
+          "threshold": 200000,
+          "multiplier": 2,
+          "fallbackCreditsPer1K": 0.0578,
+          "officialUsdPer1K": 0.001
+        }
+      },
+      "apiName": "grok-4.6",
+      "skuId": "5110",
+      "creditPrice": 0.1156,
+      "tierSkus": {
+        "input": "5110",
+        "output": "5111",
+        "cacheHit": "5112"
+      }
+    },
+    {
+      "id": "claude-opus-4-8",
+      "name": "Claude Opus 4.8",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0045,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0045,
+        "output": 0.0225,
+        "cacheWrite": 0.005625,
+        "cacheHit": 0.00045
+      },
+      "apiName": "claude-opus-4-8",
+      "skuId": "3780",
+      "creditPrice": 0.306,
+      "tierSkus": {
+        "input": "3780",
+        "output": "3781",
+        "cacheWrite": "3782",
+        "cacheHit": "3783"
+      }
+    },
+    {
+      "id": "claude-opus-4-7",
+      "name": "Claude Opus 4.7",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0045,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0045,
+        "output": 0.0225,
+        "cacheWrite": 0.005625,
+        "cacheHit": 0.00045
+      },
+      "apiName": "claude-opus-4-7",
+      "skuId": "3020",
+      "creditPrice": 0.306,
+      "tierSkus": {
+        "input": "3020",
+        "output": "3021",
+        "cacheWrite": "3022",
+        "cacheHit": "3023"
+      }
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "name": "Claude Sonnet 5.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0019,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0019,
+        "output": 0.0095,
+        "cacheWrite": 0.002375,
+        "cacheHit": 0.0001911764705882353
+      },
+      "apiName": "claude-sonnet-5-5",
+      "skuId": "3040",
+      "creditPrice": 0.1292,
+      "tierSkus": {
+        "input": "3040",
+        "output": "3041",
+        "cacheWrite": "3042",
+        "cacheHit": "3043"
+      }
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "name": "Claude Haiku 5.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 9.5588235e-05,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 9.558823529411765e-05,
+        "output": 0.000475,
+        "cacheWrite": 0.00011911764705882353,
+        "cacheHit": 1.0294117647058824e-05
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 100000,
+          "multiplier": 5,
+          "fallbackCreditsPer1K": 0.0325,
+          "officialUsdPer1K": 0.0005
+        },
+        "output": {
+          "threshold": 100000,
+          "multiplier": 5,
+          "fallbackCreditsPer1K": 0.1615,
+          "officialUsdPer1K": 0.0025
+        },
+        "cacheWrite": {
+          "threshold": 100000,
+          "multiplier": 5,
+          "fallbackCreditsPer1K": 0.0405,
+          "officialUsdPer1K": 0.000625
+        },
+        "cacheHit": {
+          "threshold": 100000,
+          "multiplier": 5,
+          "fallbackCreditsPer1K": 0.0035,
+          "officialUsdPer1K": 5e-05
+        }
+      },
+      "apiName": "claude-haiku-5-5",
+      "skuId": "3050",
+      "creditPrice": 0.0065,
+      "tierSkus": {
+        "input": "3050",
+        "output": "3051",
+        "cacheWrite": "3052",
+        "cacheHit": "3053"
+      }
+    },
+    {
+      "id": "claude-sonnet-5",
+      "name": "Claude Sonnet 5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0018,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0018,
+        "output": 0.009,
+        "cacheWrite": 0.00225,
+        "cacheHit": 0.00018088235294117647
+      },
+      "apiName": "claude-sonnet-5",
+      "skuId": "3030",
+      "creditPrice": 0.1224,
+      "tierSkus": {
+        "input": "3030",
+        "output": "3031",
+        "cacheWrite": "3032",
+        "cacheHit": "3033"
+      }
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "name": "Claude Sonnet 4.6",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0027,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0027,
+        "output": 0.0135,
+        "cacheWrite": 0.003375,
+        "cacheHit": 0.0002705882352941176
+      },
+      "apiName": "claude-sonnet-4-6",
+      "skuId": "3010",
+      "creditPrice": 0.1836,
+      "tierSkus": {
+        "input": "3010",
+        "output": "3011",
+        "cacheWrite": "3012",
+        "cacheHit": "3013"
+      }
+    },
+    {
+      "id": "grok-imagine-video",
+      "name": "Grok Imagine Video 1.0",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.02,
+      "comingSoon": false,
+      "minUSD": 0.02,
+      "maxUSD": 0.028,
+      "apiName": "grok-imagine-text-to-video-beta",
+      "skuId": "1800",
+      "creditPrice": 1.36,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.02,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "grok-imagine-video-1-5",
+      "name": "Grok Imagine Video 1.5",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.056,
+      "comingSoon": false,
+      "minUSD": 0.056,
+      "maxUSD": 0.175,
+      "apiName": "grok-imagine-video-1.5-preview",
+      "skuId": "1803",
+      "creditPrice": 3.808,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.056,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "grok-imagine-video-1-5-lite",
+      "name": "Grok Imagine Video 1.5 Lite",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.013999999999999999,
+      "comingSoon": false,
+      "minUSD": 0.013999999999999999,
+      "maxUSD": 0.09799999999999999,
+      "apiName": "grok-imagine-video-1.5-lite",
+      "skuId": "1808",
+      "creditPrice": 0.952,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.014,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "grok-imagine-image-2-0",
+      "name": "Grok Imagine Image 2.0",
+      "modality": "image",
+      "unit": "image",
+      "evolinkPrice": 0.03,
+      "comingSoon": false,
+      "minUSD": 0.03,
+      "maxUSD": 0.06,
+      "apiName": "grok-imagine-image-2.0",
+      "skuId": "5300",
+      "creditPrice": 2.04,
+      "headlineRate": {
+        "label": "Image generation · 1K Low",
+        "unit": "/image",
+        "skuId": "5300",
+        "fallbackCredits": 2.04,
+        "officialUSD": 0.04
+      }
+    },
+    {
+      "id": "deepseek-chat",
+      "name": "DeepSeek Chat",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00026470588235294115,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00026470588235294115,
+        "output": 0.0010588235294117646,
+        "cacheHit": 5.882352941176471e-06
+      },
+      "apiName": "deepseek-chat",
+      "skuId": "1205",
+      "creditPrice": 0.018,
+      "tierSkus": {
+        "input": "1205",
+        "output": "1206",
+        "cacheHit": "1207"
+      }
+    },
+    {
+      "id": "deepseek-reasoner",
+      "name": "DeepSeek Reasoner",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00026470588235294115,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00026470588235294115,
+        "output": 0.0010588235294117646,
+        "cacheHit": 5.882352941176471e-06
+      },
+      "apiName": "deepseek-reasoner",
+      "skuId": "1205",
+      "creditPrice": 0.018,
+      "tierSkus": {
+        "input": "1205",
+        "output": "1206",
+        "cacheHit": "1207"
+      }
+    },
+    {
+      "id": "deepseek-v4-flash",
+      "name": "DeepSeek V4 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00039705882352941176,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00039705882352941176,
+        "output": 0.0011911764705882354,
+        "cacheHit": 1.3235294117647058e-05
+      },
+      "apiName": "deepseek-v4-flash",
+      "skuId": "1190",
+      "creditPrice": 0.027,
+      "tierSkus": {
+        "input": "1190",
+        "output": "1191",
+        "cacheHit": "1192"
+      }
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00026470588235294115,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00026470588235294115,
+        "output": 0.0010588235294117646,
+        "cacheHit": 5.882352941176471e-06
+      },
+      "apiName": "deepseek-v4.1-flash",
+      "skuId": "1205",
+      "creditPrice": 0.018,
+      "tierSkus": {
+        "input": "1205",
+        "output": "1206",
+        "cacheHit": "1207"
+      }
+    },
+    {
+      "id": "deepseek-v4.1-flash-1017",
+      "name": "DeepSeek V4.1 Flash 1017",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00029411764705882356,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00029411764705882356,
+        "output": 0.0011764705882352942,
+        "cacheHit": 5.882352941176471e-06
+      },
+      "apiName": "deepseek-v4.1-flash-1017",
+      "skuId": "1213",
+      "creditPrice": 0.02,
+      "tierSkus": {
+        "input": "1213",
+        "output": "1214",
+        "cacheHit": "1215"
+      }
+    },
+    {
+      "id": "deepseek-v4-flash-vision-exp",
+      "name": "DeepSeek V4 Flash Vision",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00026470588235294115,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00026470588235294115,
+        "output": 0.0010588235294117646,
+        "cacheHit": 5.882352941176471e-06
+      },
+      "apiName": "deepseek-v4-flash-vision-exp",
+      "skuId": "1205",
+      "creditPrice": 0.018,
+      "tierSkus": {
+        "input": "1205",
+        "output": "1206",
+        "cacheHit": "1207"
+      }
+    },
+    {
+      "id": "deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0011911764705882354,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0011911764705882354,
+        "output": 0.003573529411764706,
+        "cacheHit": 3.970588235294118e-05
+      },
+      "apiName": "deepseek-v4-pro",
+      "skuId": "1193",
+      "creditPrice": 0.081,
+      "tierSkus": {
+        "input": "1193",
+        "output": "1194",
+        "cacheHit": "1195"
+      }
+    },
+    {
+      "id": "doubao-seed-2.0-pro",
+      "name": "Doubao Seed 2.0 Pro",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00047058823529411766,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00047058823529411766,
+        "output": 0.0023529411764705885,
+        "cacheHit": 9.411764705882353e-05,
+        "cacheStorage": 2.9411764705882355e-06
+      },
+      "highVolumeTiers": {
+        "input": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.032,
+            "officialUsdPer1K": 0.00047058823529411766
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.048,
+            "officialUsdPer1K": 0.0007058823529411765
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.096,
+            "officialUsdPer1K": 0.001411764705882353
+          }
+        ],
+        "output": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.16,
+            "officialUsdPer1K": 0.0023529411764705885
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.24,
+            "officialUsdPer1K": 0.003529411764705882
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.48,
+            "officialUsdPer1K": 0.007058823529411764
+          }
+        ],
+        "cacheHit": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.0064,
+            "officialUsdPer1K": 9.411764705882353e-05
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.009600000000000001,
+            "officialUsdPer1K": 0.0001411764705882353
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.019200000000000002,
+            "officialUsdPer1K": 0.0002823529411764706
+          }
+        ]
+      },
+      "apiName": "doubao-seed-2.0-pro",
+      "skuId": "2600",
+      "creditPrice": 0.032,
+      "tierSkus": {
+        "input": "2600",
+        "output": "2601",
+        "cacheHit": "2602",
+        "cacheStorage": "2608"
+      }
+    },
+    {
+      "id": "doubao-seed-2.0-lite",
+      "name": "Doubao Seed 2.0 Lite",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 8.82e-05,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 8.823529411764706e-05,
+        "output": 0.0005294117647058823,
+        "cacheHit": 1.764705882352941e-05,
+        "cacheStorage": 2.9411764705882355e-06
+      },
+      "highVolumeTiers": {
+        "input": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.006,
+            "officialUsdPer1K": 8.823529411764706e-05
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.009000000000000001,
+            "officialUsdPer1K": 0.0001323529411764706
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.018000000000000002,
+            "officialUsdPer1K": 0.0002647058823529412
+          }
+        ],
+        "output": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.036,
+            "officialUsdPer1K": 0.0005294117647058823
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.05399999999999999,
+            "officialUsdPer1K": 0.0007941176470588234
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.10799999999999998,
+            "officialUsdPer1K": 0.0015882352941176468
+          }
+        ],
+        "cacheHit": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.0012,
+            "officialUsdPer1K": 1.764705882352941e-05
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.0018,
+            "officialUsdPer1K": 2.6470588235294115e-05
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.0036,
+            "officialUsdPer1K": 5.294117647058823e-05
+          }
+        ]
+      },
+      "apiName": "doubao-seed-2.0-lite",
+      "skuId": "2610",
+      "creditPrice": 0.006,
+      "tierSkus": {
+        "input": "2610",
+        "output": "2611",
+        "cacheHit": "2612",
+        "cacheStorage": "2618"
+      }
+    },
+    {
+      "id": "doubao-seed-2.0-mini",
+      "name": "Doubao Seed 2.0 Mini",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 2.94e-05,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 2.9411764705882354e-05,
+        "output": 0.00029411764705882356,
+        "cacheHit": 5.882352941176471e-06,
+        "cacheStorage": 2.9411764705882355e-06
+      },
+      "highVolumeTiers": {
+        "input": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.002,
+            "officialUsdPer1K": 2.9411764705882354e-05
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 2,
+            "fallbackCreditsPer1K": 0.004,
+            "officialUsdPer1K": 5.882352941176471e-05
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 4,
+            "fallbackCreditsPer1K": 0.008,
+            "officialUsdPer1K": 0.00011764705882352942
+          }
+        ],
+        "output": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.02,
+            "officialUsdPer1K": 0.00029411764705882356
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 2,
+            "fallbackCreditsPer1K": 0.04,
+            "officialUsdPer1K": 0.0005882352941176471
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 4,
+            "fallbackCreditsPer1K": 0.08,
+            "officialUsdPer1K": 0.0011764705882352942
+          }
+        ],
+        "cacheHit": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.0004,
+            "officialUsdPer1K": 5.882352941176471e-06
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 2,
+            "fallbackCreditsPer1K": 0.0008,
+            "officialUsdPer1K": 1.1764705882352942e-05
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 4,
+            "fallbackCreditsPer1K": 0.0016,
+            "officialUsdPer1K": 2.3529411764705884e-05
+          }
+        ]
+      },
+      "apiName": "doubao-seed-2.0-mini",
+      "skuId": "2620",
+      "creditPrice": 0.002,
+      "tierSkus": {
+        "input": "2620",
+        "output": "2621",
+        "cacheHit": "2622",
+        "cacheStorage": "2628"
+      }
+    },
+    {
+      "id": "doubao-seed-2.0-code",
+      "name": "Doubao Seed 2.0 Code",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.000471,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00047058823529411766,
+        "output": 0.0023529411764705885,
+        "cacheHit": 9.411764705882353e-05,
+        "cacheStorage": 2.9411764705882355e-06
+      },
+      "highVolumeTiers": {
+        "input": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.032,
+            "officialUsdPer1K": 0.00047058823529411766
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.048,
+            "officialUsdPer1K": 0.0007058823529411765
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.096,
+            "officialUsdPer1K": 0.001411764705882353
+          }
+        ],
+        "output": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.16,
+            "officialUsdPer1K": 0.0023529411764705885
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.24,
+            "officialUsdPer1K": 0.003529411764705882
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.48,
+            "officialUsdPer1K": 0.007058823529411764
+          }
+        ],
+        "cacheHit": [
+          {
+            "threshold": 32000,
+            "multiplier": 1,
+            "fallbackCreditsPer1K": 0.0064,
+            "officialUsdPer1K": 9.411764705882353e-05
+          },
+          {
+            "threshold": 128000,
+            "multiplier": 1.5,
+            "fallbackCreditsPer1K": 0.009600000000000001,
+            "officialUsdPer1K": 0.0001411764705882353
+          },
+          {
+            "threshold": 256000,
+            "multiplier": 3,
+            "fallbackCreditsPer1K": 0.019200000000000002,
+            "officialUsdPer1K": 0.0002823529411764706
+          }
+        ]
+      },
+      "apiName": "doubao-seed-2.0-code",
+      "skuId": "2630",
+      "creditPrice": 0.032,
+      "tierSkus": {
+        "input": "2630",
+        "output": "2631",
+        "cacheHit": "2632",
+        "cacheStorage": "2638"
+      }
+    },
+    {
+      "id": "MiniMax-M2.5",
+      "name": "MiniMax-M2.5",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.000308823529412,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0003088235294117647,
+        "output": 0.0012352941176470588,
+        "cacheHit": 6.176470588235294e-05
+      },
+      "apiName": "MiniMax-M2.5",
+      "skuId": "3100",
+      "creditPrice": 0.021,
+      "tierSkus": {
+        "input": "3100",
+        "output": "3101",
+        "cacheHit": "3102"
+      }
+    },
+    {
+      "id": "MiniMax-M3",
+      "name": "MiniMax-M3",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0004941176470588235,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0004941176470588235,
+        "output": 0.001976470588235294,
+        "cacheWrite": 0.0006176470588235294,
+        "cacheHit": 9.852941176470589e-05
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 524288,
+          "multiplier": 2,
+          "absoluteCreditsPer1K": 0.084,
+          "fallbackCreditsPer1K": 0.084,
+          "officialUsdPer1K": 0.0012352941176470588
+        },
+        "output": {
+          "threshold": 524288,
+          "multiplier": 2,
+          "absoluteCreditsPer1K": 0.336,
+          "fallbackCreditsPer1K": 0.336,
+          "officialUsdPer1K": 0.004941176470588235
+        },
+        "cacheWrite": {
+          "threshold": 524288,
+          "multiplier": 2,
+          "absoluteCreditsPer1K": 0.105,
+          "fallbackCreditsPer1K": 0.105,
+          "officialUsdPer1K": 0.0015441176470588234
+        },
+        "cacheHit": {
+          "threshold": 524288,
+          "multiplier": 2,
+          "absoluteCreditsPer1K": 0.0168,
+          "fallbackCreditsPer1K": 0.0168,
+          "officialUsdPer1K": 0.00024705882352941174
+        }
+      },
+      "apiName": "MiniMax-M3",
+      "skuId": "3200",
+      "creditPrice": 0.0336,
+      "tierSkus": {
+        "input": "3200",
+        "output": "3201",
+        "cacheWrite": "3203",
+        "cacheHit": "3202"
+      }
+    },
+    {
+      "id": "MiniMax-M3.1-Flash",
+      "name": "MiniMax M3.1 Flash",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00015000000000000001,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00015000000000000001,
+        "output": 0.0006000000000000001,
+        "cacheHit": 1.4705882352941177e-05
+      },
+      "apiName": "MiniMax-M3.1-Flash",
+      "skuId": "3208",
+      "creditPrice": 0.0102,
+      "tierSkus": {
+        "input": "3208",
+        "output": "3209",
+        "cacheHit": "3210"
+      }
+    },
+    {
+      "id": "glm-5.2",
+      "name": "GLM-5.2",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0009411764705882353,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0009411764705882353,
+        "output": 0.0032941176470588237,
+        "cacheHit": 0.00023529411764705883
+      },
+      "apiName": "glm-5.2",
+      "skuId": "3130",
+      "creditPrice": 0.064,
+      "tierSkus": {
+        "input": "3130",
+        "output": "3131",
+        "cacheHit": "3132"
+      }
+    },
+    {
+      "id": "evolink-moderation",
+      "name": "EvoLink Moderation 1.0",
+      "modality": "text",
+      "unit": "/call",
+      "evolinkPrice": 0.0147,
+      "comingSoon": false,
+      "apiName": "evolink-moderation-1.0",
+      "skuId": "1240",
+      "creditPrice": 1
+    },
+    {
+      "id": "happy-horse",
+      "name": "Happy Horse 1.0",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.112,
+      "comingSoon": false,
+      "minUSD": 0.112,
+      "maxUSD": 0.1926,
+      "apiName": "happyhorse-1.0-text-to-video",
+      "skuId": "4200",
+      "creditPrice": 7.616,
+      "displayHeadline": {
+        "label": "视频生成 · 720p",
+        "usd": 0.112,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "happy-horse-1-1",
+      "name": "Happy Horse 1.1",
+      "modality": "video",
+      "unit": "second",
+      "evolinkPrice": 0.112,
+      "comingSoon": false,
+      "minUSD": 0.056,
+      "maxUSD": 0.1445,
+      "apiName": "happyhorse-1.1-text-to-video",
+      "skuId": "4205",
+      "creditPrice": 7.616,
+      "displayHeadline": {
+        "label": "视频生成 · 480p",
+        "usd": 0.056,
+        "unit": "/output sec"
+      }
+    },
+    {
+      "id": "suno-v6",
+      "name": "Suno V6",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v6-beta",
+      "skuId": "3006",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v6-mini",
+      "name": "Suno V6 Mini",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v6-mini-beta",
+      "skuId": "3007",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v6-wild",
+      "name": "Suno V6 Wild",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v6-wild-beta",
+      "skuId": "3008",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v5-5",
+      "name": "Suno V5.5",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v5.5-beta",
+      "skuId": "3005",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v5",
+      "name": "Suno V5",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v5-beta",
+      "skuId": "3004",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v4-5-plus",
+      "name": "Suno V4.5 Plus",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v4.5plus-beta",
+      "skuId": "3003",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v4-5-all",
+      "name": "Suno V4.5 All",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v4.5all-beta",
+      "skuId": "3002",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v4-5",
+      "name": "Suno V4.5",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v4.5-beta",
+      "skuId": "3001",
+      "creditPrice": 8
+    },
+    {
+      "id": "suno-v4",
+      "name": "Suno V4",
+      "modality": "audio",
+      "unit": "2 tracks",
+      "evolinkPrice": 0.11764705882352941,
+      "comingSoon": false,
+      "apiName": "suno-v4-beta",
+      "skuId": "3000",
+      "creditPrice": 8
+    },
+    {
+      "id": "gpt-5.6-sol",
+      "name": "GPT-5.6 Sol",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0036,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0036,
+        "output": 0.018,
+        "cacheWrite": 0.0045,
+        "cacheHit": 0.00036029411764705886
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.008
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.03
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.01
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0008
+        }
+      },
+      "apiName": "gpt-5.6-sol",
+      "skuId": "2640",
+      "creditPrice": 0.2448,
+      "tierSkus": {
+        "input": "2640",
+        "output": "2641",
+        "cacheWrite": "2643",
+        "cacheHit": "2642"
+      }
+    },
+    {
+      "id": "gpt-5.6-terra",
+      "name": "GPT-5.6 Terra",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0018,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0018,
+        "output": 0.0108,
+        "cacheWrite": 0.00225,
+        "cacheHit": 0.00018088235294117647
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.018
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.005
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0004
+        }
+      },
+      "apiName": "gpt-5.6-terra",
+      "skuId": "2650",
+      "creditPrice": 0.1224,
+      "tierSkus": {
+        "input": "2650",
+        "output": "2651",
+        "cacheWrite": "2653",
+        "cacheHit": "2652"
+      }
+    },
+    {
+      "id": "gpt-5.6-luna",
+      "name": "GPT-5.6 Luna",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.00018088235294117647,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.00018088235294117647,
+        "output": 0.0010808823529411763,
+        "cacheWrite": 0.000225,
+        "cacheHit": 1.9117647058823528e-05
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0004
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.0017999999999999997
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0005
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 4e-05
+        }
+      },
+      "apiName": "gpt-5.6-luna",
+      "skuId": "2660",
+      "creditPrice": 0.0123,
+      "tierSkus": {
+        "input": "2660",
+        "output": "2661",
+        "cacheWrite": "2663",
+        "cacheHit": "2662"
+      }
+    },
+    {
+      "id": "gpt-6-astra",
+      "name": "GPT-6 Astra",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.009,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.009,
+        "output": 0.045,
+        "cacheWrite": 0.01125,
+        "cacheHit": 0.0009
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.02
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.075
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.025
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.002
+        }
+      },
+      "apiName": "gpt-6-astra",
+      "skuId": "2670",
+      "creditPrice": 0.612,
+      "tierSkus": {
+        "input": "2670",
+        "output": "2671",
+        "cacheWrite": "2673",
+        "cacheHit": "2672"
+      }
+    },
+    {
+      "id": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0018,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0018,
+        "output": 0.009,
+        "cacheWrite": 0.00225,
+        "cacheHit": 9.117647058823529e-05
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.015
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.005
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0002
+        }
+      },
+      "apiName": "gpt-6.1-sol",
+      "skuId": "2740",
+      "creditPrice": 0.1224,
+      "tierSkus": {
+        "input": "2740",
+        "output": "2741",
+        "cacheWrite": "2743",
+        "cacheHit": "2742"
+      }
+    },
+    {
+      "id": "gpt-6-sol",
+      "name": "GPT-6 Sol",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 0.0018,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 0.0018,
+        "output": 0.009,
+        "cacheWrite": 0.00225,
+        "cacheHit": 0.00018088235294117647
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.004
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.015
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.005
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0004
+        }
+      },
+      "apiName": "gpt-6-sol",
+      "skuId": "2700",
+      "creditPrice": 0.1224,
+      "tierSkus": {
+        "input": "2700",
+        "output": "2701",
+        "cacheWrite": "2703",
+        "cacheHit": "2702"
+      }
+    },
+    {
+      "id": "gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "modality": "text",
+      "unit": "1M tokens",
+      "evolinkPrice": 9.117647058823529e-05,
+      "comingSoon": false,
+      "fallbackTiers": {
+        "input": 9.117647058823529e-05,
+        "output": 0.00045,
+        "cacheWrite": 0.00011323529411764706,
+        "cacheHit": 8.823529411764705e-06
+      },
+      "highVolumeTiers": {
+        "input": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.0002
+        },
+        "output": {
+          "threshold": 272000,
+          "multiplier": 1.5,
+          "officialUsdPer1K": 0.00075
+        },
+        "cacheWrite": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 0.00025
+        },
+        "cacheHit": {
+          "threshold": 272000,
+          "multiplier": 2,
+          "officialUsdPer1K": 2e-05
+        }
+      },
+      "apiName": "gpt-6-luna",
+      "skuId": "2720",
+      "creditPrice": 0.0062,
+      "tierSkus": {
+        "input": "2720",
+        "output": "2721",
+        "cacheWrite": "2723",
+        "cacheHit": "2722"
+      }
+    }
+  ],
+  "skuPrices": {
+    "1110": 0.26,
+    "1111": 0.45,
+    "1112": 1.8,
+    "1161": 1.9584,
+    "1190": 0.027,
+    "1191": 0.081,
+    "1192": 0.0009,
+    "1193": 0.081,
+    "1194": 0.243,
+    "1195": 0.0027,
+    "1203": 0.68,
+    "1204": 0.68,
+    "1205": 0.018,
+    "1206": 0.072,
+    "1207": 0.0004,
+    "1213": 0.02,
+    "1214": 0.08,
+    "1215": 0.0004,
+    "1240": 1,
+    "1313": 12,
+    "1314": 2.04,
+    "1316": 1.6,
+    "1319": 1.53,
+    "1321": 1.5,
+    "1322": 5.1,
+    "1323": 1.5,
+    "1324": 5.1,
+    "1326": 4.76,
+    "1327": 4.76,
+    "1328": 4.76,
+    "1329": 1.904,
+    "1330": 0.04,
+    "1331": 2.38,
+    "1332": 2.38,
+    "1335": 0.153,
+    "1336": 2.295,
+    "1337": 4.59,
+    "1341": 0.1632,
+    "1342": 1.224,
+    "1343": 2.448,
+    "1344": 1.1016,
+    "1345": 1.1016,
+    "1350": 5.44,
+    "1351": 5.44,
+    "1352": 5.44,
+    "1353": 5.44,
+    "1360": 2.55,
+    "1361": 2.55,
+    "1362": 2.55,
+    "1363": 3.9304,
+    "1364": 3.9304,
+    "1365": 3.9304,
+    "1400": 21.6,
+    "1401": 162,
+    "1404": 0.9,
+    "1409": 5.76,
+    "1496": 0.1268,
+    "1497": 0.7604,
+    "1498": 0.0317,
+    "1499": 0.1901,
+    "1500": 8.5156,
+    "1501": 0.071,
+    "1502": 15.2064,
+    "1506": 0.8871,
+    "1508": 6.3867,
+    "1509": 9.5801,
+    "1510": 3.1,
+    "1520": 5.0688,
+    "1521": 12.672,
+    "1522": 1.836,
+    "1530": 0.0355,
+    "1531": 2.8398,
+    "1532": 4.2578,
+    "1535": 0.8871,
+    "1536": 0.8871,
+    "1540": 2.4,
+    "1541": 0.0145,
+    "1543": 0.0867,
+    "1544": 0.0162,
+    "1545": 1.9421,
+    "1550": 1.2,
+    "1560": 0.0918,
+    "1562": 0.459,
+    "1564": 0.1029,
+    "1565": 2.0808,
+    "1566": 3.0845,
+    "1567": 6.9401,
+    "1568": 0.8568,
+    "1569": 0.8568,
+    "1600": 8,
+    "1601": 12,
+    "1602": 6.8,
+    "1610": 5.4,
+    "1611": 5.4,
+    "1612": 8.1,
+    "1613": 8.1,
+    "1614": 0.001,
+    "1620": 5.4,
+    "1621": 5.4,
+    "1622": 8.1648,
+    "1623": 4.5,
+    "1630": 7.2,
+    "1631": 7.2,
+    "1640": 10.676,
+    "1641": 10.676,
+    "1642": 10.676,
+    "1644": 6.392,
+    "1700": 12,
+    "1701": 18,
+    "1702": 18,
+    "1730": 1.7784,
+    "1800": 1.36,
+    "1801": 1.36,
+    "1802": 0.476,
+    "1803": 3.808,
+    "1804": 2.38,
+    "1805": 2.38,
+    "1806": 0.0952,
+    "1807": 0.476,
+    "1808": 0.952,
+    "1810": 2.7,
+    "1811": 8.1,
+    "1812": 8.1,
+    "1813": 8.1,
+    "1814": 5.4,
+    "1815": 5.4,
+    "1816": 5.4,
+    "1818": 8.1,
+    "1819": 5.4,
+    "1820": 8.1,
+    "1821": 8.1,
+    "1830": 5.4,
+    "1831": 8.1,
+    "1832": 8.1,
+    "1833": 8.1,
+    "1834": 8.1,
+    "1835": 8.1,
+    "1836": 5.4,
+    "1840": 5.4,
+    "1841": 8.1,
+    "1842": 8.1,
+    "1843": 8.1,
+    "1844": 8.1,
+    "1845": 8.1,
+    "1846": 5.4,
+    "2210": 0.0612,
+    "2211": 0.306,
+    "2212": 0.0765,
+    "2213": 0.0062,
+    "2214": 0.68,
+    "2220": 0.1836,
+    "2221": 0.918,
+    "2222": 0.2295,
+    "2223": 0.0184,
+    "2224": 0.68,
+    "2250": 0.306,
+    "2251": 1.53,
+    "2252": 0.3825,
+    "2253": 0.0306,
+    "2254": 0.68,
+    "2260": 0.306,
+    "2261": 1.53,
+    "2262": 0.3825,
+    "2263": 0.0306,
+    "2264": 0.68,
+    "2300": 0.1268,
+    "2301": 0.7604,
+    "2303": 0.0127,
+    "2310": 0.0317,
+    "2311": 0.1901,
+    "2313": 0.0032,
+    "2314": 0.0634,
+    "2320": 0.1268,
+    "2321": 0.7604,
+    "2323": 0.0127,
+    "2330": 0.1268,
+    "2331": 0.7604,
+    "2333": 0.0127,
+    "2340": 0.0159,
+    "2341": 0.0951,
+    "2343": 0.0016,
+    "2344": 0.0317,
+    "2345": 0.952,
+    "2350": 0.0918,
+    "2351": 0.5508,
+    "2353": 0.0092,
+    "2354": 0.0918,
+    "2510": 0.072,
+    "2511": 0.576,
+    "2512": 0.0075,
+    "2530": 0.1008,
+    "2531": 0.8064,
+    "2532": 0.0101,
+    "2570": 0.153,
+    "2571": 0.918,
+    "2572": 0.0153,
+    "2580": 0.306,
+    "2581": 1.836,
+    "2582": 0.0306,
+    "2600": 0.032,
+    "2601": 0.16,
+    "2602": 0.0064,
+    "2608": 0.0002,
+    "2610": 0.006,
+    "2611": 0.036,
+    "2612": 0.0012,
+    "2618": 0.0002,
+    "2620": 0.002,
+    "2621": 0.02,
+    "2622": 0.0004,
+    "2628": 0.0002,
+    "2630": 0.032,
+    "2631": 0.16,
+    "2632": 0.0064,
+    "2638": 0.0002,
+    "2640": 0.2448,
+    "2641": 1.224,
+    "2642": 0.0245,
+    "2643": 0.306,
+    "2650": 0.1224,
+    "2651": 0.7344,
+    "2652": 0.0123,
+    "2653": 0.153,
+    "2660": 0.0123,
+    "2661": 0.0735,
+    "2662": 0.0013,
+    "2663": 0.0153,
+    "2670": 0.612,
+    "2671": 3.06,
+    "2672": 0.0612,
+    "2673": 0.765,
+    "2700": 0.1224,
+    "2701": 0.612,
+    "2702": 0.0123,
+    "2703": 0.153,
+    "2720": 0.0062,
+    "2721": 0.0306,
+    "2722": 0.0006,
+    "2723": 0.0077,
+    "2740": 0.1224,
+    "2741": 0.612,
+    "2742": 0.0062,
+    "2743": 0.153,
+    "2760": 0.0068,
+    "3000": 8,
+    "3001": 8,
+    "3002": 8,
+    "3003": 8,
+    "3004": 8,
+    "3005": 8,
+    "3006": 8,
+    "3007": 8,
+    "3008": 8,
+    "3010": 0.1836,
+    "3011": 0.918,
+    "3012": 0.2295,
+    "3013": 0.0184,
+    "3014": 0.68,
+    "3020": 0.306,
+    "3021": 1.53,
+    "3022": 0.3825,
+    "3023": 0.0306,
+    "3024": 0.68,
+    "3030": 0.1224,
+    "3031": 0.612,
+    "3032": 0.153,
+    "3033": 0.0123,
+    "3034": 0.68,
+    "3040": 0.1292,
+    "3041": 0.646,
+    "3042": 0.1615,
+    "3043": 0.013,
+    "3044": 0.68,
+    "3050": 0.0065,
+    "3051": 0.0323,
+    "3052": 0.0081,
+    "3053": 0.0007,
+    "3054": 0.68,
+    "3100": 0.021,
+    "3101": 0.084,
+    "3102": 0.0042,
+    "3104": 0.04,
+    "3106": 3.7,
+    "3107": 0.544,
+    "3114": 0.1292,
+    "3115": 0.3876,
+    "3116": 0.1615,
+    "3117": 0.0259,
+    "3118": 0.013,
+    "3130": 0.064,
+    "3131": 0.224,
+    "3132": 0.016,
+    "3133": 0.68,
+    "3140": 0.68,
+    "3141": 0.68,
+    "3142": 0.68,
+    "3143": 0.544,
+    "3144": 0.544,
+    "3145": 0.2244,
+    "3150": 0.072,
+    "3151": 0.252,
+    "3152": 0.018,
+    "3153": 0.68,
+    "3160": 0.0072,
+    "3161": 0.0252,
+    "3162": 0.0021,
+    "3163": 0.68,
+    "3170": 0.018,
+    "3171": 0.063,
+    "3172": 0.0052,
+    "3173": 0.68,
+    "3200": 0.0336,
+    "3201": 0.1344,
+    "3202": 0.0067,
+    "3203": 0.042,
+    "3208": 0.0102,
+    "3209": 0.0408,
+    "3210": 0.001,
+    "3213": 0.001,
+    "3214": 0.12,
+    "3215": 0.015,
+    "3780": 0.306,
+    "3781": 1.53,
+    "3782": 0.3825,
+    "3783": 0.0306,
+    "3784": 0.68,
+    "3790": 0.612,
+    "3791": 3.06,
+    "3792": 0.765,
+    "3793": 0.0612,
+    "3794": 0.68,
+    "3800": 0.323,
+    "3801": 1.615,
+    "3802": 0.4038,
+    "3803": 0.0323,
+    "3804": 0.68,
+    "3810": 0.646,
+    "3811": 3.23,
+    "3812": 0.8075,
+    "3813": 0.0162,
+    "3814": 0.68,
+    "3820": 0.2584,
+    "3821": 1.292,
+    "3822": 0.323,
+    "3823": 0.013,
+    "3824": 0.68,
+    "4000": 13.5,
+    "4001": 13.5,
+    "4002": 13.5,
+    "4003": 8.2013,
+    "4004": 8.2013,
+    "4005": 8.2013,
+    "4006": 0.04,
+    "4007": 2.7,
+    "4008": 2.7,
+    "4009": 2.7,
+    "4011": 20.09,
+    "4012": 20.09,
+    "4013": 20.09,
+    "4014": 20.09,
+    "4015": 20.09,
+    "4016": 20.09,
+    "4105": 1.02,
+    "4110": 0.4896,
+    "4111": 0.1224,
+    "4112": 1.836,
+    "4113": 0.306,
+    "4114": 0.0765,
+    "4120": 0.4896,
+    "4121": 0.1224,
+    "4122": 1.9584,
+    "4123": 0.306,
+    "4124": 0.0765,
+    "4125": 0.612,
+    "4140": 0.4896,
+    "4141": 0.1224,
+    "4142": 1.836,
+    "4143": 0.306,
+    "4144": 0.0765,
+    "4150": 0.4896,
+    "4151": 0.1224,
+    "4152": 1.836,
+    "4153": 0.306,
+    "4154": 0.0765,
+    "4200": 7.616,
+    "4201": 7.616,
+    "4202": 7.616,
+    "4203": 7.616,
+    "4205": 7.616,
+    "4206": 7.616,
+    "4207": 7.616,
+    "4300": 0.204,
+    "4400": 1.0115,
+    "4401": 0.0867,
+    "4402": 0.5202,
+    "4410": 1.0115,
+    "4411": 0.0867,
+    "4412": 0.5202,
+    "4420": 1.0115,
+    "4421": 0.0867,
+    "4422": 0.5202,
+    "4430": 1.0115,
+    "4431": 0.0867,
+    "4432": 0.5202,
+    "4440": 1.0115,
+    "4441": 0.0867,
+    "4442": 0.5202,
+    "4450": 1.0115,
+    "4451": 0.0867,
+    "4452": 0.5202,
+    "4460": 1.0115,
+    "4461": 0.0867,
+    "4462": 0.5202,
+    "4470": 1.0115,
+    "4471": 0.0867,
+    "4472": 0.5202,
+    "4480": 1.0115,
+    "4481": 0.0867,
+    "4482": 0.5202,
+    "4500": 0.1938,
+    "4501": 0.969,
+    "4502": 0.0194,
+    "4503": 0.34,
+    "5000": 2.448,
+    "5001": 4.59,
+    "5002": 0.1836,
+    "5003": 1.836,
+    "5004": 1.836,
+    "5005": 0.1836,
+    "5010": 0.0459,
+    "5011": 0.2295,
+    "5013": 0.0046,
+    "5014": 0.0459,
+    "5015": 0.0184,
+    "5016": 0.153,
+    "5018": 0.0019,
+    "5020": 0.0459,
+    "5021": 0.2295,
+    "5023": 0.0046,
+    "5024": 0.0459,
+    "5025": 0.0459,
+    "5026": 0.2295,
+    "5028": 0.0046,
+    "5029": 0.0459,
+    "5030": 0.1224,
+    "5031": 0.612,
+    "5033": 0.0062,
+    "5034": 0.1224,
+    "5100": 0.1156,
+    "5101": 0.3468,
+    "5102": 0.0174,
+    "5103": 0.34,
+    "5104": 0.34,
+    "5105": 0.34,
+    "5106": 0.68,
+    "5107": 0.17,
+    "5109": 0.68,
+    "5110": 0.1156,
+    "5111": 0.3468,
+    "5112": 0.0289,
+    "5113": 0.34,
+    "5114": 0.34,
+    "5115": 0.34,
+    "5116": 0.68,
+    "5117": 0.17,
+    "5119": 0.68,
+    "5120": 0.1156,
+    "5121": 0.3468,
+    "5122": 0.0289,
+    "5123": 0.34,
+    "5124": 0.34,
+    "5125": 0.34,
+    "5126": 0.68,
+    "5127": 0.17,
+    "5129": 0.68,
+    "5200": 8.398,
+    "5201": 8.398,
+    "5202": 8.398,
+    "5203": 2.584,
+    "5210": 5.168,
+    "5211": 5.168,
+    "5212": 5.168,
+    "5213": 9.2378,
+    "5214": 4.7804,
+    "5220": 2.584,
+    "5221": 2.584,
+    "5300": 2.04
+  },
+  "checkedAt": "2026-10-22",
+  "sourceUrl": "https://evolink.ai/zh/pricing"
+}

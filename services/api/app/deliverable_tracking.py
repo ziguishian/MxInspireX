@@ -4,14 +4,19 @@ CREATORS = {'generate_image': 'image', 'generate_video': 'video', 'generate_audi
             'generate_text': 'text', 'canvas_create_text': 'text', 'canvas_create_html': 'html', 'canvas_create_svg': 'image'}
 
 
+def creation_kind(name, args):
+    # Inpainting is a paid image generation, unlike local crop/resize steps.
+    return CREATORS.get(name) or ('image' if name == 'image_edit' and args.get('operation') == 'inpaint' else None)
+
+
 def assign_delivery(context, name, args, nodes, ready_ids=()):
     plan = context.get('designPlan') or {}
     items = {d['id']: d for d in plan.get('deliverables', [])}
     if not items: return {}, None
     target = args.get('canvas_node_id') or args.get('node_id')
     node = next((n for n in nodes if n['id'] == target), {})
-    kind = CREATORS.get(name) or node.get('data', {}).get('kind')
-    if name not in CREATORS and name != 'canvas_update_node': return {}, None
+    kind = creation_kind(name, args) or node.get('data', {}).get('kind')
+    if not creation_kind(name, args) and name != 'canvas_update_node': return {}, None
     ids = args.get('deliverable_ids')
     batch = context.get('designBatch') or {}
     target_binding = node.get('data', {}).get('deliveryBinding', {})

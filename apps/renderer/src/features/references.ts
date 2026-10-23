@@ -26,7 +26,7 @@ export function pendingReferenceSelection(messages: { role: string; referenceSel
   const last = messages.at(-1);
   if (last?.role !== 'assistant' || last.status !== 'succeeded') return undefined;
   for (const message of [...messages].reverse()) {
-    if (message.referenceSelection) return message.referenceSelection.status === 'pending' && !message.referenceSelection.submittedAction ? message.referenceSelection : undefined;
+    if (message.referenceSelection) return message.referenceSelection.items.length && message.referenceSelection.status === 'pending' && !message.referenceSelection.submittedAction ? message.referenceSelection : undefined;
   }
   return undefined;
 }

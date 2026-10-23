@@ -265,6 +265,12 @@ class TaskRuntime:
             if not target_node:
                 raise ValueError('节点任务的输出目标不存在')
             target_data = target_node.get('data') or {}
+            target_kind = target_data.get('kind') or target_node.get('type')
+            requested_kind = (normalized_input.get('canvasParams') or {}).get('kind')
+            if target_kind == 'upload':
+                target_kind = 'image'
+            if requested_kind not in {'image', 'video', 'audio', 'text', 'html', 'cad'} or requested_kind != target_kind:
+                raise ValueError('节点类型与生成类型不匹配或不支持生成')
             target_asset = target_data.get('assetId') or (target_data.get('asset') or {}).get('id')
             target_has_content = bool(target_asset or target_data.get('localFile') or target_data.get('job') or target_data.get('cad') or
                                       target_data.get('imageAssetIds') or str(target_data.get('text') or '').strip() or
@@ -312,7 +318,9 @@ class TaskRuntime:
         }
         with self.store._connect() as connection:
             connection.execute('BEGIN IMMEDIATE')
-            if task_surface == 'canvas_node':
+            if task_surface == 'canvas_node' and not (request_id and connection.execute(
+                'SELECT 1 FROM task_request_keys WHERE project_id=? AND request_id=?', (project_id, request_id)
+            ).fetchone()):
                 active_rows = connection.execute("SELECT id,input_json FROM tasks WHERE project_id=? AND status IN ('queued','running')", (project_id,)).fetchall()
                 for active in active_rows:
                     active_input = self._parse_json(active['input_json'], {})
@@ -367,6 +375,11 @@ class TaskRuntime:
         if source and (normalized_input.get('planAccepted') or normalized_input.get('clarificationContinuation') or normalized_input.get('designBatch')):
             from .skills import SkillService
             SkillService(self.store).inherit(project_id, task_id, source['id'])
+        if task_surface == 'canvas_node':
+            # Persist ownership before a fast worker can save its final result.
+            CanvasStore(self.store).update_node(project_id, canvas_node_id, {'data': {
+                'taskId': task_id, 'generating': True, 'draft': False, 'error': '', 'status': '等待生成',
+            }})
         if run_async:
             # A daemon worker keeps the local-first API responsive while
             # retaining the same durable task row and error handling as the

@@ -7,7 +7,7 @@ type QueueProject = { id: string; name: string; latestTaskId?: string | null; la
 const active = (status: string) => ['queued', 'pending', 'running'].includes(status);
 
 // Keep task destinations independent of the project currently on screen.
-export function createTaskQueue(projects: Readonly<Ref<QueueProject[]>>, fetchTasks: (projectId: string) => Promise<QueueRecord[]>, fetchActivity?: () => Promise<QueueTask[]>) {
+export function createTaskQueue(projects: Readonly<Ref<QueueProject[]>>, fetchTasks: (projectId: string) => Promise<QueueRecord[]>, fetchActivity?: () => Promise<QueueTask[]>, onFinished?: (task: QueueTask) => void) {
   const records = ref<Record<string, QueueRecord[]>>({});
   const revisions = new Map<string, number>();
   const refreshing = new Set<string>();
@@ -32,6 +32,11 @@ export function createTaskQueue(projects: Readonly<Ref<QueueProject[]>>, fetchTa
   }));
   let activityRefreshing = false;
   function replace(projectId: string, tasks: QueueRecord[]) {
+    const previous = records.value[projectId] || [];
+    for (const task of tasks) {
+      const old = previous.find(item => item.id === task.id);
+      if (old && active(old.status) && ['succeeded', 'failed'].includes(task.status)) onFinished?.({ ...task, projectId });
+    }
     revisions.set(projectId, (revisions.get(projectId) || 0) + 1);
     records.value = { ...records.value, [projectId]: tasks };
   }

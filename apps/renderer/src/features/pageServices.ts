@@ -59,7 +59,7 @@ export const knowledgeLibraryServices = context<{
   deleteDocument: (document: KnowledgeDocument) => void;
 }>('knowledge-library');
 export const helpServices = context<{ appVersion: string }>('help');
-export type SettingsSection = 'account' | 'text' | 'routing' | 'appearance' | 'components' | 'about' | 'help';
+export type SettingsSection = 'account' | 'general' | 'text' | 'routing' | 'appearance' | 'components' | 'about' | 'help';
 export const settingsServices = context<{
   current: Value<SettingsSection>;
   tabs: readonly { key: SettingsSection; label: string }[];

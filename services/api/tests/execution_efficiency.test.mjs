@@ -1,6 +1,7 @@
 import {it, expect} from 'vitest';
 import {directSingleArtifact, readyPlanExecution, singleDeliveryComplete, receiptView, nestedTextAllowed, selectRules} from '../app/execution_efficiency.mjs';
 import {singleImageToolAllowed,singleImageFrame} from '../app/execution_efficiency.mjs';
+import {completionDecision} from '../app/delivery_execution.mjs';
 
 it('keeps read and clarification fallbacks while omitting unused write schemas',()=>{
   const memory={analysisMode:'explicit_single_image'};
@@ -26,6 +27,13 @@ it('projects a small frame without dropping visual constraints or editing scope'
 
 const context = {executionPolicyVersion:2,singleDeliveryTarget:{kind:'image',count:1}};
 const image = {name:'generate_image',output:{status:'succeeded',assetId:'asset',node:{id:'node',data:{kind:'image',assetId:'asset'}}}};
+it('stops a clarified single image after its saved receipt, but preserves steering and pending results',()=>{
+  const clarified={...context,clarificationContinuation:true,clarificationTaskId:'source',continuation:{taskId:'source'}};
+  const outputs=[{name:'asset_inspect',output:{}},{name:'design_state',output:{}},image];
+  expect(completionDecision(clarified,outputs).finish).toBe(true);
+  expect(completionDecision(clarified,outputs,{updatePending:true}).finish).toBe(false);
+  expect(completionDecision(clarified,[{...image,output:{status:'generation_unconfirmed',stopTool:true}}]).finish).toBe(false);
+});
 it('reuses ready plans but reopens planning for steering, new batches or execution failures', () => {
   const plan = {ready:true,deliverables:[{id:'logo',kind:'image',acceptance:'保留品牌拼写'}]};
   expect(readyPlanExecution(context,plan,{status:'ready'})).toBe(true);
@@ -33,6 +41,7 @@ it('reuses ready plans but reopens planning for steering, new batches or executi
   expect(readyPlanExecution(context,plan,{status:'needs_plan'})).toBe(false);
   expect(readyPlanExecution(context,plan,{},[],1)).toBe(false);
   expect(readyPlanExecution(context,plan,{},[{name:'generate_image',output:{status:'failed'}}])).toBe(false);
+  expect(readyPlanExecution(context,plan,{},[{name:'generate_image',output:{status:'design_spec_required',submitted:false}}])).toBe(false);
   expect(readyPlanExecution(context,{...plan,ready:false},{})).toBe(false);
   expect(readyPlanExecution(context,{...plan,openQuestions:['用途？']},{})).toBe(false);
   expect(plan.deliverables[0].acceptance).toBe('保留品牌拼写');
@@ -52,8 +61,16 @@ it('completes only one real artifact under an unambiguous new contract', () => {
     {...image.output,node:{id:'node',data:{generating:true}}}]) {
     expect(singleDeliveryComplete(context,[{...image,output:result}])).toBe(false);
   }
-  expect(singleDeliveryComplete(context,[image,image])).toBe(false);
+  expect(singleDeliveryComplete(context,[image,image])).toBe(true);
+  const inpaint={...image,name:'image_edit',args:{operation:'inpaint'}};
+  expect(singleDeliveryComplete(context,[inpaint])).toBe(true);
+  expect(singleDeliveryComplete(context,[inpaint,image])).toBe(true);
+  expect(singleDeliveryComplete(context,[{name:'generate_image',output:{status:'reference_mismatch',submitted:false}},image])).toBe(true);
+  expect(singleDeliveryComplete(context,[{name:'generate_image',output:{status:'generation_unconfirmed'}},image])).toBe(false);
+  expect(singleDeliveryComplete(context,[image,{...image,output:{...image.output,node:{id:'second',data:{assetId:'second'}}}}])).toBe(false);
   expect(singleDeliveryComplete(context,[image,{name:'request_clarification'}])).toBe(false);
+  expect(singleDeliveryComplete(context,[{name:'request_clarification',output:{awaitingUser:true}},
+    {name:'request_clarification',output:{awaitingUser:false}},image])).toBe(true);
   expect(singleDeliveryComplete({...context,executionPolicyVersion:1},[image])).toBe(false);
   expect(singleDeliveryComplete({...context,singleDeliveryTarget:{kind:'image',count:1,nodeId:'different'}},[image])).toBe(false);
   for (const kind of ['text','html']) {

@@ -2,8 +2,11 @@ import { localServiceHint, serviceNetworkHint, taskIssue } from './taskErrors';
 
 /** Public descriptions only. Keep the original exception in task/backend logs. */
 export function generationFailureText(value: unknown): string {
+  if (/only supports background|background.*(?:unsupported|not supported)|不支持.*透明|未声明透明输出/i.test(String(value || ''))) {
+    return '所选模型不支持当前背景参数，请调整节点的背景设置后再生成。';
+  }
   const issue = taskIssue(value);
-  if (['image_response_timeout', 'image_result_unconfirmed', 'image_response_invalid'].includes(issue.code)) return issue.message;
+  if (['image_response_timeout', 'image_result_unconfirmed', 'image_response_invalid', 'model_stream_interrupted', 'model_output_limit', 'model_response_incomplete', 'media_configuration', 'audio_model', 'video_model'].includes(issue.code)) return issue.message;
   const messages: Record<string, string> = {
     scope: '素材关联未通过，已生成的文件仍保留在画布中，可查看和下载。',
     image_output_format: '图像服务返回了已禁用的 SVG，未保存。请求可能已计费，已停止自动重试，请检查图像模型设置。',

@@ -1,16 +1,21 @@
-<!doctype html><html><body><div id="app"></div><script type="module">
+<!doctype html><html><body><div id="app" class="shell-general-chat"></div><script type="module">
 import { createApp, h, ref, reactive, Teleport, nextTick } from 'vue';
 import { useVueFlow } from '@vue-flow/core';
 import GeneralCanvas from '/src/components/GeneralCanvas.vue';
 import CanvasBoardPreview from '/src/components/CanvasBoardPreview.vue';
 import '/src/style.css';
 import '/src/features/composer/composer.css';
-const projectId = 'workspace-interaction-fixture';
-localStorage.clear();
-const state = reactive({ board: {nodes:[],edges:[]}, ready: false, epoch:0 });
+import '/src/mx-theme.css';
+const params = new URLSearchParams(location.search);
+const projectId = params.get('project') || 'workspace-interaction-fixture';
+const apiBaseUrl = params.get('api') || 'http://fixture.invalid';
+const persistent = apiBaseUrl !== 'http://fixture.invalid';
+if (!persistent) localStorage.clear();
+const state = reactive({ board: {nodes:[],edges:[]}, ready: false, epoch:0, active:true });
 window.errors = []; window.generated = []; window.uploads = 0;
 const nativeFetch = window.fetch;
 window.fetch = async (url, options={}) => {
+  if (persistent && String(url).startsWith(apiBaseUrl) && options.method === 'PATCH') window.lastPatch = JSON.parse(options.body);
   if (!String(url).startsWith('http://fixture.invalid/')) return nativeFetch(url, options);
   const body = typeof options.body === 'string' ? JSON.parse(options.body) : {};
   let board = JSON.parse(JSON.stringify(state.board));
@@ -41,14 +46,16 @@ window.fetch = async (url, options={}) => {
 createApp({setup(){
   const flow=useVueFlow('design-canvas'), draft=ref('保留输入中的设计需求');
   window.flow=flow;window.state=state;
+  window.leaveProject=async()=>{state.active=false;state.ready=false;await nextTick();};
+  window.enterProject=async()=>{state.board=await (await nativeFetch(`${apiBaseUrl}/api/projects/${projectId}/canvas`)).json();state.active=true;state.epoch++;await nextTick();};
   window.reset=async(kind='image')=>{localStorage.removeItem('langjuart.nodeDraft.'+projectId+'.primary');state.epoch++;state.board={nodes:[{id:'primary',type:'creative',position:{x:0,y:0},data:{kind,title:'测试节点',draft:true}},{id:'neighbor',type:'creative',position:{x:600,y:10},data:{kind:'text',title:'参考节点',text:'参考内容'}}],edges:[]};await nextTick();await flow.setViewport({x:600,y:110,zoom:.8});};
   window.select=async(id='primary')=>{flow.removeSelectedNodes(flow.getSelectedNodes.value);flow.addSelectedNodes([flow.findNode(id)]);await nextTick();};
   return ()=>[
-    h(GeneralCanvas,{key:state.epoch,projectId,apiBaseUrl:'http://fixture.invalid',canvasDocument:state.board,messages:[{role:'assistant',content:'这是一段直接回答。'}],busy:false,modelOptions:['test-image'],videoModelOptions:['test-video'],audioModelOptions:['test-audio'],textModelOptions:['test-text'],onComposerReady:()=>state.ready=true,onCanvasChange:board=>state.board=board,onCanvasError:error=>window.errors.push(error),onGenerateNode:(...args)=>window.generated.push(args)}),
+    state.active?h(GeneralCanvas,{key:state.epoch,projectId,apiBaseUrl,canvasDocument:state.board,messages:[{role:'assistant',content:'这是一段直接回答。'}],busy:false,modelOptions:['test-image'],videoModelOptions:['test-video'],audioModelOptions:['test-audio'],textModelOptions:['test-text'],onComposerReady:()=>state.ready=true,onCanvasChange:board=>state.board=board,onCanvasError:error=>window.errors.push(error),onGenerateNode:(...args)=>window.generated.push(args)}):null,
     state.ready?h(Teleport,{key:'composer-'+state.epoch,to:'#design-composer-host',defer:true},h('div',{class:'intake-composer'},[h('textarea',{class:'intake-composer-editor','aria-label':'对话输入框',value:draft.value,onInput:e=>draft.value=e.target.value}),h('div',{class:'composer-toolbar'},'资料 · 模型 · 风格')])):null,
     h('button',{class:'support-fab','aria-label':'使用说明'},'?'),
     h(CanvasBoardPreview,{board:state.board,apiBaseUrl:'http://fixture.invalid',projectId,style:'display:none'})
   ];
 }}).mount('#app');
-await window.reset();window.ready=true;
+if(persistent) await window.enterProject();else await window.reset();window.ready=true;
 </script><style>html,body,#app{height:100%;margin:0}.intake-composer-editor{width:100%;background:transparent;color:inherit;border:0} .design-canvas-area{background:#111811}</style></body></html>

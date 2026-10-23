@@ -4,6 +4,22 @@ import { createTaskQueue, type QueueTask } from './taskQueue';
 
 const task = (id: string, projectId: string, status = 'running'): QueueTask => ({ id, projectId, status, agentKey: 'design', userMessage: `需求 ${id}` });
 describe('task queue destinations', () => {
+  it('notifies once for new terminal transitions, not historical results or cancellations', () => {
+    const notify = vi.fn();
+    const queue = createTaskQueue(ref([{ id: 'a', name: 'A' }]), vi.fn(), undefined, notify);
+    queue.replace('a', [task('old', 'a', 'succeeded')]);
+    expect(notify).not.toHaveBeenCalled();
+    queue.update('a', task('new', 'a'));
+    queue.update('a', task('new', 'a', 'succeeded'));
+    queue.update('a', task('new', 'a', 'succeeded'));
+    expect(notify).toHaveBeenCalledTimes(1);
+    queue.update('a', task('failed', 'a'));
+    queue.update('a', task('failed', 'a', 'failed'));
+    expect(notify).toHaveBeenCalledTimes(2);
+    queue.update('a', task('cancel', 'a'));
+    queue.update('a', task('cancel', 'a', 'cancelled'));
+    expect(notify).toHaveBeenCalledTimes(2);
+  });
   it('discovers canvas work and attention states in unopened projects', async () => {
     const queue = createTaskQueue(ref([{ id: 'a', name: '项目 A' }, { id: 'b', name: '项目 B' }]), vi.fn(), async () => [
       { ...task('node', 'a'), taskSurface: 'canvas_node', canvasNodeId: 'node-1' },

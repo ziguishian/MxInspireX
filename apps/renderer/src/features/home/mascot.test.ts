@@ -49,7 +49,7 @@ describe('shared Agent mascot', () => {
     await controller.apply(item.id);
     expect(mascotSpriteStyle(controller.apiBaseUrl, controller.active.value)['--xiaoju-image']).toContain('/api/mascot/generations/aa/image');
     await controller.apply(null);
-    expect(mascotSpriteStyle(controller.apiBaseUrl, controller.active.value)).toEqual({});
+    expect(mascotSpriteStyle(controller.apiBaseUrl, controller.active.value)['--xiaoju-image']).toContain('assets/mascots/robot-soft.png');
     expect(controller.activeName.value).toBe('点阵机器人');
     controller.dispose();
   });

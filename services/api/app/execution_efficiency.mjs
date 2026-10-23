@@ -8,7 +8,7 @@ export function readyPlanExecution(constraints, plan, batch, outputs = [], updat
     || constraints.deliveryRepairOnly || plan.openQuestions?.length) return false;
   const lastPlan = outputs.findLastIndex(item => item.name === 'design_plan' && item.output?.plan?.ready);
   return !outputs.slice(lastPlan + 1).some(({output = {}}) =>
-    ['planning_required','dependency_required','failed','generation_unconfirmed','reference_changed','reference_mismatch'].includes(output.status));
+    ['planning_required','design_spec_required','dependency_required','failed','generation_unconfirmed','reference_changed','reference_mismatch'].includes(output.status));
 }
 
 export function directSingleArtifact(constraints, skills = {}, updateRevision = 0, attachments = []) {
@@ -60,15 +60,24 @@ export function nestedTextAllowed(constraints, policy = {}, skills = {}) {
 export function singleDeliveryComplete(constraints, outputs) {
   const target = constraints?.singleDeliveryTarget;
   if (!efficientExecution(constraints) || !target || target.count !== 1 || constraints.designPlan || constraints.deliveryRepairOnly) return false;
-  if (outputs.some(item => ['design_plan','request_clarification','request_reference_selection'].includes(item.name))) return false;
-  const names = {image:['generate_image'], text:['canvas_create_text','generate_text'], html:['canvas_create_html']}[target.kind] || [];
-  const creations = outputs.filter(item => /^(generate_(?:image|text|video|audio|cad|3d)|canvas_create_(?:text|html|media))$/.test(item.name));
+  if (outputs.some(item => ['design_plan','request_reference_selection'].includes(item.name))) return false;
+  const clarification = outputs.findLast(item => item.name === 'request_clarification');
+  if (clarification && clarification.output?.awaitingUser !== false) return false;
+  const names = {image:['generate_image','image_edit'], text:['canvas_create_text','generate_text'], html:['canvas_create_html'],
+    audio:['generate_audio'],video:['generate_video'],cad:['generate_cad']}[target.kind] || [];
+  const attempts = outputs.filter(item => item.name === 'image_edit' && item.args?.operation === 'inpaint'
+    || /^(generate_(?:image|text|video|audio|cad|3d)|canvas_create_(?:text|html|media))$/.test(item.name));
+  // Only explicit pre-submit failures may be ignored. Unknown/paid outcomes
+  // must still prevent completion, even when another result exists.
+  const creations = [...new Map(attempts.filter(item => item.output?.submitted !== false)
+    .map((item,index) => [item.output?.status === 'succeeded' && item.output?.node?.id
+      ? `${names.includes(item.name) ? target.kind : item.name}:${item.output.node.id}` : `attempt:${index}`,item])).values()];
   if (creations.length !== 1 || !names.includes(creations[0].name)) return false;
   const result = creations[0].output || {}, node = result.node, data = node?.data || {};
   if (!node?.id || target.nodeId && node.id !== target.nodeId || data.generating || data.error) return false;
   if (result.status && result.status !== 'succeeded') return false;
-  return Boolean(target.kind === 'image' ? (result.assetId || data.assetId)
-    : target.kind === 'html' ? data.html?.trim() : data.text?.trim());
+  return Boolean(target.kind === 'html' ? data.html?.trim() : target.kind === 'text' ? data.text?.trim()
+    : target.kind === 'cad' ? data.cad : (result.assetId || data.assetId));
 }
 
 export function receiptView(name, result) {

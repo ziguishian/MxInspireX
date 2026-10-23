@@ -256,7 +256,15 @@ class CanvasStore:
                 if expected is None:
                     conflict = actual is not None
                 else:
-                    conflict = actual is None or any(actual.get(key) != value for key, value in expected.items() if key not in {'type', 'deliveryProbe', 'animated'})
+                    # Vue Flow materializes an absent edge label as ''. Both
+                    # represent an unlabeled edge, not a concurrent edit.
+                    conflict = actual is None or any(
+                        actual.get(key) != value
+                        and not (collection == 'edges' and key == 'label'
+                                 and actual.get(key) in (None, '') and value in (None, ''))
+                        for key, value in expected.items()
+                        if key not in {'type', 'deliveryProbe', 'animated'}
+                    )
                 if conflict:
                     raise CanvasConflict('节点或连线已被更新，已保留最新内容。请重新选择后操作。')
         hidden = set(doc.get("hiddenAssetIds", []))

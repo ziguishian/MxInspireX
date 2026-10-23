@@ -271,6 +271,10 @@ class EvoLinkVideoProvider(EvoLinkTransport, SeedreamVideoProvider):
             options['aspect_ratio'] = params['aspectRatio']
         if options.get('aspect_ratio') == 'auto':
             options.pop('aspect_ratio')
+        # Seedance 2.5 first/last-frame mode inherits the first image's ratio.
+        # The node's default preview ratio is not an accepted API value here.
+        if model.lower().startswith('seedance-2.5') and 'image-to-video' in model.lower():
+            options['aspect_ratio'] = 'adaptive'
         if 'sora' in model.lower():
             if last_frame_asset:
                 raise ProviderError('EvoLink Sora 仅支持一张首帧图，不支持尾帧', status_code=400)

@@ -50,6 +50,7 @@ export function canvasReferenceParams(references: CanvasReference[], params: Rec
   if (problem) throw new Error(problem);
   const automaticParams = { ...params };
   delete automaticParams.referenceModes;
+  delete automaticParams.referenceMode;
   return { ...automaticParams, canvasNodeId: nodeId, kind, source_asset_id: imageIds[0], source_asset_ids: imageIds,
     ...(kind === 'video' ? { last_frame_asset_id: imageIds[1] } : {}),
     reference_node_ids: references.map(ref => ref.nodeId),

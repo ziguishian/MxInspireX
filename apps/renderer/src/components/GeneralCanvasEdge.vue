@@ -18,7 +18,7 @@ const curve = computed(() => getBezierPath({
   <EdgeLabelRenderer>
     <button v-if="selected" type="button" class="canvas-edge-delete nodrag nopan" :data-edge-id="id"
       :style="{ transform: `translate(-50%, -50%) translate(${curve[1]}px, ${curve[2]}px)` }"
-      :disabled="disabled" aria-label="删除连线" title="删除连线（也可按 Backspace）"
+      :disabled="disabled" aria-label="删除连线" title="删除连线（Delete / Backspace，或再次点击连线）"
       @pointerdown.stop @mousedown.stop @dblclick.stop @click.stop="emit('delete', id)">
       <X :size="16" :stroke-width="2.5" aria-hidden="true" />
     </button>

@@ -55,8 +55,8 @@ onUnmounted(() => document.removeEventListener('pointerdown', outside));
 
 <template>
   <article ref="card" class="project-card" :class="{ 'is-editing': editing, 'is-menu-open': menuOpen }" role="button" tabindex="0" :aria-label="`打开项目 ${project.name}`" @click="emit('open', project.id)" @keydown.enter.self.prevent="emit('open', project.id)" @keydown.space.self.prevent="emit('open', project.id)">
-    <div class="project-card-preview" :class="{ 'has-asset': previewKind }">
-      <LibraryAssetThumbnail v-if="previewAsset && previewKind" :asset="previewAsset" :api-base-url="apiBaseUrl" fit="cover" />
+    <div class="project-card-preview" :class="{ 'has-asset': previewKind, 'has-natural-image': previewKind === 'image' }">
+      <LibraryAssetThumbnail v-if="previewAsset && previewKind" :asset="previewAsset" :api-base-url="apiBaseUrl" fit="contain" :natural="previewKind === 'image'" />
       <div v-else class="project-card-placeholder"><component :is="fallbackIcon" :size="38" :stroke-width="1.45" /><span>{{ visible && board?.nodes?.length ? '正在准备预览' : '尚未生成资产' }}</span></div>
       <div class="project-card-info">
         <strong v-if="!editing">{{ project.name }}</strong>
@@ -84,6 +84,7 @@ onUnmounted(() => document.removeEventListener('pointerdown', outside));
 .project-card:is(:hover, :focus-within, .is-editing, .is-menu-open) { z-index: 3; }
 .project-card:focus-visible { outline: 2px solid var(--theme-accent-strong); outline-offset: 4px; border-radius: 14px; }
 .project-card-preview { position: relative; aspect-ratio: var(--library-preview-ratio, 16 / 9); overflow: hidden; border: 1px solid var(--theme-border); border-radius: var(--ui-radius-card); background: var(--theme-surface-subtle); box-shadow: var(--ui-media-shadow); transition: border-color .16s ease, transform .16s ease; }
+.project-card-preview.has-natural-image { aspect-ratio: auto; }
 .project-card:hover .project-card-preview, .project-card:focus-within .project-card-preview { border-color: var(--theme-border-strong); transform: translate3d(0, -2px, 0); }
 .project-card-placeholder { display: grid; width: 100%; height: 100%; place-content: center; justify-items: center; gap: 9px; color: var(--theme-text-subtle); background: color-mix(in srgb, var(--theme-surface-subtle) 82%, var(--theme-bg)); font-size: 11px; }
 .project-card-actions { position: absolute; top: 10px; right: 10px; z-index: 3; opacity: 0; transform: translate3d(0, -4px, 0); transition: opacity .14s ease, transform .14s ease; }

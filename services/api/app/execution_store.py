@@ -25,6 +25,9 @@ class ExecutionStore:
                   task_id TEXT NOT NULL, fingerprint TEXT NOT NULL, name TEXT NOT NULL,
                   args TEXT NOT NULL, status TEXT NOT NULL, output TEXT, updated_at TEXT NOT NULL,
                   PRIMARY KEY(task_id, fingerprint));
+                CREATE TABLE IF NOT EXISTS tool_delivery_claims (
+                  task_id TEXT NOT NULL, fingerprint TEXT NOT NULL, resources TEXT NOT NULL,
+                  update_revision INTEGER NOT NULL, PRIMARY KEY(task_id, fingerprint));
             """)
 
     def load(self, task_id):
@@ -143,6 +146,56 @@ class ExecutionStore:
             stopped = db.execute("SELECT fingerprint,output FROM tool_receipts WHERE task_id=? AND name=? AND status='completed' AND json_extract(output,'$.stopTool')=1", (task_id, name)).fetchone()
             if stopped:
                 return stopped['fingerprint'], json.loads(stopped['output'])
+            task = db.execute('SELECT input_json FROM tasks WHERE id=?', (task_id,)).fetchone()
+            constraints = json.loads(task['input_json']) if task else {}
+            from .deliverable_tracking import creation_kind
+            kind = creation_kind(name, args)
+            delivery_resources = set(resources) if kind else set()
+            contract = constraints.get('deliveryContract') or []
+            update_revision = db.execute('SELECT COALESCE(MAX(revision),0) FROM task_updates WHERE task_id=? AND applied_at IS NOT NULL', (task_id,)).fetchone()[0] if kind and constraints.get('executionPolicyVersion', 0) >= 3 else 0
+            if kind and not constraints.get('designPlan') and len(contract) == 1 and contract[0].get('kind') == kind and contract[0].get('count', 1) == 1:
+                delivery_resources = {f'single:{kind}'}
+            elif kind and not update_revision and (constraints.get('singleDeliveryTarget') or {}).get('kind') == kind:
+                # Optional planning must not turn one user delivery into a new
+                # slot just by introducing or renaming a scope/item ID.
+                delivery_resources.add(f'single:{kind}')
+            if constraints.get('executionPolicyVersion', 0) >= 3 and delivery_resources:
+                claims = db.execute('''SELECT r.fingerprint,r.status,r.output,c.resources,c.update_revision
+                    FROM tool_receipts r JOIN tool_delivery_claims c USING(task_id,fingerprint)
+                    WHERE r.task_id=? AND r.status!='rejected' ORDER BY r.updated_at''', (task_id,)).fetchall()
+                for claim in claims:
+                    owned = set(json.loads(claim['resources']))
+                    if not owned.intersection(delivery_resources): continue
+                    result = json.loads(claim['output'] or '{}')
+                    if claim['status'] == 'running' or result.get('status') == 'generation_unconfirmed' or result.get('stopTool'):
+                        if claim['status'] == 'completed': return claim['fingerprint'], result
+                        raise RuntimeError('同一交付仍在执行或结果尚未确认，已阻止改写参数重复提交。')
+                    if claim['update_revision'] != update_revision: continue
+                    node = result.get('node') or {}
+                    data = node.get('data') or {}
+                    usable = node.get('id') and not data.get('generating') and not data.get('error') and (result.get('assetId') or data.get('assetId') or data.get('text') or data.get('html') or data.get('cad'))
+                    if result.get('status') in (None, 'succeeded') and usable:
+                        if not delivery_resources.issubset(owned) and f'single:{kind}' not in owned.intersection(delivery_resources):
+                            raise RuntimeError('本次调用包含已完成交付，请只提交尚未完成的交付项。')
+                        return claim['fingerprint'], result
+            if name == 'generate_image' and constraints.get('executionPolicyVersion', 0) < 3:
+                target = constraints.get('singleDeliveryTarget') or {}
+                # A completed single-image delivery owns this task even if the
+                # model rewrites its prompt or invents a new deliverable ID.
+                # New steering and planned batches retain their normal path.
+                if (constraints.get('executionPolicyVersion', 0) >= 2
+                        and target.get('kind') == 'image' and target.get('count') == 1
+                        and not constraints.get('designPlan') and not constraints.get('deliveryRepairOnly')
+                        and not db.execute('SELECT 1 FROM task_updates WHERE task_id=?', (task_id,)).fetchone()):
+                    for receipt in db.execute("SELECT fingerprint,output FROM tool_receipts WHERE task_id=? AND name=? AND status='completed' ORDER BY updated_at", (task_id, name)):
+                        result = json.loads(receipt['output'] or '{}')
+                        node = result.get('node') or {}
+                        data = node.get('data') or {}
+                        if (result.get('status') == 'succeeded' and node.get('id')
+                                and (result.get('assetId') or data.get('assetId'))
+                                and not data.get('generating') and not data.get('error')
+                                and (not target.get('nodeId') or target['nodeId'] == node['id'])):
+                            return receipt['fingerprint'], result
             if name == 'generate_video' and resources:
                 # An async receipt is completed as soon as the provider accepts
                 # it. Its pending job still owns the target, including after a
@@ -174,6 +227,9 @@ class ExecutionStore:
                 if running and not live_independent:
                     raise RuntimeError("本轮有生成请求的结果尚未确认或存在并发冲突，已阻止通过改写提示词重复提交。请等待依赖请求；结果未知时先核对原任务。")
             db.execute("INSERT INTO tool_receipts VALUES (?,?,?,?,?,?,?)", (task_id, fingerprint, name, encoded, "running", None, self.now()))
+            if constraints.get('executionPolicyVersion', 0) >= 3 and delivery_resources:
+                db.execute('INSERT OR REPLACE INTO tool_delivery_claims VALUES (?,?,?,?)',
+                           (task_id, fingerprint, json.dumps(sorted(delivery_resources)), update_revision))
         return fingerprint, None
 
     def reconcile(self, task_id):

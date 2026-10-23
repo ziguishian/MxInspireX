@@ -64,9 +64,9 @@ watch(() => props.editRequest, request => { if (request && !submitting.value) vo
 </template>
 
 <style scoped>
-.user-message-bubble{display:grid;justify-items:end;min-width:0}
+.user-message-bubble{position:relative;display:grid;justify-items:end;min-width:0}
 .user-message-surface{box-sizing:border-box;min-width:0;max-width:100%;border:1px solid var(--theme-border);border-radius:16px 16px 4px 16px;background:var(--theme-surface-subtle);padding:12px 15px}
-.user-message-actions{display:flex;justify-content:flex-end;gap:2px;min-height:27px;margin-top:2px;opacity:0;pointer-events:none;transition:opacity .12s ease}
+.user-message-actions{position:absolute;top:100%;right:0;z-index:1;display:flex;justify-content:flex-end;gap:2px;min-height:27px;margin-top:2px;opacity:0;pointer-events:none;transition:opacity .12s ease}
 :global(.design-message.user:hover) .user-message-actions,.user-message-bubble:focus-within .user-message-actions{opacity:1;pointer-events:auto}
 .user-message-actions button{display:grid;place-items:center;width:27px;height:27px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--theme-text-muted);cursor:var(--cursor-pointer)}
 .user-message-actions button:hover{background:var(--theme-surface-hover);color:var(--theme-text)}
@@ -81,6 +81,6 @@ watch(() => props.editRequest, request => { if (request && !submitting.value) vo
 .user-message-edit-footer .message-resend{color:var(--theme-accent-strong);background:var(--theme-surface-hover)}
 .user-message-edit-footer button:disabled{opacity:.45;cursor:default}
 .user-message-action-error{display:block;max-width:100%;color:var(--theme-danger);font-size:11px;margin-top:5px}
-@media(hover:none){.user-message-actions{opacity:1;pointer-events:auto}}
+@media(hover:none){.user-message-actions{position:static;opacity:1;pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){.user-message-actions{transition:none}}
 </style>

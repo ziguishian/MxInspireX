@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { canvasNodeKind, nodePreviewSize, requestedMediaRatio } from './nodeSizing';
+import { canvasNodeKind, nodePreviewSize, requestedMediaRatio, nodeAspectPatch } from './nodeSizing';
 import { boardChanges, cleanBoard } from './canvasEditing';
 
 describe('canvas preview sizing', () => {
+  it('updates the blank node immediately and removes conflicting pixel sizes', () => {
+    const data = { kind: 'image', previewSize: { width: 600, height: 338 }, params: { size: '1920x1080', width: 1920, height: 1080, aspect_ratio: '16:9', model: 'gpt-image-2', quality: 'auto' } };
+    const patch = nodeAspectPatch(data, '3:4')!;
+    expect(patch.previewSize).toEqual({ width: 600, height: 800 });
+    expect(patch.params).toEqual({ aspectRatio: '3:4', model: 'gpt-image-2', quality: 'auto' });
+    expect(nodePreviewSize({ ...data, ...patch })).toEqual(patch.previewSize);
+    expect(data.params.size).toBe('1920x1080');
+    expect(nodeAspectPatch({ ...data, ...patch }, '1:1')!.previewSize).toEqual({ width: 600, height: 600 });
+    expect(nodeAspectPatch(data, '0:0')).toBeNull();
+  });
   it('gives new media a larger readable frame while preserving a saved media width', () => {
     expect(nodePreviewSize({ kind: 'image', previewSizingVersion: 2 })).toEqual({ width: 720, height: 405 });
     expect(nodePreviewSize({ kind: 'image', previewSizingVersion: 2 }, 2 / 3)).toEqual({ width: 720, height: 1080 });

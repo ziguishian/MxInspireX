@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 from .asset_identity import asset_id
-from .node_context import fingerprint
+from .node_context import fingerprint, check_canvas_inputs
 
 IMAGE_TOOLS = {'generate_image', 'image_edit'}
 
@@ -49,6 +49,10 @@ def normalize_image_request(registry, project_id, task_id, name, arguments, bind
     board = {n['id']: n for n in nodes}
     canvas = context.get('canvasParams') or {}
     canvas_task = context.get('taskSurface') == 'canvas_node'
+    try:
+        check_canvas_inputs(registry.store, registry.canvas_store, project_id, task_id, context)
+    except ValueError as error:
+        raise ImageRequestError(str(error), code='reference_changed', field='reference_node_ids') from error
     canvas_target = canvas.get('canvasNodeId') if canvas.get('kind') == 'image' else None
     target = args.get('canvas_node_id')
     if args.get('output_mode') not in (None, 'create', 'edit'):

@@ -27,6 +27,13 @@ function reply(api, operation, content = '七项礼盒设计已保存。') {
 }
 globalThis.fetch = async(input, options={}) => {
   const url = String(typeof input==='string' ? input : input.url);
+  if (mode === 'upload_failed' && url.endsWith('/agent-tools/generate_image')) {
+    return Response.json({detail:'参考图上传失败，尚未提交生成请求',errorCode:'reference_upload_failed',stopTool:true,retryable:false},{status:422});
+  }
+  if (mode === 'design_spec_stalled' && url.endsWith('/agent-tools/generate_image')) {
+    return Response.json({tool:'generate_image',status:'design_spec_required',submitted:false,
+      instruction:`缺少 visualDirection，修正计划后再生成（${round}）`});
+  }
   const session = sessionResponse(url, options); if (session) return session;
   if(url.includes('/image-operations/')) {
     assert.equal(options.method,'GET');
@@ -156,6 +163,25 @@ globalThis.fetch = async(input, options={}) => {
       return reply(api,{name:'design_plan',args:{plan:detailed}});
     }
     if(index===4)assert.equal(allowance,2000,'overview review keeps its separate limit');
+  }
+  if (mode === 'upload_failed') {
+    assert.ok(index < 2, 'failed upload must stop without another model or generation request');
+    if (index === 0) return reply(api,{name:'design_plan',args:{plan:{...plan,deliverables:plan.deliverables.slice(0,1)}}});
+    return reply(api,{name:'generate_image',args:{prompt:'礼盒外盒',deliverable_ids:['gift-box'],provider:'local-placeholder'}});
+  }
+  if (mode === 'prerequisite_recovery') {
+    assert.ok(index < 5, 'prerequisite repair must reach generation');
+    if (index === 0 || index === 3) {
+      const draft = structuredClone(plan); delete draft.visualDirection;
+      return reply(api,{name:'design_plan',args:{plan:draft}});
+    }
+    if (index === 1) return reply(api,{name:'design_state',args:{brief:{summary:plan.goal,assumptions:[],openQuestions:[],visualDirection:plan.visualDirection}}});
+    if (index === 2) return reply(api,{name:'report_progress',args:{summary:'已补齐视觉方向，继续原交付清单。'}});
+    return reply(api,{name:'generate_batch',args:{items:plan.deliverables.map(d=>({tool:'generate_image',arguments:{prompt:d.title,provider:'local-placeholder',output_mode:'create',deliverable_ids:[d.id]}}))}});
+  }
+  if (mode === 'design_spec_stalled') {
+    assert.ok(index < 3, 'design specification failures must stop after two corrections');
+    return reply(api, {name:'generate_image',args:{prompt:'同一张海报',params:{aspect_ratio:'3:4'}}});
   }
   if (['schema_stalled','json_stalled','plan_stalled'].includes(mode)) {
     assert.ok(index<3,'stop before a fourth model call; two corrections only');

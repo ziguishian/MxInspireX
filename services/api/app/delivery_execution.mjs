@@ -24,6 +24,18 @@ export function hasPendingDelivery(delivery) {
   return Boolean(delivery?.pendingMedia?.length || delivery?.pendingPreview?.length);
 }
 
+// Settled attempts include failures and unknown paid outcomes, not just files.
+export function generationCompletionMessage(outputs, reason) {
+  if (reason === 'video_submitted') return '视频请求已受理，正在等待生成结果。';
+  const failures = outputs.filter(({name,output}) => artifactTools.has(name)
+    && (output?.status === 'failed' || output?.status === 'generation_unconfirmed'));
+  if (failures.length) {
+    const messages = [...new Set(failures.map(({output}) => output.message).filter(Boolean))];
+    return '本轮生成未全部完成；已生成的产物会保留。' + (messages.length ? '\n' + messages.join('\n') : '请查看执行详情核对结果。');
+  }
+  return '作品已保存到右侧画布。';
+}
+
 export function missingDeliverables(delivery) {
   return (delivery?.deliverables || []).filter(item => item.status === 'pending');
 }

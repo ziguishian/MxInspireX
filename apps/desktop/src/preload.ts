@@ -7,6 +7,20 @@ const apiPort = Number.isInteger(port) && port > 0 && port <= 65535 ? port : 876
 contextBridge.exposeInMainWorld('studio', {
   apiBaseUrl: `http://127.0.0.1:${apiPort}`,
   isDesktop: true,
+  updates: {
+    state: () => ipcRenderer.invoke('app-update:state'),
+    check: () => ipcRenderer.invoke('app-update:check'),
+    download: () => ipcRenderer.invoke('app-update:download'),
+    install: () => ipcRenderer.invoke('app-update:install'),
+    subscribe: (listener: (state: unknown) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, state: unknown) => listener(state);
+      ipcRenderer.on('app-update:state', handler);
+      return () => ipcRenderer.removeListener('app-update:state', handler);
+    },
+  },
+  openWorkspaceFolder: () => ipcRenderer.invoke('workspace:open-folder') as Promise<void>,
+  clearAppCache: () => ipcRenderer.invoke('workspace:clear-cache') as Promise<void>,
+  changeWorkspaceLocation: (mode: 'migrate' | 'existing') => ipcRenderer.invoke('workspace:change-location', mode) as Promise<string | null>,
   exportTestingLogs: () => ipcRenderer.invoke('testing:export-logs') as Promise<string | null>,
   exportHtmlPdf: (input: { html: string; width: number }) => ipcRenderer.invoke('canvas:export-html-pdf', input) as Promise<Uint8Array>,
   onScheduleNotification: (listener: (projectId: string | null) => void) => {

@@ -44,11 +44,13 @@ export function generationAttemptComplete(constraints = {}, outputs = []) {
   const items = plan.deliverables.filter(item=>!batch || batch.itemIds.includes(item.id));
   const done = new Set(progress.filter(item=>available.has(item.status)).map(item=>item.id));
   for (const {name,args,output} of outputs) {
-    if (!generationTools.includes(name) || !output) continue;
+    if (!(generationTools.includes(name) || name === 'image_edit' && args?.operation === 'inpaint') || !output) continue;
     const usable = output.status==='succeeded' && !output.node?.data?.generating && !output.node?.data?.error
       && Boolean(output.assetId || output.node?.data?.text || output.node?.data?.html || output.node?.data?.cad);
     if (usable || output.status==='generation_unconfirmed' || output.status==='failed' && output.stopTool) {
-      for (const id of args?.deliverable_ids || []) done.add(id);
+      const binding = output.node?.data?.deliveryBinding;
+      if (binding && binding.scopeId !== plan.scopeId) continue;
+      for (const id of binding?.itemIds || args?.deliverable_ids || []) done.add(id);
     }
   }
   return items.length>0 && items.every(item=>done.has(item.id));

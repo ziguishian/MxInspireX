@@ -129,6 +129,49 @@ def test_bound_reference_node_changes_are_checked_even_with_asset_arguments(work
     transport.assert_not_called()
 
 
+@pytest.mark.parametrize('change', ['replace', 'empty', 'generating', 'remove'])
+def test_canvas_upstream_change_before_first_preflight_cannot_use_stale_asset(workspace, change):
+    registry, assets, args = setup(workspace, ('identity',))
+    source = registry.canvas_store.ensure_asset_node('one', assets[0])
+    target = registry.canvas_store.create_node('one', kind='image', title='output')
+    context_patch(workspace, taskSurface='canvas_node',
+        canvasParams={'kind':'image','canvasNodeId':target['id'],
+                      'reference_node_ids':[source['id']], 'source_asset_ids':[assets[0]['id']]},
+        referencedNodes=[{'id':source['id']}])
+    if change == 'remove':
+        registry.canvas_store.apply_changes('one', {'removeNodeIds':[source['id']]}, agent_edit=True)
+    else:
+        patch_data = {'assetId':picture(workspace, 'new')['id']} if change == 'replace' else {'assetId':None,'asset':None} if change == 'empty' else {'generating':True}
+        registry.canvas_store.update_node('one', source['id'], {'data':patch_data})
+    with patch('urllib.request.urlopen') as transport:
+        rejected = preflight(registry, args)
+        assert rejected['status'] == 'reference_changed', rejected
+        transport.assert_not_called()
+
+
+@pytest.mark.parametrize('kind', ['image', 'video', 'text', 'html', 'audio', 'cad', '3d'])
+def test_canvas_generators_reject_text_changed_after_reading(workspace, kind):
+    from app.node_context import observe
+    registry, _, args = setup(workspace, ('identity',))
+    source = registry.canvas_store.create_node('one', kind='text', title='source', data={'text':'old text'})
+    target = registry.canvas_store.create_node('one', kind=kind, title='output')
+    context_patch(workspace, taskSurface='canvas_node',
+        canvasParams={'kind':kind,'canvasNodeId':target['id'],'reference_node_ids':[source['id']]},
+        referencedNodes=[{'id':source['id']}])
+    observe(workspace, 'one', 'current', [source], initial=True)
+    registry.canvas_store.update_node('one', source['id'], {'data':{'text':'new text'}})
+    name = f"canvas_create_{kind}" if kind in {'text','html'} else f"generate_{kind}"
+    with patch('urllib.request.urlopen') as transport:
+        with pytest.raises(ValueError, match='节点内容已在读取后改变'):
+            registry._focused_arguments('one', 'current', name, args if kind == 'image' else {})
+        transport.assert_not_called()
+    # A fresh read acknowledges the current source; layout changes alone are safe.
+    observe(workspace, 'one', 'current', registry.canvas_store.load('one')['nodes'])
+    registry.canvas_store.update_node('one', source['id'], {'position':{'x':20,'y':40}})
+    result = registry._focused_arguments('one', 'current', name, args if kind == 'image' else {})
+    assert result['canvas_node_id'] == target['id']
+
+
 def test_selected_candidates_are_not_injected_into_each_item(workspace):
     registry, assets, args = setup(workspace, ('identity',))
     candidate = picture(workspace, 'candidate')

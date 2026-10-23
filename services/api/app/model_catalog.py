@@ -267,6 +267,12 @@ class ModelCatalog:
                     priceNote='目录包含按用量阈值变化的输入/输出倍率；基础单价仅供展示，以服务账单为准',
                 )
             return gateway
+        from .evolink_billing import is_evolink
+        from .evolink_prices import default_evolink_price
+        if is_evolink(provider, base_url):
+            price = default_evolink_price(record['id'])
+            if price:
+                return price
         price = default_price(record['id'])
         if price:
             from urllib.parse import urlsplit

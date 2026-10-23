@@ -194,7 +194,21 @@ class DesignPlan(BaseModel):
     research: str = Field(min_length=1, max_length=350)
 
 
+def validate_image_plan(context):
+    from .image_reference_design import compile_design_spec
+    for item in (context.get('designPlan') or {}).get('deliverables', []):
+        if item.get('kind') == 'image':
+            compile_design_spec(context, {'itemIds': [item['id']]}, {'prompt': ''})
+
+
 def reused_plan_receipt(context):
+    from .image_reference_design import DesignSpecError
+    try:
+        validate_image_plan(context)
+    except DesignSpecError as error:
+        return {'tool': 'design_plan', 'status': error.code, 'submitted': False,
+                'instruction': f'{error} 请用 change_reason 说明修正原因并补齐原计划，不改变交付范围。',
+                'plan': context['designPlan'], 'batch': context.get('designBatch')}
     return {'tool': 'design_plan', 'status': 'plan_reused', 'code': 'no_plan_change', 'fieldPath': 'plan',
             'plan': context['designPlan'], 'batch': context.get('designBatch'), 'progress': context.get('deliveryProgress', []),
             'instruction': '当前计划已经 ready，已保留原清单、视觉要求、验收条件和进度，未重复改写。直接执行未完成项；无需再次保存或确认计划。只有新证据、用户补充或真实制作/依赖问题需要修改时，提供具体 change_reason。'}
@@ -245,10 +259,17 @@ def save_design_plan(store, project_id, task_id, plan, *, reuse_ready=False, exp
     # id. Models sometimes copy the key into plan inputs. Resolve only aliases
     # that are explicitly selected for this task before persisting the plan.
     from .asset_identity import selected_asset_id
+    from .canvas import CanvasStore
+    text_node_ids = {node['id'] for node in CanvasStore(store).load(project_id)['nodes']
+                     if node.get('data', {}).get('kind') in {'text', 'html'}}
     for item in proposal.get('deliverables', []):
         for ref in item.get('inputs', []):
             if ref.get('source') == 'asset':
                 ref['id'] = selected_asset_id(ref.get('id'), initial)
+                if ref['id'] in text_node_ids:
+                    raise ValueError('inputs 中的 asset 必须是图片资产 ID，不能填写文字或 HTML 节点 ID。'
+                                     '上游文字已在任务上下文中，请将其要求提炼到生成提示词、preserve 或验收要求，'
+                                     '移除这条图片 inputs；不要为文字节点填写 reference_analysis.images。')
     plan = normalize_current_input_roles(proposal, initial)
     value = DesignPlan.model_validate(plan).model_dump()
     from .product_identity import bind_product_plan
@@ -268,10 +289,7 @@ def save_design_plan(store, project_id, task_id, plan, *, reuse_ready=False, exp
     # A visual direction is useful only when every planned image translates it
     # into observable form/material/composition decisions.  Old saved plans
     # without the new field stay readable and executable.
-    if value.get('visualDirection'):
-        missing_specs = [item['title'] for item in value['deliverables'] if item['kind'] == 'image' and not item.get('imageSpec')]
-        if missing_specs:
-            raise ValueError('设计方向已包含视觉判断；每个图片交付项还需填写 imageSpec（主体结构、比例、材质工艺、构图、光线和避免项）：' + '、'.join(missing_specs))
+    validate_image_plan({**initial, 'designPlan': value})
     items = {item['id']: item for item in value['deliverables']}
     members, groups = set(), set()
     for series in value['visualSeries']:
