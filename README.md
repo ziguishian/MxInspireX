@@ -77,6 +77,8 @@ npm run start:portable
 
 ## 开发与验证
 
+外部 Agent 可通过 CLI 访问本地工作区：`node scripts/mxinspirex.mjs --help`。支持 JSON 输出、稳定请求 ID、任务等待/取消/原结果取回，以及资产上传下载；需要应用或本地 API 已启动。完整用法及 Windows/macOS 包内启动器见 [CLI 文档](docs/cli.md)。
+
 ```sh
 npm run setup:portable    # 安装锁定依赖
 npm run verify:portable   # 独立空工作区启动检查，不调用模型

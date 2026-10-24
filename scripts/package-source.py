@@ -23,7 +23,7 @@ SKIP_EXT = {
     ".dmg", ".pkg", ".exe", ".tsbuildinfo",
 }
 ROOT_FILES = [
-    ".gitignore", "AGENTS.md", "README.md", "RUN_IN_CODEX.md",
+    ".gitignore", ".gitattributes", "AGENTS.md", "README.md", "RUN_IN_CODEX.md",
     "README.en.md", "README.ja.md", "README.ko.md", "README.es.md", "LICENSE",
     "package.json", "package-lock.json", "vitest.config.ts",
 ]

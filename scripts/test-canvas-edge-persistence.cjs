@@ -55,17 +55,18 @@ if (!process.versions.electron) {
       await wait(`document.querySelectorAll('.prompt-linked-reference').length===${expected.length}`);
       assert.deepEqual(await js(`Array.from(document.querySelectorAll('.prompt-linked-reference'),e=>e.dataset.referenceNode).sort()`), expected);
     };
-    const generate = async expected => {
+    const generate = async (expected, removeText = false) => {
       await references(expected);
       const count = await js('generated.length');
-      await js(`(()=>{const input=document.querySelector('.canvas-prompt-panel textarea');input.value='Create one design';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+      const submitted = await js(`(()=>{const input=document.querySelector('.canvas-prompt-panel textarea');input.value=${removeText ? "'Create one design'" : "input.value+'\\nCreate one design'"};input.dispatchEvent(new Event('input',{bubbles:true}));return input.value;})()`);
       await wait('!document.querySelector(".prompt-submit").disabled');
       await js(`document.querySelector('.prompt-submit').click()`);
       await wait(`generated.length===${count + 1}`); await pause(250);
       assert.equal(await js('generated.length'), count + 1, 'exactly one generation submission');
       const output = await js('JSON.parse(JSON.stringify(generated.at(-1)))');
       assert.deepEqual(output[3].reference_node_ids.slice().sort(), expected);
-      for (const s of ['a', 'b']) assert.equal(output[1].includes(`SOURCE_${s.toUpperCase()}_UNIQUE`), expected.includes(`source-${s}`), 'prompt matches live upstream references');
+      assert.equal(output[1], submitted, 'submitted prompt exactly matches visible edited text');
+      for (const s of ['a', 'b']) if (removeText || !expected.includes(`source-${s}`)) assert.equal(output[1].includes(`SOURCE_${s.toUpperCase()}_UNIQUE`), false, 'removed text is not silently restored');
       // The real composer persists a loading placeholder before emitting.
       // End this captured (non-provider) submission so the next case can run.
       const target = (await request(boardUrl)).nodes.find(node => node.id === 'target');
@@ -81,8 +82,12 @@ if (!process.versions.electron) {
     try {
       await win.loadURL(url.href); win.focus(); win.webContents.focus(); await wait('!!window.ready');
       const original = (await request(boardUrl)).nodes;
-      await references(['source-a', 'source-b']); await deleteA();
-      await references(['source-b']); await generate(['source-b']);
+      await references(['source-a', 'source-b']);
+      assert.equal(await js(`document.querySelector('.canvas-prompt-panel textarea').value.includes('SOURCE_A_UNIQUE') && document.querySelector('.canvas-prompt-panel textarea').value.includes('SOURCE_B_UNIQUE')`), true, 'upstream text is visibly merged before editing');
+      await deleteA();
+      assert.equal(await js(`!document.querySelector('.canvas-prompt-panel textarea').value.includes('SOURCE_A_UNIQUE') && document.querySelector('.canvas-prompt-panel textarea').value.includes('SOURCE_B_UNIQUE')`), true, 'removed connection updates only its visible text');
+      await references(['source-b']); await generate(['source-b'], true);
+      assert.equal(await js(`document.querySelector('.canvas-prompt-panel textarea').value.includes('SOURCE_B_UNIQUE')`), false, 'user deletion survives project re-entry');
       // A true document reload must reconstruct edges from the server.
       const loaded = new Promise(resolve => win.webContents.once('did-finish-load', resolve));
       win.webContents.reload(); await loaded; await wait('!!window.ready');

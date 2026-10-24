@@ -22,16 +22,17 @@ def run_worker(workspace, task_id, project_id, mode, api, skill_id='', recovery=
     if mode == 'svg_legacy_snapshot':
         svg_policy = {'mode':'auto','allowed':True}
     author = mode.startswith('create')
+    # Full tool-catalog integration, not a small-context budget fixture.
     payload = {'apiKey': 'fixture-key-only', 'model': 'fixture', 'api': api, 'baseUrl': 'http://skill-fixture.invalid/v1',
-               'modelCapabilities': {'contextLength': 64000}, 'maxOutputTokens': 4096, 'skills': state,
+               'modelCapabilities': {'contextLength': 128000}, 'maxOutputTokens': 4096, 'skills': state,
                'persistentSessions': persistent, 'recovery': recovery or {},
                'toolGateway': {'baseUrl': 'http://skill-fixture.invalid', 'projectId': project_id, 'taskId': task_id},
                'context': {'projectId': project_id, 'taskId': task_id, 'brief': '创建包装设计Skill' if author else '处理当前需求',
                            'constraints': {'svgPolicy': svg_policy, 'skillManagement': author, 'skillCreationRequired': author, 'executionFlow': 'direct', 'agentCollaboration': False}}}
-    env = {**os.environ, 'PYTHONPATH': str(ROOT), 'FIXTURE_PYTHON': sys.executable, 'FIXTURE_WORKSPACE': str(workspace.workspace_root),
+    env = {**os.environ, 'PYTHONUTF8': '1', 'PYTHONPATH': str(ROOT), 'FIXTURE_PYTHON': sys.executable, 'FIXTURE_WORKSPACE': str(workspace.workspace_root),
            'FIXTURE_SKILL_MODE': mode, 'FIXTURE_SKILL_ID': skill_id}
-    result = subprocess.run([shutil.which('node'), '--import', str(FIXTURES / 'skills_transport.mjs'), str(ROOT / 'app/openai_agent_worker.mjs')],
-                            input=json.dumps(payload), text=True, capture_output=True, env=env, timeout=60)
+    result = subprocess.run([shutil.which('node'), '--import', (FIXTURES / 'skills_transport.mjs').resolve().as_uri(), str(ROOT / 'app/openai_agent_worker.mjs')],
+                            input=json.dumps(payload), text=True, encoding='utf-8', capture_output=True, env=env, timeout=60)
     events = [json.loads(line) for line in result.stdout.splitlines() if line.startswith('{')]
     return result, events
 

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { verifySidecarBuild, verifyStandaloneWorker, workerName } from './agent-runtime-build.mjs';
 import { assertReleaseNotRunning } from './package-guard.mjs';
 import { packageDesktopRuntimeDependencies } from './desktop-runtime-dependencies.mjs';
+import { packageCli } from './package-cli.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const electronApp = path.join(root, 'node_modules', 'electron', 'dist', 'Electron.app');
@@ -158,6 +159,7 @@ cpSync(path.join(root, 'package.json'), path.join(targetProject, 'package.json')
 cpSync(path.join(root, 'LICENSE'), path.join(targetProject, 'LICENSE'));
 cpSync(path.join(root, 'docs/licenses'), path.join(targetProject, 'docs/licenses'), { recursive: true });
 packageDesktopRuntimeDependencies(root, targetProject);
+packageCli(root, targetApp, 'darwin', executableName);
 if (packageProfile === 'lite') {
   const componentManifest = path.resolve(process.env.AICS_RUNTIME_COMPONENT_MANIFEST || path.join(root, 'dist', 'runtime-components', `${process.platform}-${process.arch}`, 'runtime-components.json'));
   if (!existsSync(componentManifest)) throw new Error('轻量版缺少按需能力组件清单，请先运行 npm run build:runtime-components。');

@@ -6,6 +6,7 @@ import { downloadArtifact } from '@electron/get';
 import extract from 'extract-zip';
 import { buildWindowsUpdateInstaller } from './windows-update-installer.mjs';
 import { brandWindowsExecutable } from './windows-branding.mjs';
+import { packageCli } from './package-cli.mjs';
 import { bundleAgentWorker, fileDigest, workerName, runtimeSourceDigest } from './agent-runtime-build.mjs';
 import { packageDesktopRuntimeDependencies } from './desktop-runtime-dependencies.mjs';
 
@@ -109,6 +110,7 @@ if (packageProfile === 'full') {
 }
 const icon = path.join(root, 'apps/desktop/assets/langju-agent.ico');
 brandWindowsExecutable(path.join(appDir, 'electron.exe'), path.join(appDir, 'MxinspireX.exe'), icon, pkg);
+packageCli(root, appDir, 'win32');
 // Retain upstream license files, but only one executable launcher.
 rmSync(path.join(appDir, 'electron.exe'));
 for (const appearance of ['dark', 'light']) cpSync(path.join(root, `apps/desktop/assets/langju-agent-icon-${appearance}-1024.png`), path.join(appDir, `resources/langju-agent-icon-${appearance}-1024.png`));

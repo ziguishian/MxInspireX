@@ -659,11 +659,11 @@ const makeTool = (name, description, parameters) => {
   },
   execute: async (args, runContext, details) => {
     args = normalizeOptionalNulls(args,rawSchema);
-    validateSvgOperation(context.constraints, name, withToolDefaults(name, args));
     const previewCallId = name === 'canvas_create_html' ? details?.toolCall?.callId : undefined;
-    if (previewCallId) await beginHtmlPreview(previewCallId);
     let result;
     try {
+      validateSvgOperation(context.constraints, name, withToolDefaults(name, args));
+      if (previewCallId) await beginHtmlPreview(previewCallId);
       const plan = currentDesignPlan(context.constraints, toolOutputs);
       if (name === 'design_plan' && reusesReadyPlan(args, plan, currentBatchContext(context.constraints,toolOutputs).batch)) {
         // This is a read, not acceptance of the malformed replacement. The

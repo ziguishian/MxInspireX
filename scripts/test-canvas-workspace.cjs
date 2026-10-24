@@ -184,9 +184,10 @@ if(!process.versions.electron){
       assert.equal(await js(`document.querySelectorAll(${q(connectedPanel+' .prompt-linked-reference')}).length`),2);
       assert.equal(await visible(connectedPanel+' .prompt-reference-modes'),false);
       assert.ok((await js(`document.querySelector(${q(connectedPanel+' .prompt-reference-status')}).textContent`)).includes('已连接 2'));
+      assert.ok((await js(`document.querySelector(${q(connectedPanel+' textarea')}).value`)).includes('参考内容'), 'upstream text is visible before user editing');
       await field(connectedPanel+' textarea','保持主体，参考文字生成');await click(connectedPanel+' .prompt-submit');await pause(180);
       let connectedOutput=await js('JSON.parse(JSON.stringify(generated.at(-1)))');
-      assert.deepEqual(connectedOutput[3].source_asset_ids,['source-a']);assert.deepEqual(connectedOutput[3].reference_node_ids,['primary','neighbor']);assert.equal(connectedOutput[3].canvasNodeId,'third');assert.equal(Object.hasOwn(connectedOutput[3],'referenceModes'),false);assert.ok(connectedOutput[1].includes('参考内容'));
+      assert.deepEqual(connectedOutput[3].source_asset_ids,['source-a']);assert.deepEqual(connectedOutput[3].reference_node_ids,['primary','neighbor']);assert.equal(connectedOutput[3].canvasNodeId,'third');assert.equal(Object.hasOwn(connectedOutput[3],'referenceModes'),false);assert.equal(connectedOutput[1],'保持主体，参考文字生成','user-edited prompt is not expanded again');
       await js(`state.board={...state.board,nodes:state.board.nodes.map(n=>n.id==='third'?{...n,data:{...n.data,generating:false}}:n.id==='primary'?{...n,data:{...n.data,assetId:'source-b'}}:n)};void 0`);await pause(250);
       assert.ok((await js(`document.querySelector(${q(connectedPanel+' [data-reference-node="primary"] img')}).src`)).includes('source-b'));
       fs.writeFileSync('/tmp/aics-connected-references.png',(await win.webContents.capturePage()).toPNG());

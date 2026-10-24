@@ -22,4 +22,4 @@ iframe 使用 `allow-scripts allow-forms`，允许本地表单提交事件，CSP
 - `web_generation.test.mjs`、`htmlPreview.test.ts`：工具可见范围、媒体解析与沙箱策略。
 - `npm run test:web-interactions`：隔离 Electron 中实测预览及离线导出的 Bootstrap 标签页、折叠、筛选、表单校验与反馈、WAV 和 MP4 播放。测试不调用真实收费 Provider，不读写用户项目。
 
-2026-10-24 验证：559 项 Vitest 通过、3 项既有跳过；105 项相关 Python 用例通过；typecheck、桌面构建和上述真实交互回归通过。旧 `test_svg_policy.py::test_real_sdk_tool_filter_and_batch_gate` 的 8 个组合仍使用 Windows 不兼容的 `--import D:\...` 测试入口，本次验证单独排除，不代表这些旧用例通过。未调用真实收费模型验证生成审美，不将组件接入视为所有模型输出均合格。
+2026-10-24 首轮验证：559 项 Vitest 通过、3 项既有跳过；105 项相关 Python 用例通过；typecheck、桌面构建和上述真实交互回归通过。后续已修复 SDK fixture 的 Windows `file://` 路径和 UTF-8 协议，并将 SVG 预检拒绝纳入已有参数纠错机制；此前排除的 8 项 `test_real_sdk_tool_filter_and_batch_gate` 已全部通过，含共享 fixture 的技能/SVG 测试共 73 项通过。未调用真实收费模型验证生成审美，不将组件接入视为所有模型输出均合格。

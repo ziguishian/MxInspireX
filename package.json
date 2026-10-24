@@ -9,9 +9,11 @@
   },
   "main": "dist/desktop/main.js",
   "private": true,
+  "bin": { "mxinspirex": "scripts/mxinspirex.mjs" },
   "description": "Local-first AI workspace for general design tasks",
   "type": "module",
   "scripts": {
+    "cli": "node scripts/mxinspirex.mjs",
     "setup:portable": "node scripts/run-portable.mjs --setup-only",
     "start:portable": "node scripts/run-portable.mjs",
     "verify:portable": "node scripts/run-portable.mjs --smoke",
