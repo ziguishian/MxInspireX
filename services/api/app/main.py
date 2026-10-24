@@ -395,7 +395,7 @@ def health() -> dict[str, object]:
     return {
         "status": "ok",
         "service": "aics-api",
-        "agentRuntimeRevision": "interactive-web-media-20261024-v18",
+        "agentRuntimeRevision": "parallel-web-delivery-20261024-v19",
         "buildRevision": os.environ.get("AICS_BUILD_REVISION") or os.environ.get("AICS_BUILD_VERSION") or "development",
         "modelDefaultsVersion": settings.defaultsVersion,
         "preferredTextProvider": settings.preferredTextProvider.model_dump(mode="json"),

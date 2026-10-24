@@ -99,7 +99,7 @@ export function readyGenerationItems(constraints = {}, outputs = []) {
   const ready = new Set(progress.filter(item => available.has(item.status)).map(item => item.id));
   const started = new Set(progress.filter(item => item.status === 'generating').map(item => item.id));
   for (const { args = {}, output = {} } of outputs) {
-    if (output.status === 'generation_unconfirmed' || output.stopTool && output.retryable === false) {
+    if (output.status === 'generation_unconfirmed' || output.status === 'cancelled' || output.webMediaPending || output.stopTool && output.retryable === false) {
       for (const id of args.deliverable_ids || []) started.add(id);
     }
     const binding = output.node?.data?.deliveryBinding;
@@ -125,7 +125,7 @@ export function generationBatchRequired(operations, constraints = {}, outputs = 
     readyDeliverables: pending.map(({ id, title, kind, acceptance, representation }) => ({ id, title, kind, acceptance, representation })) };
 }
 
-export async function runGenerationBatch(operations, dispatch, dependenciesFor = () => []) {
+export async function runGenerationBatch(operations, dispatch, dependenciesFor = () => [], settleDependency = async (_operation,result) => result) {
   const producers = new Map();
   operations.forEach((operation, index) => {
     for (const id of operation.arguments.deliverable_ids || []) {
@@ -141,14 +141,14 @@ export async function runGenerationBatch(operations, dispatch, dependenciesFor =
     visiting.add(index); parents[index].forEach(validate); visiting.delete(index); visited.add(index);
   };
   operations.forEach((_, index) => validate(index));
-  const usable = value => value && !['failed','dependency_required','reference_mismatch','planning_required'].includes(value.status)
+  const usable = value => value && (!value.status || value.status === 'succeeded')
     && !value.node?.data?.generating && !value.node?.data?.error
     && Boolean(value.assetId || value.node?.data?.text || value.node?.data?.html || value.node?.data?.assetId || value.node?.data?.cad);
   const jobs = new Map();
   const start = index => {
     if (jobs.has(index)) return jobs.get(index);
     const job = Promise.resolve().then(async () => {
-      const completed = await Promise.allSettled(parents[index].map(start));
+      const completed = await Promise.allSettled(parents[index].map(async parent => settleDependency(operations[parent],await start(parent))));
       const unavailable = parents[index].filter((_, i) => completed[i].status !== 'fulfilled' || !usable(completed[i].value));
       if (unavailable.length) return {status:'dependency_required',dependencies:unavailable.flatMap(i => operations[i].arguments.deliverable_ids || []),instruction:'前置产物未完成或未成功，已保留其他结果；等待可用输入，不重复生成整组。'};
       const {tool, arguments:args} = operations[index];
@@ -163,9 +163,9 @@ export async function runGenerationBatch(operations, dispatch, dependenciesFor =
     const item = operations[index];
     if (result.status === 'rejected') return { tool: item.tool, deliverable_ids: item.arguments.deliverable_ids,
       status: 'failed', message: String(result.reason?.message || result.reason) };
-    const { status, assetId, node, job, warnings, dependencies, instruction, reused, errors, errorCode, retryable, billingCertainty } = result.value;
+    const { status, assetId, node, job, warnings, dependencies, instruction, reused, errors, errorCode, retryable, billingCertainty, webMediaPending, operationId } = result.value;
     return { tool: item.tool, deliverable_ids: item.arguments.deliverable_ids, status, assetId, nodeId: node?.id,
       job: job ? { id: job.id, status: job.status } : undefined, warnings, dependencies, instruction, reused,
-      errorCode, retryable, billingCertainty, ...(errors ? {errors} : {}) };
-  }), instruction: '按每项真实状态报告结果。保留成功项；异步任务等待完成，有依赖的后续项读取真实资产后再提交。不得因一项失败重新生成整组。' };
+      errorCode, retryable, billingCertainty, ...(webMediaPending ? {webMediaPending,operationId} : {}), ...(errors ? {errors} : {}) };
+  }), instruction: '按每项真实状态报告结果。保留成功项；网页 supporting 媒体已受理时立即编写网页，使用 deliverable://交付项ID，保存时自动绑定。其他视觉身份依赖仍需读取真实像素。不得因一项失败重新生成整组。' };
 }

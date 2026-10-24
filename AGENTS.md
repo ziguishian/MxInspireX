@@ -82,6 +82,8 @@
 
 ## 4. 一次请求如何流转
 
+网页并行与收尾 v19：`web_generation.mjs` 为简单单页提供精简工具集，保留升级为媒体计划的入口；页面文案由主 Agent 编写。就绪计划中的 supporting 内容媒体受理后，Agent 可同时编写网页，以 `deliverable://媒体交付ID` 引用未来资源；保存时只查询原操作并由 `html_assets.py` 按当前计划、唯一已保存媒体绑定 `asset://ID`。节点入口不支持未来占位。identity/layout 依赖仍先看真实像素；失败、取消、未知收费不重发、不保存未完成网页。多项输出由本地交付检查确定性收尾，保留预览、补充与恢复保护。实现与验证见 `docs/agent-flow.md` 的 v19；发布门禁覆盖 `test_web_pipeline_sdk.py` 和网页回归。
+
 外部 Agent CLI：`scripts/mxinspirex.mjs`（`npm run cli -- --help`）通过既有本地 HTTP API 操作项目、任务、画布和资产，默认 JSON 输出；创建任务必须使用稳定 requestId，强制异步且不自动重试写请求。wait 超时不取消任务，recover 只取回已受理原结果。`scripts/package-cli.mjs` 在 Windows/macOS 分发包中生成复用 Electron Node 运行时的启动器，无新增依赖。入口、退出码和 Agent 调用约定见 `docs/cli.md`；测试 `scripts/mxinspirex.test.mjs`。
 
 交互网页由主 Agent 按需组合文字、图片、视频和音频；新素材通过计划 `supporting=true` 和 HTML 项的 `dependsOn` / `inputs(role=content)` 关联，不增加最终交付数量，不绕过用户否定或节点原样生成。`canvas_create_html(style_framework=bootstrap)` 离线嵌入固定 Bootstrap 5.3.8；媒体通过真实 `asset://ID` 嵌入，预览和导出均可播放。框架正文不进入 Agent 编辑上下文，编辑继承 `styleFramework`。iframe 允许本地表单事件，CSP 继续禁止对外提交和网络访问。详见 `docs/web-generation.md`；真实交互回归 `npm run test:web-interactions` 不调用收费模型。

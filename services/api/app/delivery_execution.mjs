@@ -28,7 +28,7 @@ export function hasPendingDelivery(delivery) {
 export function generationCompletionMessage(outputs, reason) {
   if (reason === 'video_submitted') return '视频请求已受理，正在等待生成结果。';
   const failures = outputs.filter(({name,output}) => artifactTools.has(name)
-    && (output?.status === 'failed' || output?.status === 'generation_unconfirmed'));
+    && ['failed','generation_unconfirmed','cancelled','dependency_required'].includes(output?.status));
   if (failures.length) {
     const messages = [...new Set(failures.map(({output}) => output.message).filter(Boolean))];
     return '本轮生成未全部完成；已生成的产物会保留。' + (messages.length ? '\n' + messages.join('\n') : '请查看执行详情核对结果。');
@@ -38,6 +38,16 @@ export function generationCompletionMessage(outputs, reason) {
 
 export function missingDeliverables(delivery) {
   return (delivery?.deliverables || []).filter(item => item.status === 'pending');
+}
+
+export function completionInspectionNeeded(constraints, outputs) {
+  if (constraints?.deliveryRepairOnly || latestClarification(outputs)) return false;
+  const plan = currentDesignPlan(constraints,outputs);
+  const count = plan?.deliverables?.length || (constraints?.deliveryContract || []).reduce((sum,item) => sum + (item.count ?? 1),0);
+  return count > 1 && outputs.some(({name,output}) => artifactTools.has(name) && output?.status === 'succeeded')
+    && !outputs.some(({output = {}}) => output.webMediaPending || output.status === 'generation_unconfirmed'
+      || output.status === 'cancelled' || output.stopTool || output.node?.data?.generating
+      || output.job && output.status !== 'succeeded');
 }
 
 // Shared by tool completion and final inspection; unknown paid results are
@@ -60,11 +70,11 @@ export function completionDecision(constraints, outputs, {delivery, awaitingInpu
   const settled = generationAttemptComplete(constraints,outputs) || singleDeliveryComplete(constraints,outputs);
   if (settled) return {finish:true,missing:[],reason:'attempt_complete'};
   if (hasPendingDelivery(delivery)) return {finish:false,missing:[],reason:'pending_result'};
-  if (delivery?.passed) return {finish:true,missing:[],reason:'delivered'};
   if (outputs.some(({output={}})=>output.status==='generation_unconfirmed' || output.stopTool
-    || output.node?.data?.generating || output.job && output.status !== 'succeeded')) {
+    || output.status === 'cancelled' || output.webMediaPending || output.node?.data?.generating || output.job && output.status !== 'succeeded')) {
     return {finish:false,missing:[],reason:'reconcile_only'};
   }
+  if (delivery?.passed) return {finish:true,missing:[],reason:'delivered'};
   const ready = new Set(readyGenerationItems(constraints,outputs).map(item=>item.id));
   const plan = currentDesignPlan(constraints,outputs);
   return {finish:false,reason:'incomplete',missing:missingDeliverables(delivery).filter(item=>!plan || ready.has(item.id))};

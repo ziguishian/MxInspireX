@@ -1,6 +1,6 @@
 import { applyToolContracts, normalizeOptionalNulls, imageParamsSchema } from './tool_contracts.mjs';
 import { executionFrame } from './execution_frame.mjs';
-import { webMediaAllowed, webDesignInstructions } from './web_generation.mjs';
+import { webMediaAllowed, webDesignInstructions, directWeb, webTools, supportingWebMedia, waitForWebMedia } from './web_generation.mjs';
 import { efficientExecution, directSingleArtifact, singleImageToolAllowed, readyPlanExecution, nestedTextAllowed, receiptView, selectRules, researchRules } from './execution_efficiency.mjs';
 import { normalizeToolInput, bindPlanVersion, inputFailure, planReceipt, currentDesignPlan, reusesReadyPlan, validateBatchArguments, ToolInputNormalizationError } from './tool_input_validation.mjs';
 import { agentOutputTokenLimit, outputFailure, responsesOutputFailure } from './model_output.mjs';
@@ -12,14 +12,14 @@ import { imageReferenceInstructions, singleImageInstructions, referenceAnalysisS
 import { designBriefInstructions, designBriefSchema } from './design_brief.mjs';
 import { literalNode, directNodeCall, nodeInstructions, nodeToolAllowed } from './node_prompt.mjs';
 import { skillDefinitions, skillWrites, skillReads } from './skill_runtime.mjs';
-import { hasPendingDelivery, completionDecision, generationCompletionMessage, latestClarification, collectArtifactRefs, artifactToolOutputs } from './delivery_execution.mjs';
+import { hasPendingDelivery, completionDecision, completionInspectionNeeded, generationCompletionMessage, latestClarification, collectArtifactRefs, artifactToolOutputs } from './delivery_execution.mjs';
 import { ProjectSession, boundedJson, mergeSessionInput, prepareModelInput, digest, restoreCompletedHistory } from './sdk_context.mjs';
 import { HtmlGenerationProgress } from './html_generation_progress.mjs';
 import { cacheUsage, cachedModelRequest } from './prompt_cache.mjs';
 import { runNativeSearch } from './sdk_web_search.mjs';
 import { createToolScheduler, generationTools } from './tool_scheduler.mjs';
 import { svgAllowed, svgPolicyInstruction, validateSvgOperation } from './svg_policy.mjs';
-import { generationBatchRequired, normalizeBatchItems, runGenerationBatch, currentBatchContext, partitionIdentityBatch, identityPreviewAssets } from './generation_batch.mjs';
+import { generationBatchRequired, normalizeBatchItems, runGenerationBatch, currentBatchContext, partitionIdentityBatch, identityPreviewAssets, readyGenerationItems } from './generation_batch.mjs';
 import { waitForImageResult } from './image_result_wait.mjs';
 const send = (payload) => process.stdout.write(`${JSON.stringify(payload)}\n`);
 
@@ -428,8 +428,13 @@ const performGatewayCall = async (name, args, runContext, previewCallId, operati
     });
     body = await response.json();
     if (asyncImage && response.ok && body.operationId) {
-      const result = await observeImage(body.operationId);
-      body = result.output; response = {ok:result.httpStatus<400,status:result.httpStatus};
+      if (supportingWebMedia(context.constraints,currentDesignPlan(context.constraints,toolOutputs),name,effectiveArgs)) {
+        body = {tool:name,status:'processing',operationId:body.operationId,webMediaPending:true,submitted:true,
+          instruction:'原媒体任务已持久化受理。现在编写网页，用 deliverable://交付项ID 引用；保存时自动等待和绑定，无需轮询或重新生成。'};
+      } else {
+        const result = await observeImage(body.operationId);
+        body = result.output; response = {ok:result.httpStatus<400,status:result.httpStatus};
+      }
     }
   } catch (error) {
     if (['generate_image','generate_audio'].includes(name)) {
@@ -493,6 +498,10 @@ const performGatewayCall = async (name, args, runContext, previewCallId, operati
   if (['design_plan','design_state'].includes(name) && body.status === 'invalid') {
     body = {...body, status:'invalid_arguments', code:'business_validation', fieldPath:name};
   }
+  if (name === 'generate_video' && body.job?.id && body.status !== 'succeeded'
+    && supportingWebMedia(context.constraints,currentDesignPlan(context.constraints,toolOutputs),name,effectiveArgs)) {
+    body = {...body,webMediaPending:true,instruction:'视频已受理。现在编写网页并使用 deliverable://交付项ID；程序查询原任务并绑定，不重新生成。'};
+  }
   const record = {
     name,
     args: effectiveArgs,
@@ -526,13 +535,35 @@ const performGatewayCall = async (name, args, runContext, previewCallId, operati
 };
 
 const toolScheduler = createToolScheduler();
+const webMediaWaits = new Map();
+const settleWebMedia = async (dependencies) => {
+  const pending = toolOutputs.filter(item => item.output?.webMediaPending
+    && (!dependencies || item.args?.deliverable_ids?.some(id => dependencies.includes(id))));
+  await Promise.all(pending.map(record => {
+    if (webMediaWaits.has(record)) return webMediaWaits.get(record);
+    const wait = (async () => {
+      const result = await waitForWebMedia({record,baseUrl:String(toolGateway.baseUrl || 'http://127.0.0.1:8765').replace(/\/$/,''),
+        projectId:String(toolGateway.projectId || context.projectId),taskId:String(toolGateway.taskId || context.taskId)});
+      record.output = {...result,tool:record.name,webMediaSettled:true};
+      checkpoint();
+      send({type:'event',phase:'progress',message:result.status === 'succeeded' ? '网页媒体已保存，正在绑定页面。' : '网页媒体未完成，保留原请求和已生成内容。'});
+    })();
+    webMediaWaits.set(record,wait);
+    return wait;
+  }));
+};
 const gatewayCall = (name,args,runContext,previewCallId,fromBatch = false,operationId) => {
   const effectiveArgs = withToolDefaults(name, args);
   const batchRequired = !fromBatch && generationBatchRequired([{tool:name,arguments:effectiveArgs}], context.constraints, toolOutputs);
   if (batchRequired) return Promise.resolve({tool:name,...batchRequired});
   const plan = [...toolOutputs].reverse().find(item => item.name === 'design_plan' && item.output?.plan)?.output.plan || context.constraints?.designPlan;
-  const dependencies = (plan?.deliverables || []).filter(item => effectiveArgs.deliverable_ids?.includes(item.id)).flatMap(item => item.dependsOn || []);
-  return toolScheduler.run(name, effectiveArgs, () => performGatewayCall(name,args,runContext,previewCallId,operationId), dependencies);
+  const pages = (plan?.deliverables || []).filter(item => item.kind === 'html');
+  const ids = effectiveArgs.deliverable_ids || (name === 'canvas_create_html' && pages.length === 1 ? [pages[0].id] : []);
+  const dependencies = (plan?.deliverables || []).filter(item => ids.includes(item.id)).flatMap(item => item.dependsOn || []);
+  return toolScheduler.run(name, effectiveArgs, async () => {
+    if (name === 'canvas_create_html' && dependencies.length) await settleWebMedia(dependencies);
+    return performGatewayCall(name,args,runContext,previewCallId,operationId);
+  }, dependencies);
 };
 
 const intentTools = {
@@ -559,8 +590,11 @@ const directArtifact = () => directSingleArtifact(context.constraints, skillCont
   && !currentDesignPlan(context.constraints,toolOutputs);
 const directImage = () => directArtifact() && context.constraints.singleDeliveryTarget.kind === 'image'
   && context.constraints.taskSurface !== 'canvas_node';
+const directPage = () => directWeb(context.constraints,skillContext,updateReader?.revision,context.attachments)
+  && !currentDesignPlan(context.constraints,toolOutputs);
 const toolEnabled = name => {
   const required = policy.tools_required?.includes(name) || (skillContext.active || []).some(skill => skill.requiredTools?.includes(name));
+  if (directPage() && !required && !webTools.has(name)) return false;
   // Match the gateway's memory prerequisite for all writes, including resumed
   // text/HTML tasks, instead of spending a turn on a predictable rejection.
   const needsSelection = name.startsWith('generate_') || ['generation_reference_check','image_edit',
@@ -687,7 +721,12 @@ const makeTool = (name, description, parameters) => {
             if (checked.status !== 'ready') return {...checked,tool:name,validationTool:'generation_reference_check'};
             send({type:'event',phase:'progress',message:`已安排 ${operations.length} 项产物：独立项并行，依赖项按顺序执行。`});
             result = await runGenerationBatch(operations, (tool, parameters) => gatewayCall(tool, parameters, runContext, undefined, true),
-              operation => (plan?.deliverables || []).filter(item => operation.arguments.deliverable_ids?.includes(item.id)).flatMap(item => item.dependsOn || []));
+              operation => (plan?.deliverables || []).filter(item => operation.arguments.deliverable_ids?.includes(item.id)).flatMap(item => item.dependsOn || []),
+              async (operation,result) => {
+                if (!result.webMediaPending) return result;
+                await settleWebMedia(operation.arguments.deliverable_ids);
+                return toolOutputs.findLast(item => item.name === operation.tool && item.args?.deliverable_ids?.some(id => operation.arguments.deliverable_ids?.includes(id)))?.output || result;
+              });
             if (deferred.length) {
               result.results.push(...deferred.map(op=>({tool:op.tool,deliverable_ids:op.arguments.deliverable_ids,status:'awaiting_identity_source',
                 instruction:'本项未提交生成。先读取首图实际像素，按原产品造型填写 identity 分析和场景描述，只提交本项，不重做首图。'})));
@@ -1053,13 +1092,27 @@ try {
     toolUseBehavior: async (_runContext, results) => {
       const clarification = latestClarification(toolOutputs);
       const references = referenceSelection();
+      const generated = results.some(result=>generationTools.includes(result.tool?.name)
+        || ['generate_batch','image_edit','canvas_update_node','canvas_create_media','export_deliverable'].includes(result.tool?.name));
+      if (generated && !clarification && !references && !updateReader?.revision
+        && toolOutputs.some(item => item.output?.webMediaSettled && item.output.status !== 'succeeded')
+        && !readyGenerationItems(context.constraints,toolOutputs).length) {
+        const applied = updateReader?.revision || 0;
+        await updateReader?.refresh();
+        if ((updateReader?.revision || 0) === applied) return {isFinalOutput:true,finalOutput:generationCompletionMessage(toolOutputs)};
+      }
+      let verified;
+      if (!clarification && !references && !updateReader?.revision && generated
+        && completionInspectionNeeded(context.constraints,toolOutputs)) {
+        verified = await gatewayCall('delivery_verify',{refs:collectArtifactRefs(toolOutputs)});
+      }
       if (input.executionStateVersion === 1 && !clarification && !references
-        && results.some(result=>generationTools.includes(result.tool?.name) || ['generate_batch','image_edit'].includes(result.tool?.name))
-        && completionDecision(context.constraints,toolOutputs,{updatePending:Boolean(updateReader?.revision)}).finish) {
+        && generated
+        && completionDecision(context.constraints,toolOutputs,{delivery:verified,updatePending:Boolean(updateReader?.revision)}).finish) {
         const applied = updateReader?.revision || 0;
         await updateReader?.refresh();
         if ((updateReader?.revision || 0) === applied) {
-          return {isFinalOutput:true,finalOutput:generationCompletionMessage(toolOutputs, completionDecision(context.constraints,toolOutputs).reason)};
+          return {isFinalOutput:true,finalOutput:generationCompletionMessage(toolOutputs, completionDecision(context.constraints,toolOutputs,{delivery:verified}).reason)};
         }
       }
       // A no-op plan read after every selected generation has settled is a
@@ -1479,6 +1532,7 @@ try {
     if (!['succeeded', 'submitted', 'running', 'pending', 'queued'].includes(result?.status)) throw new Error(result?.message || result?.instruction || '节点生成未完成');
     finalOutput = result.status === 'succeeded' ? '作品已保存到当前节点。' : '节点生成请求已受理，等待原请求结果。';
   } else finalOutput = stages.revision || (flow === 'delivery' ? (stages.design || '作品已保存到右侧画布。') : await runStage('design', agent, userInput, true));
+  await settleWebMedia();
   let clarificationPending = Boolean(latestClarification(toolOutputs) || referenceSelection());
   const artifactRefs = () => collectArtifactRefs(toolOutputs);
   let delivery = !simpleConversation && context.constraints?.deliveryVerification && !clarificationPending ? await gatewayCall('delivery_verify', { refs: artifactRefs() }) : null;

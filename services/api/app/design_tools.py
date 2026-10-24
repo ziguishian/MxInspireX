@@ -436,6 +436,12 @@ class DesignToolRegistry:
             # No keyword-based target guessing: the model must identify the node.
             if choice=='edit' and not target and focus['nodeIds']:
                 raise DesignToolError('请明确要修改的 canvas_node_id；引用也可能只是风格参考，不能自动选择目标')
+        if name == 'canvas_create_html':
+            from .html_assets import bind_html_slots
+            from .generation_inputs import bind_generation_inputs
+            nodes = self.canvas_store.load(project_id)['nodes']
+            args['html'] = bind_html_slots(args.get('html', ''), context, delivery_binding or {}, nodes)
+            args = bind_generation_inputs(context, delivery_binding or {}, args, nodes, self.asset_store, project_id)
         node_ids = [args[k] for k in ('canvas_node_id','node_id','source_node_id','target_node_id') if args.get(k)] + list(args.get('node_ids') or [])
         asset_ids = [args[k] for k in ('source_asset_id','last_frame_asset_id','asset_id') if args.get(k)] + list(args.get('asset_ids') or []) + image_reference_ids(None, args.get('source_asset_ids')) + list(args.get('reference_asset_ids') or [])
         if name == 'canvas_create_html':

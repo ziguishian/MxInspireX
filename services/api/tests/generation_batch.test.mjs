@@ -130,6 +130,18 @@ describe('generic generation batches', () => {
 const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return{promise,resolve};};
 const success=id=>({status:'succeeded',assetId:id,node:{id,data:{assetId:id}}});
 
+it.each(['succeeded','generation_unconfirmed','cancelled'])('binds a prepared page only after original media is %s',async status=>{
+  const calls=[],gate=deferred();
+  const running=runGenerationBatch([request('hero'),{tool:'canvas_create_html',arguments:{deliverable_ids:['page'],html:'<img src="deliverable://hero">'}}],
+    async(tool,args)=>{calls.push(tool);return tool==='canvas_create_html'?success('page'):{status:'processing',webMediaPending:true,operationId:'original'};},
+    op=>op.tool==='canvas_create_html'?['hero']:[],async(_op,result)=>{expect(result.operationId).toBe('original');await gate.promise;return status==='succeeded'?success('hero'):{status,assetId:'stale'};});
+  await new Promise(resolve=>setTimeout(resolve,0));
+  expect(calls).toEqual(['generate_image']);
+  gate.resolve();const result=await running;
+  expect(calls.filter(t=>t==='generate_image')).toHaveLength(1);
+  expect(result.results[1].status).toBe(status==='succeeded'?'succeeded':'dependency_required');
+});
+
 describe('execution follows actual input dependencies',()=>{
   it('starts a ready child before an unrelated slow branch finishes, regardless of array order',async()=>{
     const gates=Object.fromEntries(['a','b','c','join'].map(id=>[id,deferred()]));

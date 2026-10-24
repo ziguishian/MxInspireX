@@ -372,6 +372,11 @@ def preflight_images(registry, project_id, task_id, arguments):
                 continue
             if context.get('designBatch') and binding and not set(binding['itemIds']).issubset(context['designBatch']['itemIds']):
                 raise ImageRequestError('批量生成只提交本批 itemIds，累计旧项保留。', code='batch_scope_required', field='deliverable_ids')
+            if name == 'canvas_create_html':
+                from .html_assets import validate_html_slots
+                from .html_syntax import validate_html_styles
+                validate_html_slots(args.get('html', ''), context, binding)
+                validate_html_styles(args.get('html', ''))
             if name not in IMAGE_TOOLS: continue
             args = prepare_image_request(registry, project_id, task_id, name, original, binding, preflight=True)
             summary = args['_image_resolution']

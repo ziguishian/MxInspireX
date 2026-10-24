@@ -91,3 +91,44 @@ def test_html_content_dependencies_accept_audio_without_relaxing_image_inputs(wo
         bind_generation_inputs(context, {'itemIds': ['page']}, {'html': '<h1>遗漏音频</h1>'}, [], assets, project)
     with pytest.raises(ValueError):
         bind_generation_inputs(context, {'itemIds': ['page']}, {'prompt': '图片'}, [], assets, project)
+
+
+def test_page_slots_bind_saved_media_without_rewriting_interactions(workspace):
+    store, project, assets, canvas = workspace
+    audio = audio_asset(assets, project)
+    plan = {**web_plan(), 'scopeId': 'scope', 'ready': True}
+    task(store, project, context={'designPlan': plan})
+    canvas.create_node(project, kind='audio', title='声音', data={'kind': 'audio', 'assetId': audio['id'],
+        'deliveryBinding': {'scopeId': 'scope', 'itemIds': ['sound']}})
+    tools = DesignToolRegistry(store, asset_store=assets, canvas_store=canvas)
+    source = '<button onclick="this.textContent=\'已切换\'">切换</button><audio controls src="deliverable://sound"></audio>'
+    result = tools.execute(project_id=project, task_id='task', name='canvas_create_html', arguments={
+        'html': source, 'deliverable_ids': ['page'], 'style_framework': 'bootstrap'})
+    assert result['status'] == 'succeeded', result
+    assert strip_web_framework(result['node']['data']['html']) == source.replace('deliverable://sound', 'asset://' + audio['id'])
+    assert result['node']['data']['audioAssetIds'] == [audio['id']]
+    again = tools.execute(project_id=project, task_id='task', name='canvas_create_html', arguments={
+        'html': source, 'deliverable_ids': ['page'], 'style_framework': 'bootstrap'})
+    assert again['node']['id'] == result['node']['id']
+    assert len([n for n in canvas.load(project)['nodes'] if n['data']['kind'] == 'html']) == 1
+
+
+@pytest.mark.parametrize('failure', ['missing', 'generating', 'error', 'duplicate', 'scope', 'undeclared', 'node'])
+def test_unready_or_unowned_slots_never_publish_a_page(workspace, failure):
+    from app.html_assets import bind_html_slots
+    store, project, assets, canvas = workspace
+    audio = audio_asset(assets, project)
+    context = {'designPlan': {**web_plan(), 'scopeId': 'scope', 'ready': True}}
+    data = {'kind': 'audio', 'assetId': audio['id'], 'deliveryBinding': {'scopeId': 'scope', 'itemIds': ['sound']}}
+    if failure == 'generating': data['generating'] = True
+    if failure == 'error': data['error'] = 'failed'
+    if failure == 'scope': data['deliveryBinding']['scopeId'] = 'other-task'
+    if failure == 'undeclared': context['designPlan']['deliverables'][1]['inputs'] = []
+    if failure == 'node': context['taskSurface'] = 'canvas_node'
+    nodes = [] if failure == 'missing' else [{'id': 'a', 'data': data}]
+    if failure == 'duplicate': nodes.append({'id': 'b', 'data': data})
+    with pytest.raises(ValueError):
+        bind_html_slots('<audio src="deliverable://sound"></audio>', context, {'itemIds': ['page']}, nodes)
+    with pytest.raises(ValueError, match='未解析'):
+        DesignToolRegistry(store, asset_store=assets, canvas_store=canvas).canvas_create_html(project_id=project, html='<img src="deliverable://sound">')
+    assert not canvas.load(project)['nodes']

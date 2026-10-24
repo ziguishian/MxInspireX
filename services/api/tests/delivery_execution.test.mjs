@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { missingDeliverables, latestClarification, completionDecision, generationCompletionMessage } from '../app/delivery_execution.mjs';
+import { missingDeliverables, latestClarification, completionDecision, completionInspectionNeeded, generationCompletionMessage } from '../app/delivery_execution.mjs';
+
+it('finishes multiple outputs after local inspection without a model summary, but retains pending/steering guards',()=>{
+  const constraints={deliveryContract:[{kind:'text',count:2}]};
+  const outputs=['a','b'].map(id=>({name:'canvas_create_text',output:{status:'succeeded',node:{id,data:{text:id}}}}));
+  expect(completionInspectionNeeded(constraints,outputs)).toBe(true);
+  expect(completionDecision(constraints,outputs,{delivery:{passed:true}})).toMatchObject({finish:true,reason:'delivered'});
+  expect(completionDecision(constraints,outputs,{delivery:{passed:true},updatePending:true}).finish).toBe(false);
+  for (const output of [{webMediaPending:true},{status:'generation_unconfirmed'},{status:'cancelled'}]) {
+    const pending=[...outputs,{name:'generate_image',output}];
+    expect(completionInspectionNeeded(constraints,pending)).toBe(false);
+    expect(completionDecision(constraints,pending,{delivery:{passed:true}}).finish).toBe(false);
+  }
+});
 
 it.each(['failed','generation_unconfirmed'])('ends a settled %s attempt without claiming a saved image', status => {
   const constraints = {designPlan:{ready:true,scopeId:'current',deliverables:[{id:'pack',kind:'image'}]}};

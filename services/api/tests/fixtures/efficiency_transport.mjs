@@ -88,7 +88,10 @@ globalThis.fetch = async (input, options={}) => {
     operation={name:'design_plan',args:{plan:JSON.parse(process.env.FIXTURE_PLAN),expected_revision:2,expected_scope_id:'state-revision-is-not-a-plan'}};
   } else if (index===0 || ['plan_creation','selection_planned'].includes(mode) && index===1) {
     assert.ok(!tools.some(t=>t.name==='generate_text'));
-    if (!['clarification','packaging'].includes(mode)) assert.ok(!tools.some(t=>(inventoryMode ? ['design_plan','design_state','report_progress','generation_reference_check'] : ['design_plan','design_state','generation_reference_check']).includes(t.name)));
+    if (kind==='html') {
+      assert.ok(tools.some(t=>t.name==='design_plan'),'Simple pages retain a media planning escape hatch');
+      assert.ok(!tools.some(t=>['design_state','report_progress','generation_reference_check'].includes(t.name)));
+    } else if (!['clarification','packaging'].includes(mode)) assert.ok(!tools.some(t=>(inventoryMode ? ['design_plan','design_state','report_progress','generation_reference_check'] : ['design_plan','design_state','generation_reference_check']).includes(t.name)));
     operation = kind==='image' ? {name:'generate_image',args:{prompt:'简约蓝色海报'}}
       : kind==='text' ? {name:'canvas_create_text',args:{text:'完整的品牌设计文案。'}}
       : {name:'canvas_create_html',args:{html:'<!doctype html><html><head><meta name="viewport" content="width=device-width"></head><body><h1>设计作品</h1></body></html>'}};

@@ -22,9 +22,10 @@ globalThis.fetch = async (url, options) => {
   const responses = String(url).endsWith('/responses'), first = round++ === 0;
   if (first) {
     const tools = body.tools.map(tool => tool.function || tool);
-    for (const name of ['canvas_create_html','design_plan','generate_image','generate_video','generate_audio','generate_text']) {
+    for (const name of ['canvas_create_html','design_plan','generate_image','generate_video','generate_audio']) {
       assert.ok(tools.some(tool=>tool.name===name), `Missing webpage tool: ${name}`);
     }
+    assert.ok(!tools.some(tool=>tool.name==='generate_text'), 'Simple page copy stays in the main model');
     assert.ok(tools.find(tool=>tool.name==='canvas_create_html').parameters.properties.style_framework);
   }
   const chunk = (delta, finish_reason=null) => ({id:'fixture',object:'chat.completion.chunk',created:1,model:body.model,choices:[{index:0,delta,finish_reason}]});
