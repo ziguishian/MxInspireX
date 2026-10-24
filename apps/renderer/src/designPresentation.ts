@@ -21,7 +21,9 @@ const internalTools = new Set(['conversation_memory_read', 'conversation_memory_
 
 /** Poll snapshots may omit text; keep the current message until a new one arrives. */
 export function designLiveText(trace: DesignTrace[] = [], answer?: string, previous = ''): string {
-  return [...trace].reverse().find(event => event.phase === 'text' && event.message)?.message || answer || previous;
+  const text = [...trace].reverse().find(event => event.phase === 'text' && event.message)?.message || answer || previous;
+  const prompts = [...new Set(trace.filter(event => event.phase === 'generation_prompt').map(event => event.message).filter(Boolean))] as string[];
+  return [...prompts.filter(prompt => !text.includes(prompt)), text].filter(Boolean).join('\n\n');
 }
 
 /** Only public execution events are presented; model reasoning is never read. */

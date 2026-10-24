@@ -9,7 +9,7 @@
   },
   "main": "dist/desktop/main.js",
   "private": true,
-  "description": "Local-first enterprise AI design Agent for cultural-tourism and ship design",
+  "description": "Local-first AI workspace for general design tasks",
   "type": "module",
   "scripts": {
     "setup:portable": "node scripts/run-portable.mjs --setup-only",
@@ -49,6 +49,7 @@
     "test:image-download": "node scripts/test-image-download.cjs",
     "test:html-canvas": "node scripts/test-html-canvas.cjs",
     "test:html-generation": "node scripts/test-html-generation.cjs",
+    "test:web-interactions": "node scripts/test-web-interactions.cjs",
     "test:node-resize": "node scripts/test-node-resize.cjs",
     "test:node-composer": "node scripts/test-node-composer.cjs",
     "test:auto-layout-locks": "node scripts/test-auto-layout-locks.cjs",

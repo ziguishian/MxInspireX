@@ -14,7 +14,7 @@ def whole_canvas_requested(text):
 def node_view(node, *, text_offset=0, text_limit=3000):
     from .node_context import fingerprint
     data = node.get('data') or {}
-    selected = {key: data[key] for key in ('kind','title','adopted','adoptedAt','editor','referenceRole','assetId','imageAssetIds','previewSize','htmlPreviewSize','generating','status','error','draft') if key in data}
+    selected = {key: data[key] for key in ('kind','title','adopted','adoptedAt','editor','referenceRole','assetId','styleFramework','imageAssetIds','mediaAssetIds','videoAssetIds','audioAssetIds','previewSize','htmlPreviewSize','generating','status','error','draft') if key in data}
     if data.get('asset'):
         selected['asset'] = {key: data['asset'][key] for key in ('id','kind','mime') if key in data['asset']}
         selected.setdefault('assetId', data['asset'].get('id'))
@@ -29,8 +29,10 @@ def node_view(node, *, text_offset=0, text_limit=3000):
         longest = len(source)
     for key in ('text','html','summary','prompt'):
         if isinstance(data.get(key), str):
-            longest = max(longest, len(data[key]))
-            selected[key] = data[key][text_offset:text_offset+text_limit]
+            from .web_framework import strip_web_framework
+            content = strip_web_framework(data[key]) if key == 'html' else data[key]
+            longest = max(longest, len(content))
+            selected[key] = content[text_offset:text_offset+text_limit]
     if data.get('job'):
         selected['job'] = {key: data['job'][key] for key in ('id','jobId','status') if key in data['job']}
     return {'id': node['id'], 'version':fingerprint(node), 'position': node.get('position'), 'data': selected,
@@ -90,6 +92,7 @@ class TaskFocus:
                 asset_id = node.get('data',{}).get('assetId') or (node.get('data',{}).get('asset') or {}).get('id')
                 if asset_id: assets.add(asset_id)
                 assets.update(node.get('data', {}).get('imageAssetIds') or [])
+                assets.update(node.get('data', {}).get('mediaAssetIds') or [])
         # Uploaded/global reference images receive local, editable asset IDs.
         if context.get('referencedFiles') or context.get('referencedAssets') or assets:
             from .assets import AssetStore

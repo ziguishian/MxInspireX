@@ -817,8 +817,8 @@ async function runWorkflow(count:number) {
           Object.assign(stepParams,{model,background:'transparent',output_format:'png',aspectRatio:`${size.width}:${size.height}`});
         }
         const params=canvasReferenceParams(refs,stepParams,id,operation.data.kind);
-        const context=refs.filter(r=>r.text).map(r=>`【${r.title}】\n${r.text}`).join('\n');
-        const ok=await props.runWorkflowNode(operation.data.kind,`${operation.data.workflowOperation==='cutout' ? '图像编辑任务：移除上游图片背景，保留主体细节和构图，输出真实 alpha 透明 PNG，不绘制棋盘格。' : operation.data.prompt || ''}\n${context}`,node.position,{...params,canvasProjectId:projectId});
+        const stepPrompt=operation.data.workflowOperation==='cutout' ? '图像编辑任务：移除上游图片背景，保留主体细节和构图，输出真实 alpha 透明 PNG，不绘制棋盘格。' : operation.data.prompt || '';
+        const ok=await props.runWorkflowNode(operation.data.kind,stepPrompt,node.position,{...params,canvasProjectId:projectId});
         if(!ok) throw Error('工作流已暂停：当前步骤未确认成功，已完成结果保留，请核对原任务后继续');
         completed++;
         await nextTick();
@@ -939,18 +939,16 @@ async function generateFromNode(nodeId: string, prompt: string, kind: CanvasKind
   if (kind === 'upload') kind = 'image';
   const references = nodeReferences.value[nodeId] || [];
   if (dirtyDrawings.value.has(nodeId) || references.some(ref => dirtyDrawings.value.has(ref.nodeId))) { emit('canvas-error', '请等待画板保存完成后再生成'); return; }
-  const inputText = references.filter(ref => ref.text).map(ref => `【${ref.title}】\n${ref.text}`).join('\n\n');
   let effectiveParams: Record<string, any>;
   try { effectiveParams = canvasReferenceParams(references, params, nodeId, kind); }
   catch (error) { emit('canvas-error', error instanceof Error ? error.message : '参考素材未就绪'); return; }
-  const generationData = { params, prompt: prompt.trim(), generating: true, draft: false, error: '', taskId: '' };
+  const generationData = { params, prompt, generating: true, draft: false, error: '', taskId: '' };
   node.data = { ...node.data, ...generationData };
   submittingGenerations.add(nodeId);
   try {
     const response = await fetch(`${props.apiBaseUrl}/api/projects/${encodeURIComponent(projectId)}/agent-tools/canvas_update_node`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node_id: nodeId, patch: { data: generationData } }) });
     if (!response.ok) throw new Error(await response.text());
-    const context = [inputText && `上游节点内容：\n${inputText}`].filter(Boolean).join('\n');
-    emit('generate-node', kind, context ? `${prompt.trim()}\n${context}` : prompt.trim(), node.position, { ...effectiveParams, canvasProjectId: projectId });
+    emit('generate-node', kind, prompt, node.position, { ...effectiveParams, canvasProjectId: projectId });
   } catch (error) { node.data.generating = false; node.data.error = error instanceof Error ? error.message : '生成未能开始'; emit('canvas-error', node.data.error); }
   finally { await nextTick(); submittingGenerations.delete(nodeId); }
 }

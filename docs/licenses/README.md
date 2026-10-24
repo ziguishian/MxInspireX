@@ -9,3 +9,5 @@
 - v0.2.2 是携带本许可的 Windows 安装版本，安装向导与安装目录使用同一份根 `LICENSE`；旧版 Release 保留。外部贡献或第三方代码须按其原许可保留，不能仅靠替换根许可证取得其重新许可权。
 
 商业授权联系：ziguishian@foxmail.com。
+
+网页离线组件使用 Bootstrap 5.3.8（含 Popper 2.11.8），两者继续按 MIT 许可提供，声明随 `services/api/app/web_frameworks/bootstrap/` 及导出的 HTML 保留。项目自身的非商业许可不替代第三方组件许可。

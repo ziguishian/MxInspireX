@@ -5,15 +5,15 @@ import { fileURLToPath } from 'node:url';
 import { downloadArtifact } from '@electron/get';
 import extract from 'extract-zip';
 import { buildWindowsUpdateInstaller } from './windows-update-installer.mjs';
-import * as ResEdit from 'resedit';
+import { brandWindowsExecutable } from './windows-branding.mjs';
 import { bundleAgentWorker, fileDigest, workerName, runtimeSourceDigest } from './agent-runtime-build.mjs';
 import { packageDesktopRuntimeDependencies } from './desktop-runtime-dependencies.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
 const packageProfile = process.env.AICS_PACKAGE_PROFILE === 'lite' ? 'lite' : 'full';
-const output = path.resolve(process.env.AICS_DISTRIBUTION_DIR || path.join(root, 'dist', 'packages', `LangjuAgent-${pkg.version}-${Date.now()}`));
-const appDir = path.join(output, 'windows-x64', 'LangjuAgent');
+const output = path.resolve(process.env.AICS_DISTRIBUTION_DIR || path.join(root, 'dist', 'packages', `MxinspireX-${pkg.version}-${Date.now()}`));
+const appDir = path.join(output, 'windows-x64', 'MxinspireX');
 const cache = path.join(root, '.tmp', 'package-downloads');
 const pythonVersion = '3.13.15';
 const pythonDigest = 'd1f04d990aee1253d8569e8e5104e30fa9f5fa830899f14843448872d936a2cf';
@@ -76,7 +76,7 @@ if (packageProfile === 'full') {
   const components = [];
   const baseUrl = process.env.AICS_COMPONENT_BASE_URL?.replace(/\/$/, '') || '';
   const archiveComponent = (id, label, description, environment, source) => {
-    const archiveName = `LangjuAgent-${pkg.version}-win32-x64-${id}-component.zip`;
+    const archiveName = `MxinspireX-${pkg.version}-win32-x64-${id}-component.zip`;
     const archive = path.join(componentRoot, archiveName);
     execFileSync(hostPython, ['-c', 'import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); z=zipfile.ZipFile(sys.argv[2],"w",zipfile.ZIP_DEFLATED,compresslevel=9); [z.write(p,p.relative_to(root.parent).as_posix()) for p in sorted(root.rglob("*")) if p.is_file()]; z.close()', source, archive], { stdio: 'inherit' });
     components.push({ id, label, description, environment, archiveName, sha256: fileDigest(archive), bytes: statSync(archive).size, downloadUrl: baseUrl ? `${baseUrl}/${archiveName}` : null });
@@ -108,28 +108,14 @@ if (packageProfile === 'full') {
   writeFileSync(path.join(componentRoot, 'SHA256SUMS-components.txt'), components.map(component => `${component.sha256}  ${component.archiveName}`).join('\n') + '\n');
 }
 const icon = path.join(root, 'apps/desktop/assets/langju-agent.ico');
-const exe = ResEdit.NtExecutable.from(readFileSync(path.join(appDir, 'electron.exe')), { ignoreCert: true });
-const resources = ResEdit.NtExecutableResource.from(exe);
-const icons = ResEdit.Data.IconFile.from(readFileSync(icon));
-for (const group of ResEdit.Resource.IconGroupEntry.fromEntries(resources.entries)) ResEdit.Resource.IconGroupEntry.replaceIconsForResource(resources.entries, group.id, group.lang, icons.icons.map(item => item.data));
-for (const version of ResEdit.Resource.VersionInfo.fromEntries(resources.entries)) {
-  version.setFileVersion(...pkg.version.split('.').map(Number), 0);
-  version.setProductVersion(...pkg.version.split('.').map(Number), 0);
-  for (const language of version.getAvailableLanguages()) version.setStringValues(language, {
-    FileDescription: pkg.productName, ProductName: pkg.productName, CompanyName: '灵矩绘境',
-    OriginalFilename: 'LangjuAgent.exe', InternalName: 'LangjuAgent',
-  });
-  version.outputToResourceEntries(resources.entries);
-}
-resources.outputResource(exe);
-writeFileSync(path.join(appDir, 'LangjuAgent.exe'), Buffer.from(exe.generate()));
+brandWindowsExecutable(path.join(appDir, 'electron.exe'), path.join(appDir, 'MxinspireX.exe'), icon, pkg);
 // Retain upstream license files, but only one executable launcher.
 rmSync(path.join(appDir, 'electron.exe'));
 for (const appearance of ['dark', 'light']) cpSync(path.join(root, `apps/desktop/assets/langju-agent-icon-${appearance}-1024.png`), path.join(appDir, `resources/langju-agent-icon-${appearance}-1024.png`));
 cpSync(icon, path.join(appDir, 'resources/langju-agent.ico'));
-writeFileSync(path.join(appDir, '使用说明.txt'), `MxinspireX ${pkg.version} · Windows x64${packageProfile === 'lite' ? ' 轻量版' : ''}\r\n\r\n完整解压本文件夹后，双击 LangjuAgent.exe 即可使用。不要单独移动 exe。\r\n${packageProfile === 'lite' ? 'CAD 与本地音视频处理可在“设置 → 能力组件”中按需安装；其它功能无需额外运行环境。' : '无需安装 Python、Node.js 或 FFmpeg。'}首次使用请在设置中填写自己的 API 地址与 Key。\r\n项目保存在“文档\\Langju Design Studio”（旧工作区会继续沿用）；Key 保存在当前用户的 Windows 凭据管理器。\r\n退出应用后再移动文件夹或升级。卸载安装版不会删除项目和个人配置。\r\n`);
+writeFileSync(path.join(appDir, '使用说明.txt'), `MxinspireX ${pkg.version} · Windows x64${packageProfile === 'lite' ? ' 轻量版' : ''}\r\n\r\n完整解压本文件夹后，双击 MxinspireX.exe 即可使用。不要单独移动 exe。\r\n${packageProfile === 'lite' ? 'CAD 与本地音视频处理可在“设置 → 能力组件”中按需安装；其它功能无需额外运行环境。' : '无需安装 Python、Node.js 或 FFmpeg。'}首次使用请在设置中填写自己的 API 地址与 Key。\r\n项目保存在“文档\\Langju Design Studio”（旧工作区会继续沿用）；Key 保存在当前用户的 Windows 凭据管理器。\r\n退出应用后再移动文件夹或升级。卸载安装版不会删除项目和个人配置。\r\n`);
 writeFileSync(path.join(appDir, 'BUILD-METADATA.json'), JSON.stringify({ version: pkg.version, packageProfile, platform: 'win32', arch: 'x64', electronVersion, pythonVersion, generatedAt: new Date().toISOString(), sourceDigest: runtimeSourceDigest(root), workerDigest: fileDigest(path.join(api, 'app', workerName)), signing: 'unsigned' }, null, 2));
-const prefix = `LangjuAgent-${pkg.version}-${packageProfile === 'lite' ? 'lite-' : ''}windows-x64`;
+const prefix = `MxinspireX-${pkg.version}-${packageProfile === 'lite' ? 'lite-' : ''}windows-x64`;
 const zip = path.join(output, `${prefix}-portable.zip`);
 execFileSync(hostPython, ['-c', 'import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); z=zipfile.ZipFile(sys.argv[2],"w",zipfile.ZIP_DEFLATED,compresslevel=6); [z.write(p,p.relative_to(root.parent).as_posix()) for p in sorted(root.rglob("*")) if p.is_file()]; z.close()', appDir, zip], { stdio: 'inherit' });
 const installer = path.join(output, `${prefix}-setup.exe`);

@@ -1,4 +1,4 @@
 interface:
-  display_name: "景区导览系统设计"
-  short_description: "按真实点位与路线设计景区地图、导向标识、牌型规范及场景效果"
-  default_prompt: "用 $scenic-wayfinding-design 为景区制作导览地图和一套导视牌。"
+  display_name: "空间导览与导视设计"
+  short_description: "按真实点位与路线设计空间地图、导向标识、牌型规范及场景效果"
+  default_prompt: "用 $scenic-wayfinding-design 为空间项目制作导览地图和一套导视牌。"

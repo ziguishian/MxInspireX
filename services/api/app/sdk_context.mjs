@@ -161,6 +161,7 @@ export function selectProjectFrame(frame, budget) {
     attachments:budgeted(frame.attachments,budget*.08),
     outcomes:budgeted((frame.outcomes||[]).slice(-3),budget*.1),
     localKnowledge:budgeted((frame.localKnowledge||[]).slice(0,3),budget*.1),
+    ...(frame.promptTemplates ? {promptTemplates:budgeted(frame.promptTemplates,budget*.2)} : {}),
     notice:frame.notice,
   };
 }
@@ -203,10 +204,11 @@ export function prepareModelInput(modelData, { frame, skills, memory, singleImag
   const localCompacted = !compactedWindow && localBeforeTokens > 12000;
   const maxChars = Math.max(0, Math.min(known ? (localCompacted ? 8000 : 12000) : (localCompacted ? 8000 : 12000), capacity));
   const frameBudget = Math.min(10000, Math.floor(maxChars*.5));
-  const selectedFrame = singleImage && frame ? singleImageFrame(frame) : selectProjectFrame(frame,frameBudget);
+  const literalFrame = frame?.nodePrompt?.version === 1;
+  const selectedFrame = literalFrame ? frame : singleImage && frame ? singleImageFrame(frame) : selectProjectFrame(frame,frameBudget);
   // Control state must remain complete even when long design prose is trimmed.
   const {execution,scope,...frameContent} = selectedFrame || {};
-  const frameText = selectedFrame ? JSON.stringify({...JSON.parse(boundedJson(frameContent, frameBudget)),...(execution ? {execution} : {}),...(scope ? {scope} : {})}) : '';
+  const frameText = literalFrame ? JSON.stringify(selectedFrame) : selectedFrame ? JSON.stringify({...JSON.parse(boundedJson(frameContent, frameBudget)),...(execution ? {execution} : {}),...(scope ? {scope} : {})}) : '';
   localBeforeTokens += frameText.length;
   const sentFrame = frameText ? JSON.parse(frameText) : undefined;
   // Large *completed* tool bodies remain in canonical Session/asset storage.

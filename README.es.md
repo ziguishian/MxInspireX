@@ -7,7 +7,7 @@
 [![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
-MxinspireX es un **espacio de trabajo de diseño con IA** creado por 灵矩绘境 para profesionales del diseño, equipos de proyectos culturales y creativos, y creadores de productos. Convierte requisitos y materiales de referencia en diseños que puedes seguir editando, comparar y exportar.
+MxinspireX es un **espacio de trabajo de diseño con IA** creado por 灵矩绘境 para profesionales del diseño, equipos creativos de distintos sectores, y creadores de productos. Convierte requisitos y materiales de referencia en diseños que puedes seguir editando, comparar y exportar.
 
 Sube imágenes de productos, materiales de marca o documentos y explica lo que necesitas con tus propias palabras. El agente utiliza el contexto del proyecto para llamar a los modelos y reúne conceptos de producto, envases, carteles, personajes e imágenes de ambientes en un mismo lienzo infinito. Puedes continuar la conversación para hacer cambios o conectar nodos para usar textos e imágenes anteriores como referencias en la siguiente generación.
 

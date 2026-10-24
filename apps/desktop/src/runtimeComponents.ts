@@ -140,7 +140,7 @@ export class RuntimeComponentManager {
     const result = await dialog.showOpenDialog({
       title: `选择“${component.label}”能力包`,
       properties: ['openFile'],
-      filters: [{ name: '朗居能力包', extensions: ['zip'] }],
+      filters: [{ name: 'MxinspireX 能力包', extensions: ['zip'] }],
     });
     return result.canceled ? null : result.filePaths[0] || null;
   }

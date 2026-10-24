@@ -41,7 +41,7 @@ if (!process.versions.electron) {
         await js(`reset(${JSON.stringify(kind)})`);
         await js('select()');
         await wait('!!document.querySelector(".canvas-prompt-panel textarea")');
-        await js(`(() => {const input=document.querySelector('.canvas-prompt-panel textarea');input.value='node composer ${kind}';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+        await js(`(() => {const input=document.querySelector('.canvas-prompt-panel textarea');input.value='  node composer ${kind}\\n';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
         await wait('!document.querySelector(".prompt-submit").disabled');
         assert.match(await js('document.querySelector(".prompt-delivery-summary").textContent'), /本次生成：1 项/);
         const before = await js('generated.length');
@@ -49,6 +49,7 @@ if (!process.versions.electron) {
         await wait(`generated.length === ${before + 1}`);
         const event = await js('JSON.parse(JSON.stringify(generated.at(-1)))');
         assert.equal(event[0], kind === 'upload' ? 'image' : kind);
+        assert.equal(event[1], `  node composer ${kind}\n`, 'submission must preserve whitespace and wording');
         assert.equal(event[3].canvasNodeId, 'primary');
         assert.equal(event[3].canvasProjectId, 'workspace-interaction-fixture');
         assert.deepEqual(event[3].reference_node_ids, []);
@@ -66,13 +67,14 @@ if (!process.versions.electron) {
       await js(`state.board={...state.board,edges:[{id:'reference',source:'neighbor',target:'primary',sourceHandle:'output',targetHandle:'input'}]}; void 0;`);
       await js('select()');
       await wait('!!document.querySelector(".canvas-prompt-panel textarea")');
+      await wait('document.querySelector(".canvas-prompt-panel textarea").value.includes("参考内容")');
       await js(`(() => {const input=document.querySelector('.canvas-prompt-panel textarea');input.value='follow connected text';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
       await wait('!document.querySelector(".prompt-submit").disabled');
       await js(`document.querySelector('.prompt-submit').click()`);
       await wait('generated.length === 8');
       const linked = await js('JSON.parse(JSON.stringify(generated.at(-1)))');
       assert.deepEqual(linked[3].reference_node_ids, ['neighbor']);
-      assert.ok(linked[1].includes('参考内容'));
+      assert.equal(linked[1], 'follow connected text', 'explicitly deleted upstream text must not be restored at submission');
       assert.match(await js('document.querySelector(".prompt-delivery-summary").textContent'), /含上游文字/);
       results.push({kind:'text-to-image', params:linked[3], prompt:linked[1]});
       for (const kind of ['video', 'image']) {

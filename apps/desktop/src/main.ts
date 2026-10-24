@@ -32,6 +32,8 @@ app.on('second-instance', () => {
   window?.show(); window?.focus();
 });
 const APP_NAME = 'MxinspireX';
+// Match the existing installer identity; changing it would split pinned shortcuts.
+if (process.platform === 'win32') app.setAppUserModelId('com.aicreativestudio.desktop');
 // The desktop entry is compiled to dist/desktop in development and is kept
 // under the app root in a packaged build. In both cases two levels up is the
 // project root that contains services/api and dist/renderer.
@@ -111,7 +113,7 @@ function appIconPath(appearance: AppAppearance = currentAppAppearance()) {
   // versions. The ICNS remains declared in the bundle's Info.plist for
   // Finder/Stage Manager; the Dock API receives the matching PNG variant.
   const variant = `langju-agent-icon-${appearance}-1024.png`;
-  const candidates = app.isPackaged
+  const candidates = !isDev
     ? [path.join(process.resourcesPath, variant)]
     : [
         path.join(projectRoot, 'apps', 'desktop', 'assets', variant),
@@ -474,7 +476,7 @@ async function pollScheduleNotifications() {
     if (!response.ok) return;
     const notices = await response.json() as Array<{ id: string; title: string; body: string; projectId?: string | null }>;
     for (const notice of notices) {
-      const notification = new Notification({ title: notice.title, body: notice.body.slice(0, 240) });
+      const notification = new Notification({ title: notice.title, body: notice.body.slice(0, 240), icon: appIconPath() });
       notification.on('click', () => {
         let target = visibleWindows()[0];
         if (!target) { createWindow(); target = visibleWindows()[0]; }

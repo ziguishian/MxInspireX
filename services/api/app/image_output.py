@@ -26,6 +26,8 @@ def reject_svg_output(content: bytes, *, transparent_requested: bool = False):
 def prepare_image_output(prompt: str, params: dict[str, Any], *, background: str | None = None,
                          source_transparent: bool = False) -> tuple[str, dict[str, Any]]:
     options = dict(params)
+    from .node_prompt import literal_prompt
+    literal = literal_prompt.get()
     # Send a real raster format to the provider instead of relying on its
     # default. Reject unsupported formats before submitting a paid request.
     output_format = str(options.get('output_format') or 'png').strip().lower()
@@ -35,11 +37,11 @@ def prepare_image_output(prompt: str, params: dict[str, Any], *, background: str
     options['output_format'] = output_format
     # Explicit node settings take precedence over the Agent's inferred choice.
     choice = options.get("background")
-    if choice in (None, "", "auto"):
+    if choice in (None, "", "auto") and not literal:
         choice = background or choice
     if choice not in (None, "", "auto", "opaque", "transparent"):
         raise ValueError("图像背景必须为 auto、opaque 或 transparent")
-    if choice in (None, "", "auto"):
+    if choice in (None, "", "auto") and not literal:
         # A fallback for older tool callers; the SDK also has a typed field.
         # Inspect this image's prompt only, never an entire conversation.
         transparent = re.search(r"透明(?:的)?(?:背景|底[图色]?|图层)|(?:背景|底[图色]?)\s*(?:为|是|设为|设置为|改成)?\s*透明|(?:fully\s+)?transparent\s+(?:background|layer)|alpha\s+background", prompt, re.I)
@@ -52,10 +54,12 @@ def prepare_image_output(prompt: str, params: dict[str, Any], *, background: str
         options["background"] = choice
     if choice == "transparent":
         if str(options.get("output_format", "")).lower() not in {"png", "webp"}:
+            if literal:
+                raise ValueError('透明背景需要 PNG 或 WebP，请修改输出格式。')
             options["output_format"] = "png"
         # Text describes the desired pixels; the API field requests real alpha.
         constraint = "输出真实透明背景，保留干净的 alpha 边缘；不要绘制棋盘格或添加实色背景。"
-        if constraint not in prompt:
+        if not literal and constraint not in prompt:
             prompt += "\n" + constraint
     if str(options.get("output_format") or "png").lower() == "png":
         options.pop("output_compression", None)

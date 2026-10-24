@@ -7,8 +7,8 @@ import { pathToFileURL } from 'node:url';
 import { createServer } from 'node:net';
 
 const app = path.resolve(process.argv[2]);
-const windows = existsSync(path.join(app, 'LangjuAgent.exe'));
-const executable = path.join(app, windows ? 'LangjuAgent.exe' : 'Contents/MacOS/LangjuAgent');
+const windows = existsSync(path.join(app, 'MxinspireX.exe'));
+const executable = path.join(app, windows ? 'MxinspireX.exe' : 'Contents/MacOS/MxinspireX');
 const worker = path.join(app, windows ? 'resources/app/services/api/app/openai_agent_worker.mjs' : 'Contents/Resources/app/services/api/app/openai_agent_worker.mjs');
 const temp = mkdtempSync(path.join(tmpdir(), 'langju-release-check-'));
 const env = { ...process.env, AICS_TEST_MODE: '1', AICS_WORKSPACE_ROOT: path.join(temp, 'workspace') };

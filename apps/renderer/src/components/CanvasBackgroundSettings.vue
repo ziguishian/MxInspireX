@@ -1,13 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { canvasBackground, saveCanvasBackground, type CanvasBackground } from '../features/canvasBackground';
+import { prepareCanvasBackgroundImage } from '../features/canvasBackgroundImage';
 const error = ref('');
-function save(patch: Partial<CanvasBackground>) { try { saveCanvasBackground({...canvasBackground,...patch});error.value=''; } catch {error.value='保存失败，本地存储空间不足，请换用较小的图片。';} }
+const processing = ref(false);
+const saved = ref(false);
+const fileInput = ref<HTMLInputElement>();
+function chooseImage() {
+  error.value = '';
+  const input = fileInput.value;
+  if (!input) return;
+  // Open synchronously from the button gesture; do not rely on label activation
+  // of a one-pixel transparent control inside the desktop window.
+  try {
+    if (typeof input.showPicker === 'function') input.showPicker();
+    else input.click();
+  } catch {
+    error.value = '无法打开文件选择窗口，请再次点击上传。';
+  }
+}
+function save(patch: Partial<CanvasBackground>) { try { saveCanvasBackground({...canvasBackground,...patch});error.value='';saved.value=true; } catch {saved.value=false;error.value='保存失败，本地存储空间不足。原背景已保留，请清理应用存储空间后重试。';} }
 async function upload(event: Event) {
   const input=event.target as HTMLInputElement, file=input.files?.[0]; input.value=''; if(!file)return;
-  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>2*1024*1024){error.value='请选择 2 MB 以内的 PNG、JPEG 或 WebP 图片。';return;}
-  try { const image=await createImageBitmap(file);image.close();const reader=new FileReader();reader.onerror=()=>{error.value='图片读取失败';};reader.onload=()=>save({image:String(reader.result)});reader.readAsDataURL(file); }
-  catch {error.value='图片无法解码，请更换文件。';}
+  if (processing.value) return;
+  processing.value=true;error.value='';saved.value=false;
+  try { save({image:await prepareCanvasBackgroundImage(file)}); }
+  catch (cause) { error.value=cause instanceof Error ? cause.message : '图片读取失败，请重试。'; }
+  finally { processing.value=false; }
 }
 </script>
 <template>
@@ -24,8 +43,11 @@ async function upload(event: Event) {
     <div class="background-image-row">
       <div class="background-image-actions">
         <strong>背景图片</strong>
-        <label class="background-upload">{{ canvasBackground.image ? '更换背景图片' : '上传背景图片' }}<input type="file" accept="image/png,image/jpeg,image/webp" @change="upload" /></label>
-        <button v-if="canvasBackground.image" type="button" class="background-remove" @click="save({image:''})">移除图片</button>
+        <button type="button" class="background-upload" :disabled="processing" @click="chooseImage" @keydown.enter.prevent="chooseImage" @keydown.space.prevent="chooseImage">{{ processing ? '正在处理图片…' : canvasBackground.image ? '更换背景图片' : '上传背景图片' }}</button>
+        <input ref="fileInput" class="background-file-input" type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择画布背景图片" tabindex="-1" @change="upload" />
+        <button v-if="canvasBackground.image" type="button" class="background-remove" :disabled="processing" @click="save({image:''})">移除图片</button>
+        <p v-if="error" class="background-feedback" role="alert">{{ error }}</p>
+        <p v-else-if="processing || saved" class="background-feedback" role="status">{{ processing ? '正在处理并保存背景图片…' : '已保存，进入项目画布即可查看。' }}</p>
       </div>
       <div class="background-image-thumbnail">
         <span class="appearance-mini background-preview">
@@ -35,8 +57,7 @@ async function upload(event: Event) {
         <small>图片预览</small>
       </div>
     </div>
-    <p v-if="error" role="alert">{{ error }}</p>
-    <small>自动保存 · 仅用于画布背景，不作为生成参考。</small>
+    <small>支持 20 MB 以内的 PNG、JPEG、WebP，会自动缩放压缩并在本机保存。仅用于画布背景，不作为生成参考。</small>
   </section>
 </template>
 <style scoped>
@@ -48,10 +69,12 @@ async function upload(event: Event) {
 .background-pattern.dots { background-image:radial-gradient(circle,var(--workspace-grid-color) 1px,transparent 1px); background-size:10px 10px; }
 .background-image-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:16px; border-top:1px solid var(--theme-border); }
 .background-image-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+.background-feedback { flex-basis:100%; margin:0; font-size:var(--ui-font-caption); }
+.background-feedback[role="alert"] { color:var(--theme-status-red); }
 .background-upload,.background-remove { padding:8px 14px; border:1px solid var(--theme-border); border-radius:10px; background:var(--theme-bg); color:var(--theme-text); cursor:pointer; font-size:var(--ui-font-control); }
-.background-upload:focus-within { outline:2px solid var(--theme-accent); outline-offset:2px; }
-.background-upload { position:relative; }
-.background-upload input { position:absolute; width:1px; height:1px; opacity:0; }
+.background-upload:focus-visible { outline:2px solid var(--theme-accent); outline-offset:2px; }
+.background-upload,.background-remove { -webkit-app-region:no-drag; }
+.background-file-input { display:none; }
 .background-image-thumbnail { box-sizing:border-box; flex:0 0 96px; width:96px; padding:7px; text-align:center; }
 .background-image-thumbnail img { width:100%; height:100%; object-fit:cover; }
 .background-image-thumbnail small { display:block; margin-top:6px; font-size:var(--ui-font-caption); }

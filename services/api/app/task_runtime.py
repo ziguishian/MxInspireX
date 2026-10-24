@@ -171,6 +171,13 @@ class TaskRuntime:
         raw_input['taskSurface'] = task_surface
         if task_surface == 'canvas_node':
             raw_input['canvasNodeId'] = canvas_node_id
+            if isinstance(raw_input.get('nodePrompt'), dict) and raw_input['nodePrompt'].get('version') == 1:
+                node_prompt = raw_input['nodePrompt']
+                if not isinstance(node_prompt.get('submitted'), str) or not node_prompt['submitted'].strip():
+                    raise ValueError('节点提示词不能为空')
+                if node_prompt['submitted'] != brief:
+                    raise ValueError('节点提交提示词与任务输入不一致')
+                raw_input['nodePrompt'] = {'version': 1, 'original': str(node_prompt.get('original', brief)), 'submitted': brief}
             canvas_params['canvasNodeId'] = canvas_node_id
             raw_input['canvasParams'] = canvas_params
         if _replaces is not None:
@@ -623,6 +630,7 @@ class TaskRuntime:
             constraints['skillManagement'] = is_skill_management(brief, constraints)
             constraints['skillCreationRequired'] = is_skill_creation(brief, constraints)
             simple_conversation = row["agent_key"] == "design" and is_simple_conversation(brief, constraints)
+            constraints['simpleConversation'] = simple_conversation
             from .conversation_context import ConversationContext
             from .task_focus import TaskFocus
             from .canvas import CanvasStore
@@ -694,7 +702,7 @@ class TaskRuntime:
                 constraints['memoryProtocol'] = 1
             retrieved_context = []
             from .task_policy import execution_flow
-            needs_research = not simple_conversation and focus['mode']=='none' and execution_flow(brief,constraints)=='research_design'
+            needs_research = input_data.get('taskSurface') != 'canvas_node' and not simple_conversation and focus['mode']=='none' and execution_flow(brief,constraints)=='research_design'
             if self.knowledge_store and needs_research:
                 hits = self.knowledge_store.vector_search_for_project(project_id=row["project_id"], query=brief, limit=4)
                 retrieved_context = [f"{hit['title']} · {hit['locator']}: {hit['text']}" for hit in hits]
@@ -707,12 +715,20 @@ class TaskRuntime:
             for key in ("conversation", "priorAgentOutputs", "userMessage"):
                 constraints.pop(key, None)
             prior_outputs = []
+            from .prompt_templates import retrieve_templates
+            retrieve_templates(self.store.workspace_root, brief, constraints,
+                lambda phase, message: self._append_trace(task_id, phase, message))
+            if constraints.get('promptTemplates'):
+                with self.store._connect() as template_db:
+                    saved = json.loads(template_db.execute('SELECT input_json FROM tasks WHERE id=?', (task_id,)).fetchone()[0])
+                    saved['promptTemplates'] = constraints['promptTemplates']
+                    template_db.execute('UPDATE tasks SET input_json=? WHERE id=?', (json.dumps(saved, ensure_ascii=False), task_id))
             constraints["conversationContext"] = conversation_context
             self._append_trace(task_id, "context", f"已恢复当前对话：{conversation_context['historyTurnCount']} 轮记录")
             self._append_trace(task_id, "agent", "正在调用 Agent 生成结构化结果")
             # Let the Agent assess missing requirements before presenting visual
             # references. Generation tools still enforce the reference gate.
-            if self.reference_registry:
+            if self.reference_registry and input_data.get('taskSurface') != 'canvas_node':
                 from .reference_workflow import ReferenceWorkflow
                 constraints['referenceWorkflow'] = ReferenceWorkflow(self.store, self.asset_store).use_attachments(self.reference_registry, row['project_id'], task_id, attachments)
             from .task_timing import record_timing
@@ -740,6 +756,13 @@ class TaskRuntime:
             if self._stopping.is_set():
                 return self._pause_for_restart(row)
             from .delivery_findings import annotate_delivery, findings_summary
+            if input_data.get('taskSurface') != 'canvas_node':
+                with self.store._connect() as prompt_db:
+                    events = json.loads(prompt_db.execute('SELECT trace_json FROM tasks WHERE id=?', (task_id,)).fetchone()[0] or '[]')
+                prompts = list(dict.fromkeys(event['message'] for event in events if event.get('phase') == 'generation_prompt'))
+                if prompts:
+                    answer = result.structured_data.get('answer', '')
+                    result.structured_data['answer'] = '\n\n'.join([*(p for p in prompts if p not in answer), answer])
             annotate_delivery(result.structured_data)
             output = {
                 "status": result.status,
@@ -1054,7 +1077,9 @@ class TaskRuntime:
                     trace = [entry for entry in trace if entry.get("phase") != "text"]
                 if phase == 'generation' and trace and trace[-1].get('phase') == 'generation':
                     trace.pop()
-                entry = {"at": utc_now(), "phase": str(phase), "message": str(message)[:64000 if phase in {'text','narration'} else 1000]}
+                entry = {"at": utc_now(), "phase": str(phase), "message": str(message)[:64000 if phase in {'text','narration','generation_prompt'} else 1000]}
+                if phase == 'generation_prompt' and isinstance(data, dict):
+                    entry['data'] = {'templateIds': data.get('templateIds', [])}
                 if isinstance(data, dict) and phase in {'model_call','recovery_attempt','retry','context_compaction','context_manifest','stage_timing'}:
                     allowed = {
                         'sequence','agentRound','stage','role','model','inputTokens','outputTokens','estimatedInputTokens','latencyMs','durationMs',
@@ -1069,7 +1094,7 @@ class TaskRuntime:
                 trace.append(entry)
                 # Tool traffic must not evict the current streamed message or
                 # public explanation while a long generation is still running.
-                retained = {index for phase_set,limit in [({'text'},1),({'progress','narration'},24)]
+                retained = {index for phase_set,limit in [({'text'},1),({'progress','narration'},24),({'generation_prompt'},50)]
                             for index in [i for i,e in enumerate(trace) if e.get('phase') in phase_set][-limit:]}
                 # Keep complete bounded counters across refresh/reconnect while
                 # ordinary diagnostic events continue to use a rolling tail.
@@ -1188,6 +1213,9 @@ class TaskRuntime:
         return normalized
 
     def _resolve_text_provider(self, input_data: dict[str, Any]):
+        from .node_prompt import is_literal
+        if is_literal(input_data) and (input_data.get('canvasParams') or {}).get('kind') in {'image', 'upload', 'video', 'audio'}:
+            return None, input_data.get('textProvider') or {'key': 'openai-compatible'}
         raw = input_data.get("textProvider")
         if not isinstance(raw, dict):
             if os.environ.get("AICS_TEST_MODE") == "1":

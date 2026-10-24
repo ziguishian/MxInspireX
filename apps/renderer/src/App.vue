@@ -58,7 +58,7 @@ import { useWorkspaceNavigation } from './features/navigation/useWorkspaceNaviga
 import { createTaskQueue, type QueueTask } from './features/taskQueue';
 import { canDispatchQueue, createQueueMessage, moveQueueItem, shouldAdvanceQueue, queuePauseReason, queueTaskResult, supplementUnavailableReason, queueItemCanStart, type QueuedComposerMessage } from './features/messageQueue';
 
-import { ArrowUp, House, Wrench, BookOpen, Bot, Box, CircleHelp, ClipboardList, Clock3, ChevronDown, ChevronRight, ChevronUp, FileText, Folder, GripVertical, Images, ListPlus, LoaderCircle, Monitor, Sun, Moon, Palette, Paperclip, Pencil, Play, Settings2, Square as StopIcon, Trash2, Upload, Volume2, X } from 'lucide-vue-next';
+import { ArrowUp, House, Wrench, Spline, BookOpen, Bot, Box, CircleHelp, ClipboardList, Clock3, ChevronDown, ChevronRight, ChevronUp, FileText, Folder, GripVertical, Images, ListPlus, LoaderCircle, Monitor, Sun, Moon, Palette, Paperclip, Pencil, Play, Settings2, Square as StopIcon, Trash2, Upload, Volume2, X } from 'lucide-vue-next';
 
 import type { Project, ProjectCreateInput } from '@contracts/project';
 
@@ -2623,8 +2623,7 @@ async function generateCanvasNode(kind: 'image' | 'video' | 'audio' | 'text' | '
   const project = params.canvasProjectId ? projects.value.find(item => item.id === params.canvasProjectId) : activeProject.value;
   const { canvasProjectId: _projectId, ...generationParams } = params;
   if (!project || !prompt.trim()) return;
-  const labels = { image: '图像', video: '视频', audio: '音频', text: '文本', html: '网页 HTML', cad: 'CAD 模型', upload: '图像' };
-  return await runCanvasNodeTask(project, `请在当前空白画布节点中生成${labels[kind]}。\n用户提示词：${prompt}`, { ...generationParams, kind });
+  return await runCanvasNodeTask(project, prompt, { ...generationParams, kind });
 }
 
 async function patchCanvasNodeTaskState(projectId: string, nodeId: string, data: Record<string, any>) {
@@ -2683,12 +2682,13 @@ async function submitCanvasNodeTask(project: Project, message: string, canvasPar
   let submitted = false;
   try {
     const previousError = errorMessage.value;
-    const providerReady = await ensureTextProvider();
+    const providerReady = ['image', 'upload', 'video', 'audio'].includes(canvasParams.kind) || await ensureTextProvider();
     const providerError = errorMessage.value;
     errorMessage.value = previousError;
     if (!providerReady) throw new Error(providerError || '请先配置文本模型');
     const input = {
       taskSurface: 'canvas_node', canvasNodeId: nodeId,
+      nodePrompt: { version: 1, original: canvasParams.originalPrompt ?? message, submitted: message },
       referencedSkills: [],
       referencedAssets: (canvasParams.reference_asset_ids || []).map((id: string) => ({ id, projectId: project.id })),
       referencedNodes: [...new Set<string>((canvasParams.reference_node_ids || []) as string[])].map(id => ({ id, projectId: project.id })),
@@ -2760,7 +2760,7 @@ function showDesignTask(projectId: string, task: TaskRecord, animateReply = fals
   if (activeProjectId.value !== projectId) return;
   upsertTaskRecord(projectId, task);
   designConversation.value = replaceConversationTurn(designConversation.value, task);
-  designProgress.value = [...(task.trace || [])].reverse().find((event) => event.phase !== 'text')?.message || '正在分析…';
+  designProgress.value = [...(task.trace || [])].reverse().find((event) => !['text', 'generation_prompt'].includes(event.phase || ''))?.message || '正在分析…';
   const existingMessage = designConversation.value.find((item) => item.role === 'assistant' && item.taskId === task.id);
   let content = designLiveText(task.trace, task.output?.structured_data?.answer, existingMessage?.content);
   if (task.status === 'succeeded') content = designTaskReply(task);
@@ -3674,7 +3674,7 @@ onUnmounted(() => {
     <section class="workspace-grid">
       <nav v-if="workspaceView !== 'design-agent'" class="top-left-nav-card" :style="{ '--nav-count': sidebarNavItems.length + 2 }" aria-label="工作台导航">
         <button class="sidebar-nav-item brand-home-button" :class="{ active: workspaceView === 'intake' }" type="button" aria-label="返回首页" @click="startNewIntake(); router.push('/')"><span class="nav-icon" aria-hidden="true"><House :size="18" :stroke-width="1.7" /></span><strong>首页</strong></button>
-        <button v-for="(item, index) in sidebarNavItems" :key="item.key" :style="{ '--nav-index': index + 1 }" class="sidebar-nav-item" :class="{ active: workspaceView !== 'settings' && sidebarSection === item.key }" :aria-label="item.label" @click="navigateSidebar(item.key)"><span class="nav-icon" aria-hidden="true"><Clock3 v-if="item.key === 'schedules'" :size="17" :stroke-width="1.7" /><Folder v-else-if="item.key === 'projects'" :size="17" :stroke-width="1.7" /><Images v-else-if="item.key === 'assets'" :size="17" :stroke-width="1.7" /><Wrench v-else-if="item.key === 'skills'" :size="17" :stroke-width="1.7" /><BookOpen v-else :size="17" :stroke-width="1.7" /></span><strong>{{ item.label }}</strong><i v-if="item.key === 'schedules' && scheduleUnreadCount" class="schedule-nav-badge">{{ scheduleUnreadCount > 99 ? '99+' : scheduleUnreadCount }}</i></button>
+        <button v-for="(item, index) in sidebarNavItems" :key="item.key" :style="{ '--nav-index': index + 1 }" class="sidebar-nav-item" :class="{ active: workspaceView !== 'settings' && sidebarSection === item.key }" :aria-label="item.label" @click="navigateSidebar(item.key)"><span class="nav-icon" aria-hidden="true"><Clock3 v-if="item.key === 'schedules'" :size="17" :stroke-width="1.7" /><Folder v-else-if="item.key === 'projects'" :size="17" :stroke-width="1.7" /><Images v-else-if="item.key === 'assets'" :size="17" :stroke-width="1.7" /><Wrench v-else-if="item.key === 'skills'" :size="17" :stroke-width="1.7" /><Spline v-else-if="item.key === 'workflows'" :size="17" :stroke-width="1.7" /><BookOpen v-else :size="17" :stroke-width="1.7" /></span><strong>{{ item.label }}</strong><i v-if="item.key === 'schedules' && scheduleUnreadCount" class="schedule-nav-badge">{{ scheduleUnreadCount > 99 ? '99+' : scheduleUnreadCount }}</i></button>
 
       </nav>
       <div class="top-left-profile-wrap">
@@ -3783,7 +3783,7 @@ onUnmounted(() => {
     <div v-if="isCreating" class="modal-backdrop" @click.self="isCreating = false">
       <form class="modal" @submit.prevent="createProject">
         <div class="modal-header"><div><p class="eyebrow">NEW PROJECT</p><h2>创建设计项目</h2></div><button type="button" class="icon-button" @click="isCreating = false">×</button></div>
-        <label>项目名称<input v-model="form.name" autofocus placeholder="例如：船舶客舱体验设计方案" /></label>
+        <label>项目名称<input v-model="form.name" autofocus placeholder="例如：品牌视觉与产品包装设计" /></label>
         <label>项目 Brief<textarea v-model="form.brief" rows="4" placeholder="目标、预算、数量、客群或任何已知约束"></textarea></label>
         <div class="form-row"><label>预算（分）<input v-model.number="form.budgetMinor" type="number" min="0" placeholder="15000000" /></label><label>币种<select v-model="form.currency"><option>CNY</option><option>USD</option><option>EUR</option></select></label></div>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -3863,7 +3863,7 @@ onUnmounted(() => {
         <ModelRouterSettings v-else-if="settingsTab === 'routing'" :api-base-url="apiBaseUrl" />
         <section v-else-if="settingsTab === 'appearance'" class="settings-pane"><AppearanceSettings v-model="themeMode" :resolved="resolvedTheme" /><label class="settings-switch toggle-control"><input v-model="reduceAnimations" type="checkbox" role="switch" /><span class="toggle-track" /><span>减少动画 <small>MxinspireX保持静止表情，减少画布和对话中的装饰动画；也尊重系统设置</small></span></label><label class="settings-switch toggle-control"><input v-model="allowExternalNetwork" type="checkbox" role="switch" /><span class="toggle-track" /><span>允许联网研究 <small>Agent 可调用 OpenAI 联网搜索并提供来源，可随时关闭</small></span></label><MascotSettings :provider="taskMediaProvider('image')" :model-options="imageModelOptions" /><button type="button" class="about-link" @click="switchSettingsTab('about')">关于灵矩绘境 →</button></section>
         <section v-else-if="settingsTab === 'components'" class="settings-pane runtime-components-pane"><LocalCapabilities /><div class="provider-config-heading"><span>按需能力组件</span><small>只在使用时安装，不包含项目或个人数据</small></div><article v-for="component in runtimeComponents" :key="component.id" class="runtime-component-card"><div class="runtime-component-icon"><Box :size="18" /></div><div><strong>{{ component.label }}</strong><p>{{ component.description }}</p><small>{{ formatComponentSize(component.bytes) }} · {{ component.installed ? '已安装' : component.available ? '可在线下载' : '从能力包安装' }}</small></div><button type="button" :disabled="component.installed || !!runtimeComponentLoading" @click="installRuntimeComponent(component)">{{ component.installed ? '已安装' : runtimeComponentLoading === component.id ? '安装中…' : '按需安装' }}</button></article><p v-if="runtimeComponentMessage" class="runtime-component-message" role="status">{{ runtimeComponentMessage }}</p></section>
-        <section v-else class="settings-pane about-pane" @click="handleAboutClick"><div class="about-mark"><img class="about-logo" :src="brandLogoSrc" alt="MxInspireX Logo" /></div><p class="eyebrow">MxinspireX · 灵矩绘境</p><h3>与你一起推进设计的 AI Agent</h3><p>MxinspireX 将需求理解、资料检索、视觉生成与画布编辑整合在同一个工作区。从品牌视觉、产品概念到内容设计，让想法形成方案，让方案持续迭代。</p><p>我们相信，设计始于人的观察与判断。AI 帮助探索可能、完成繁复工作，让创作者把精力留给想法与取舍。</p><p>以本地工作区保存创作过程，用可追溯的引用连接灵感与成果，让每一次修改都有来处，也有继续生长的空间。</p><p>由灵矩绘境研发，与设计师一起从探索走向交付。</p><button type="button" class="about-link" @click.stop="switchSettingsTab('help')">查看使用说明 →</button><p>联系邮箱：<a class="help-contact-link" href="mailto:ziguishian@foxmail.com">ziguishian@foxmail.com</a></p><p>开发者：<strong>AlexiShi</strong></p><small>版本 {{ appVersion }} · Beta 测试版</small><BetaTestingAbout :api-base-url="apiBaseUrl" /><div class="about-footer-meta"><span>© 2026 灵矩绘境 · MxinspireX</span><span>需求梳理 · 方案生成 · 持续迭代</span></div></section>
+        <section v-else class="settings-pane about-pane" @click="handleAboutClick"><div class="about-mark"><img class="about-logo" :src="brandLogoSrc" alt="MxinspireX Logo" /></div><p class="eyebrow">MxinspireX · 灵矩绘境</p><h3>与你一起推进设计的 AI Agent</h3><p>MxinspireX 将需求理解、资料检索、视觉生成与画布编辑整合在同一个工作区。从品牌视觉、产品概念到内容设计，让想法形成方案，让方案持续迭代。</p><p>我们相信，设计始于人的观察与判断。AI 帮助探索可能、完成繁复工作，让创作者把精力留给想法与取舍。</p><p>以本地工作区保存创作过程，用可追溯的引用连接灵感与成果，让每一次修改都有来处，也有继续生长的空间。</p><p>由灵矩绘境研发，与设计师一起从探索走向交付。</p><button type="button" class="about-link" @click.stop="switchSettingsTab('help')">查看使用说明 →</button><p>联系邮箱：<a class="help-contact-link" href="mailto:ziguishian@foxmail.com">ziguishian@foxmail.com</a></p><p>开发者：<strong>AlexiShi</strong></p><small>版本 {{ appVersion }} · Beta 测试版</small><BetaTestingAbout :api-base-url="apiBaseUrl" /><div class="about-footer-meta"><span>© 2026 灵矩绘境 · MxinspireX</span><span>需求梳理 · 方案生成 · 持续迭代</span></div></section>
         <p v-if="providerTestResult && settingsTab !== 'about'" class="provider-test-result" role="status" aria-live="polite">{{ providerTestResult }}</p><p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
         <div v-if="settingsTab !== 'about'" class="settings-page-actions"><button v-if="settingsTab === 'text'" type="submit" class="primary-button" :disabled="isSavingProvider || isDetectingModels">{{ isSavingProvider || isDetectingModels ? '同步并保存中…' : '保存并同步模型目录' }}</button><button v-else-if="settingsTab === 'appearance'" type="submit" class="primary-button">保存外观设置</button></div>
       </form>

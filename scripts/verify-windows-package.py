@@ -22,13 +22,13 @@ def machine_bytes(data, label):
 
 
 output = Path(sys.argv[1]).resolve()
-app = output/'windows-x64/LangjuAgent'
+app = output/'windows-x64/MxinspireX'
 api = app/'resources/app/services/api'
 python = api/'python'
 metadata = json.loads((app/'BUILD-METADATA.json').read_text())
 profile = metadata.get('packageProfile', 'full')
 assert metadata['arch'] == 'x64'
-assert machine(app/'LangjuAgent.exe') == 0x8664
+assert machine(app/'MxinspireX.exe') == 0x8664
 assert machine(python/'python.exe') == 0x8664
 assert (app/'resources/app/dist/renderer/index.html').is_file()
 assert (app/'resources/app/dist/desktop/preload.js').is_file()
@@ -89,7 +89,7 @@ assert not list(app.rglob('catalog.sqlite'))
 assert not list(app.rglob('.venv'))
 with zipfile.ZipFile(next(output.glob('*windows*x64*portable.zip'))) as archive:
     assert archive.testzip() is None
-    assert 'LangjuAgent/LangjuAgent.exe' in archive.namelist()
+    assert 'MxinspireX/MxinspireX.exe' in archive.namelist()
     assert not any(name.startswith('/') or '..' in Path(name).parts for name in archive.namelist())
 setup = next(output.glob('*windows*x64*setup.exe'))
 assert machine(setup) in (0x14c, 0x8664)

@@ -20,6 +20,13 @@ globalThis.fetch = async (url, options) => {
     return Response.json({status:'succeeded',outputKind:'html',node:{id:'html-node',data:{kind:'html',html}}});
   }
   const responses = String(url).endsWith('/responses'), first = round++ === 0;
+  if (first) {
+    const tools = body.tools.map(tool => tool.function || tool);
+    for (const name of ['canvas_create_html','design_plan','generate_image','generate_video','generate_audio','generate_text']) {
+      assert.ok(tools.some(tool=>tool.name===name), `Missing webpage tool: ${name}`);
+    }
+    assert.ok(tools.find(tool=>tool.name==='canvas_create_html').parameters.properties.style_framework);
+  }
   const chunk = (delta, finish_reason=null) => ({id:'fixture',object:'chat.completion.chunk',created:1,model:body.model,choices:[{index:0,delta,finish_reason}]});
   const call = {type:'function_call',id:'html-item',call_id:'html-call',name:'canvas_create_html',arguments:args,status:'completed'};
   const message = {type:'message',id:'message',role:'assistant',status:'completed',content:[{type:'output_text',text:'网页已保存到画布。',annotations:[]}]};

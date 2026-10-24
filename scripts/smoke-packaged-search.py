@@ -53,7 +53,7 @@ class Upstream(BaseHTTPRequestHandler):
 
 
 release = Path(sys.argv[1]).resolve()
-executable = release/'macos-arm64/朗居设计Agent.app/Contents/Resources/app/services/api/sidecar/aics-api/aics-api'
+executable = release/'macos-arm64/MxinspireX.app/Contents/Resources/app/services/api/sidecar/aics-api/aics-api'
 assert executable.is_file()
 workspace = Path(tempfile.mkdtemp(prefix='langju-search-package-'))
 upstream = ThreadingHTTPServer(('127.0.0.1', 0), Upstream)
@@ -66,7 +66,7 @@ log = (workspace/'api.log').open('wb')
 env = {**os.environ, 'AICS_WORKSPACE_ROOT': str(workspace), 'AICS_TEST_MODE': '1',
        'AICS_API_HOST': '127.0.0.1', 'AICS_API_PORT': str(port),
        'AICS_PROVIDER_KEY_OPENROUTER': 'fixture-only', 'AICS_PROVIDER_KEY_OPENAI_COMPATIBLE': 'fixture-only',
-       'AICS_NODE':str(release/'macos-arm64/朗居设计Agent.app/Contents/MacOS/LangjuAgent'), 'AICS_NODE_RUN_AS_NODE':'1',
+       'AICS_NODE':str(release/'macos-arm64/MxinspireX.app/Contents/MacOS/MxinspireX'), 'AICS_NODE_RUN_AS_NODE':'1',
        'NO_PROXY': '127.0.0.1,localhost', 'no_proxy': '127.0.0.1,localhost'}
 process = subprocess.Popen([str(executable), '--host', '127.0.0.1', '--port', str(port)], env=env, stdout=log, stderr=log)
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))

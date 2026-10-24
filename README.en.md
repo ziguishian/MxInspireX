@@ -7,7 +7,7 @@
 [![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
-MxinspireX is an **AI design workspace** by 灵矩绘境, built for designers, cultural and creative teams, and product creators. It turns briefs and reference materials into work you can refine, compare and export.
+MxinspireX is an **AI design workspace** by 灵矩绘境, built for designers, creative teams across industries, and product creators. It turns briefs and reference materials into work you can refine, compare and export.
 
 Upload product images, brand assets or documents and describe what you need in natural language. The agent uses your project context to call models and brings product concepts, packaging, posters, characters and scene images together on an infinite canvas. Continue the conversation to refine the results, or connect nodes to use upstream text and images as references for the next generation.
 

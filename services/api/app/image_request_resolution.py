@@ -53,7 +53,7 @@ def normalize_image_request(registry, project_id, task_id, name, arguments, bind
         check_canvas_inputs(registry.store, registry.canvas_store, project_id, task_id, context)
     except ValueError as error:
         raise ImageRequestError(str(error), code='reference_changed', field='reference_node_ids') from error
-    canvas_target = canvas.get('canvasNodeId') if canvas.get('kind') == 'image' else None
+    canvas_target = canvas.get('canvasNodeId') if canvas.get('kind') in {'image', 'upload'} else None
     target = args.get('canvas_node_id')
     if args.get('output_mode') not in (None, 'create', 'edit'):
         raise ImageRequestError('output_mode 必须为 edit 或 create', field='output_mode')
@@ -190,6 +190,19 @@ def prepare_image_request(registry, project_id, task_id, name, arguments, bindin
     from .image_reference_design import prepare_reference_design, drawing_reference_ids, compile_design_spec
     args = normalize_image_request(registry, project_id, task_id, name, arguments, binding)
     context = registry._task_input(project_id, task_id) if task_id else {}
+    from .node_prompt import is_literal
+    if is_literal(context) and name == 'generate_image':
+        # normalize_image_request already validates ownership, current inputs and target.
+        args['_reference_snapshot'] = ConversationMemoryService(registry.store).validate_generation(project_id, task_id, args, freeze=not preflight)
+        nodes = registry.canvas_store.load(project_id)['nodes']
+        source_nodes = set((context.get('canvasParams') or {}).get('reference_node_ids') or [])
+        refs = [{'assetId': identity, 'sha256': registry.asset_store.get_asset(project_id=project_id, asset_id=identity)['sha256']}
+                for identity in args['source_asset_ids']]
+        args['_image_resolution'] = {'references': refs,
+            'nodeVersions': {node['id']: fingerprint(node) for node in nodes if node['id'] in source_nodes},
+            'output': {'mode': 'create', 'nodeId': args.get('canvas_node_id')}, 'binding': binding or {},
+            'pendingDependencies': [], 'providerInputAssetIds': args['source_asset_ids'], 'providerInputKind': 'original_assets'}
+        return args
     nodes = registry.canvas_store.load(project_id)['nodes']
     binding = binding or {}
     pending = []

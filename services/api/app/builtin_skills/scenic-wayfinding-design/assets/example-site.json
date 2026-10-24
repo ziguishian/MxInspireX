@@ -1,6 +1,6 @@
 {
   "fictional": true,
-  "title": "青屿湿地示意数据",
+  "title": "共享办公空间示意数据",
   "coordinateSystem": "local illustrative x east, y north; not surveyed",
   "nodes": [
     {
@@ -11,19 +11,19 @@
     },
     {
       "id": "V",
-      "name": "游客中心",
+      "name": "服务中心",
       "x": 0,
       "y": 1
     },
     {
       "id": "B",
-      "name": "观鸟台",
+      "name": "会议区",
       "x": 0,
       "y": 2
     },
     {
       "id": "L",
-      "name": "湖畔",
+      "name": "休息区",
       "x": 1,
       "y": 1
     }

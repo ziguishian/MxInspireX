@@ -5,7 +5,7 @@
 
 
 - **许可**：当前源码采用根 `LICENSE` 的 MxinspireX 非商业许可 1.0；商业使用需事先书面授权，不能再将当前版本标为 MIT 或 OSI 开源。此前 v0.2.1 和截至 `1222db5` 的 MIT 版本及其授权不变；第三方许可保留。后续打包携带当前许可和 `docs/licenses/`，新发版本不能覆盖旧 Release 来追溯变更许可，详见 `docs/licenses/README.md`。
-- **产品**：本地优先的 AI 设计工作区，面向文旅、文创及船舶等设计场景。用户通过对话、参考资料与无限画布完成设计和交付。
+- **产品**：本地优先的 AI 设计工作区，面向品牌、平面、产品、包装、数字界面、空间与多媒体等通用设计任务。用户通过对话、参考资料与无限画布完成设计和交付。
 - **核心对象**：工作区包含多个项目；项目拥有持续对话、任务、资产、资料及画布。每条用户消息对应任务，主 Agent 会话按项目延续。
 - **能力**：文本、图像、视频、音频、3D、HTML、本地参数化 CAD；知识检索、视觉参考库、技能库、导出与本地定时任务。
 - **技术栈**：Vue 3 + TypeScript + Vite + Vue Router；Vue Flow 画布、Three.js 预览；Electron 桌面端；Python 3.12+ / FastAPI；Node.js / OpenAI Agents SDK；SQLite 与本地文件存储。LanceDB 是可选依赖。Electron 主进程运行依赖必须声明在根 `dependencies`，并由 `desktop-runtime-dependencies.mjs` 复制和验证，不能依赖开发目录的 `node_modules` 向上解析。
@@ -21,7 +21,7 @@
 
 ## 2. 开始任务时怎么读
 
-桌面标题栏左侧仅显示 MxInspireX 文字，不显示文件、编辑、视图、帮助菜单；中央显示累计 Token 和确认扣费，页面内不重复显示桌面用量。标题栏和侧栏空白支持拖动窗口。主题切换位于左下角，更新按钮仅有新版本时显示，两者在画布页隐藏；任务入口移至右上角，只列运行中任务。外观设置支持方格/点状/空白及本地图片画布背景，见 docs/desktop-ui-20261023.md。原生窗口按钮颜色通过 `windowAppearance.ts` 校验后，跟随 `appearance.ts` 的背景/前景色（含自定义配色）；不恢复旧荧光绿。应用图标母版为 `scripts/brand-assets/mxinspirex-app-icon-{dark,light}.png`，由 `export-app-icon.py` 转换为 ICO/ICNS/PNG，Agent 吉祥物独立保留。桌面外观验证：构建后执行 `node node_modules/electron/cli.js scripts/test-window-chrome.cjs`。
+桌面标题栏左侧仅显示 MxinspireX 文字，不显示文件、编辑、视图、帮助菜单；中央显示累计 Token 和确认扣费，页面内不重复显示桌面用量。标题栏和侧栏空白支持拖动窗口。主题切换位于左下角，更新按钮仅有新版本时显示，两者在画布页隐藏；任务入口移至右上角，只列运行中任务。外观设置支持方格/点状/空白及本地图片画布背景，见 docs/desktop-ui-20261023.md。原生窗口按钮颜色通过 `windowAppearance.ts` 校验后，跟随 `appearance.ts` 的背景/前景色（含自定义配色）；不恢复旧荧光绿。应用图标母版为 `scripts/brand-assets/mxinspirex-app-icon-{dark,light}.png`，由 `export-app-icon.py` 转换为 ICO/ICNS/PNG，Agent 吉祥物独立保留。桌面外观验证：构建后执行 `node node_modules/electron/cli.js scripts/test-window-chrome.cjs`。
 
 模型选择菜单（首页、项目对话及画布生成面板）只显示厂商图标和模型名，保留精简自动路由选项；不展示本地目录统计、能力长说明或价格。厂商识别复用 `features/modelBrand.ts`，本地矢量图集为 `assets/model-brands.svg`，由 `ModelBrandIcon.vue` 内联所选图形以兼容 Electron file URL。价格统一在设置「用量和计费」的 `CreditPricing.vue` 展示；加载/连接失败仍需显示真实状态。
 
@@ -38,6 +38,10 @@
 5. 完成后按影响范围验证；入口、路径、业务约束或命令改变时同步本文，细节写入对应专题文档。
 
 ## 3. 目录与职责
+
+画布背景上传使用 `CanvasBackgroundSettings.vue` 的显式按钮同步打开文件选择器；`canvasBackgroundImage.ts` 在本机解码、缩放压缩 20 MB 以内的 PNG/JPEG/WebP，再保存本地设置。处理中／成功／错误均在按钮附近显示，保存失败保留原背景；图片不上传至 Provider、不成为生成参考。`scripts/test-window-chrome.cjs` 覆盖鼠标／键盘打开选择器、大图上传、刷新保存与移除。
+
+桌面品牌统一为 `MxinspireX`，包括标题栏、应用包、可执行文件和发布归档。Windows 开发及发布共用 `scripts/windows-branding.mjs` 写入 PE 图标和产品元数据，开发运行时复制到 `dist/dev/windows-<摘要>/`，不修改 node_modules；应用 ID、数据目录与兼容键保持原值。原生图标、网页 Logo 和 favicon 使用已确认母版；旧 `generate-brand-assets.py` CLI 已禁用，导出使用 `export-app-icon.py`。平台状态矩阵、静态图标限制及验证入口见 `docs/desktop-branding.md`。
 
 | 位置 | 职责与阅读入口 |
 | --- | --- |
@@ -77,6 +81,12 @@
 | 桌面启动、发布包 | 桌面 `main.ts`、`preload.ts`、`runtimeComponents.ts`；脚本 `scripts/dev-api.mjs`、`scripts/launch-dev-macos.mjs`、`scripts/build-sidecar.mjs`、`scripts/build-runtime-components.mjs`、`scripts/agent-runtime-build.mjs`、`scripts/package-distributions.mjs`、`scripts/package-lite-distributions.mjs`。 |
 
 ## 4. 一次请求如何流转
+
+交互网页由主 Agent 按需组合文字、图片、视频和音频；新素材通过计划 `supporting=true` 和 HTML 项的 `dependsOn` / `inputs(role=content)` 关联，不增加最终交付数量，不绕过用户否定或节点原样生成。`canvas_create_html(style_framework=bootstrap)` 离线嵌入固定 Bootstrap 5.3.8；媒体通过真实 `asset://ID` 嵌入，预览和导出均可播放。框架正文不进入 Agent 编辑上下文，编辑继承 `styleFramework`。iframe 允许本地表单事件，CSP 继续禁止对外提交和网络访问。详见 `docs/web-generation.md`；真实交互回归 `npm run test:web-interactions` 不调用收费模型。
+
+系统提示词与产品定位面向通用设计任务，不预设特定行业、文化主题或风格。主 Agent 按本轮目标判断领域；视觉评价按需求契合度判断（历史字段 `culturalRelevance` 保留兼容）；内置 IP／导视技能使用通用正文，旧技能 ID 保持稳定。参考库默认分类覆盖多个行业，旧分类和真实项目／案例内容保留，不做全库文本替换。
+
+对话提示词由主 Agent 将模糊需求转为具体设计术语，按需选风格；生成边界通过 `generation_prompt` 事件展示实际提示词后直接执行，不额外调用润色模型。工作区 `prompt-templates/` 是独立模板集合，`prompt_templates.py` 提供导入/检索接口：空集合不搜索，非空最多检索三条候选，用户要求优先，模板不是指令。节点新任务保存 `nodePrompt.version=1`、original/submitted 与 canvasParams；图片/视频/音频走确定性工具调用，不跑主 Agent 文本模型。风格、镜头和上游文字在输入框内可见合并，提交后不再拼接或改写，后端 `node_prompt.py` 绑定持久化原文及参数；透明背景只走参数，不追加提示词。文本/HTML/CAD 使用隔离内容生成指令。旧任务不追溯改写。详见 `docs/agent-flow.md` 的「提示词组织与节点原样生成」。
 
 模型与连接显示按能力分类的目录状态；普通中转站只有在目录同步成功、对应图像/视频/音频列表确为空且用户显式选择补充服务商时才跨服务调用。补充选择按主服务商和 URL 保存，候选来自已配置且有本地目录的其他服务商，`effectiveMediaOptions` 与 `taskMediaProvider` 共用来源；未同步/失败不视为缺失，不静默切换。Ollama 保留原远程媒体回退。3D 目录存在不代表协议已接入，仍要求独立服务配置；对应测试 `providerModels.test.ts`。
 

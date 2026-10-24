@@ -56,11 +56,16 @@ def bind_generation_inputs(context, binding, args, nodes, assets, project_id, *,
             raise ValueError('排版或产品身份输入必须对应一张明确的图片：' + ref['id'])
         for id in asset_ids:
             asset = assets.get_asset(project_id=project_id, asset_id=id)
-            if not asset or asset['kind'] != 'image' or asset['mime'] == 'image/svg+xml':
+            web_media = 'html' in args and ref.get('role') == 'content' and asset and asset['kind'] in {'image', 'video', 'audio'}
+            if not asset or (asset['kind'] != 'image' and not web_media) or asset['mime'] == 'image/svg+xml':
                 raise ValueError('图像输入必须是可用图片；其他媒体请先提取本项需要的画面或文字：' + ref['id'])
             path = Path(asset['absolutePath'])
             if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != asset['sha256']:
                 raise ValueError('所需输入文件缺失或已变化：' + ref['id'])
+            if 'html' in args and ref.get('role') == 'content':
+                from .html_assets import referenced_image_ids
+                if id not in referenced_image_ids(args['html']):
+                    raise ValueError('网页必须嵌入已声明的内容媒体 asset://' + id)
             resolved_assets.append({'assetId':id,'sha256':asset['sha256'],'role':'layout_master' if ref.get('role')=='layout' else 'input','purpose':ref['purpose']})
         input_records.append({**ref,'assetIds':asset_ids,'nodeIds':[n['id'] for n in selected]})
     from .design_tools import image_reference_ids

@@ -7,7 +7,7 @@
 [![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
-MxinspireX는 灵矩绘境에서 만든 **AI 디자인 작업 공간**입니다. 디자이너, 문화·콘텐츠 제작팀, 제품 기획자가 요구 사항과 참고 자료를 바탕으로 디자인을 만들고, 결과물을 수정·비교·내보낼 수 있도록 돕습니다.
+MxinspireX는 灵矩绘境에서 만든 **AI 디자인 작업 공간**입니다. 디자이너, 다양한 분야의 크리에이티브 팀, 제품 기획자가 요구 사항과 참고 자료를 바탕으로 디자인을 만들고, 결과물을 수정·비교·내보낼 수 있도록 돕습니다.
 
 제품 이미지, 브랜드 자료, 문서를 올리고 원하는 작업을 일상적인 말로 설명하세요. 에이전트가 프로젝트의 맥락에 맞춰 모델을 호출하고 제품 콘셉트, 패키지, 포스터, 캐릭터, 연출 이미지 등을 하나의 무한 캔버스에 모읍니다. 대화를 이어 가며 수정하거나 노드를 연결해 앞 단계의 텍스트와 이미지를 다음 생성의 참고 자료로 사용할 수 있습니다.
 

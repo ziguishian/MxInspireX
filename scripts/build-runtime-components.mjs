@@ -67,7 +67,7 @@ const definitions = [
 ];
 const components = [];
 for (const definition of definitions) {
-  const archiveName = `LangjuAgent-${packageVersion}-${platform}-${arch}-${definition.id}-component.zip`;
+  const archiveName = `MxinspireX-${packageVersion}-${platform}-${arch}-${definition.id}-component.zip`;
   const archive = path.join(outputRoot, archiveName);
   rmSync(archive, { force: true });
   execFileSync('/usr/bin/ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', path.join(staging, definition.id), archive]);

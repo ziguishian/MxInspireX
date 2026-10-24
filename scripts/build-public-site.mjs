@@ -14,7 +14,7 @@ export function publicSiteFiles(siteUrl = '') {
     canonical = url.href.replace(/\/?$/, '/');
   }
   const title = 'MxinspireX — 本地优先 AI 设计 Agent 与无限画布';
-  const description = '灵矩绘境的 MxinspireX 将对话、参考资料与无限画布连接起来，支持产品、包装、文创、图像、视频、HTML 与参数化 CAD 设计。自带模型密钥，项目保存在本地。';
+  const description = '灵矩绘境的 MxinspireX 将对话、参考资料与无限画布连接起来，支持品牌、平面、产品、包装、空间、图像、视频、HTML 与参数化 CAD 设计。自带模型密钥，项目保存在本地。';
   const schema = { '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'MxinspireX', description,
     applicationCategory: 'DesignApplication', operatingSystem: 'Windows', softwareVersion: pkg.version,
     author: { '@type': 'Organization', name: '灵矩绘境' }, license: `${repo}/blob/main/LICENSE`,
@@ -31,7 +31,7 @@ ${canonical ? `<link rel="canonical" href="${escape(canonical)}"><meta property=
 <style>body{max-width:860px;margin:0 auto;padding:48px 24px;background:#fafafa;color:#242424;font:16px/1.8 system-ui,sans-serif}h1{font-size:32px;line-height:1.3}h2{margin-top:36px;font-size:22px}a{color:#245da8}nav{display:flex;gap:24px;flex-wrap:wrap}footer{margin-top:48px;border-top:1px solid #ddd;padding-top:20px;color:#555}li{margin:8px 0}img{max-width:100%;height:auto;border-radius:12px}</style></head>
 <body><header><p>灵矩绘境 · MxinspireX ${escape(pkg.version)}</p><h1>本地优先的 AI 设计 Agent 与无限画布</h1><p>${escape(description)}</p>
 <nav aria-label="产品链接"><a href="${repo}/releases">下载安装包</a><a href="${repo}">GitHub 源码</a><a href="${repo}/blob/main/docs/USER_GUIDE.md">使用指南</a><a href="#faq">常见问题</a></nav></header>
-<main><section><h2>MxinspireX 是什么？</h2><p>MxinspireX 是面向文旅、文创及产品设计场景的 AI 设计工作区。用户通过对话说明需求，将图片、文档和画布节点作为参考，持续生成和修改设计产物。它不是模型服务商，使用前需要配置自己的模型服务与 API Key。</p></section>
+<main><section><h2>MxinspireX 是什么？</h2><p>MxinspireX 是面向不同领域通用设计任务的 AI 设计工作区。用户通过对话说明需求，将图片、文档和画布节点作为参考，持续生成和修改设计产物。它不是模型服务商，使用前需要配置自己的模型服务与 API Key。</p></section>
 <section><h2>可以完成哪些设计？</h2><ul><li>Logo、海报、产品概念、包装与 IP 形象的视觉探索。</li><li>沿用真实产品主图生成场景，或基于已有图片进行局部修改。</li><li>文字策划、交互 HTML、音频、视频，以及独立服务的 3D 生成。</li><li>本地参数化 CAD 建模与 STEP、STL、GLB 导出。</li><li>在无限画布连接节点，使用上游文字和图像组织后续任务。</li></ul><p>媒体能力取决于已配置服务与模型；生成的概念设计不等于可直接生产的工程文件。</p></section>
 <section><h2>如何开始？</h2><ol><li>从 GitHub Releases 下载对应平台的安装包。</li><li>打开设置中的“模型与连接”，填写自己的服务地址与 API Key。</li><li>同步模型目录，描述需求并上传必要参考，在项目画布查看结果。</li></ol><p>当前发布目标为 Windows x64。源码开发环境还需 Node.js 与 uv；其他平台请核对 Release 的实际附件。界面以中文为主。</p></section>
 <section id="faq"><h2>常见问题</h2><h3>是否完全离线？</h3><p>不是。项目与文件保存在本机；云模型调用会向所选服务发送完成任务所需的内容。本地优先不表示云生成完全离线。</p><h3>是否包含免费模型额度？</h3><p>不包含账号、Key 或模型额度。当前源码仅限非商业使用，商用须书面授权；历史 MIT 版本保持原许可。模型调用费用由所选服务商决定。软件区分已确认扣费、参考估算与待对账。</p><h3>修改图片会覆盖原作吗？</h3><p>图像调整保留来源并生成新节点。节点连线用于引用上游内容，不表示允许覆盖上游作品。</p><h3>请求失败会自动重新扣费吗？</h3><p>结果未知的请求不会自动重复提交。有已受理任务编号的媒体，可在产物记录中查询和取回原结果；失败不代表服务商未收费。</p><h3>安装包有数字签名吗？</h3><p>请以各版本发布说明为准。当前构建配置未提供发布证书，Windows 可能提示未知发布者。</p></section>

@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS design_lessons (
 );
 """
 DEFAULTS = {
-    'industry': ['文旅', '船舶', '文博非遗', '食品饮料', '茶酒礼赠', '生活方式'],
-    'designType': ['品牌视觉', '包装礼盒', '文创产品', 'IP 插画', '导视', '海报'],
+    'industry': ['科技数码', '消费零售', '食品饮料', '生活方式', '教育服务', '工业制造', '商业服务'],
+    'designType': ['品牌视觉', '平面设计', '产品设计', '包装礼盒', '数字界面', '空间设计', 'IP 插画', '导视', '海报', '多媒体'],
 }
 EDITABLE = {'title', 'industries', 'designTypes', 'tags', 'colors', 'description', 'notes', 'author', 'rightsStatus'}
 _WRITE_LOCK = threading.RLock()
@@ -86,7 +86,14 @@ class ReferenceLibraryStore:
 
     def categories(self):
         with self.store._connect() as db:
-            return [dict(row) for row in db.execute("SELECT * FROM reference_categories ORDER BY CASE WHEN dimension='industry' AND name='文旅' THEN 0 WHEN dimension='industry' AND name='船舶' THEN 1 ELSE 2 END, rowid")]
+            categories = [dict(row) for row in db.execute('SELECT * FROM reference_categories ORDER BY rowid')]
+        # Show the current general-purpose defaults first; retain historical and
+        # user categories with their IDs and reference bindings intact.
+        def order(category):
+            defaults = DEFAULTS[category['dimension']]
+            name = category['name']
+            return (list(DEFAULTS).index(category['dimension']), defaults.index(name) if name in defaults else len(defaults))
+        return sorted(categories, key=order)
 
     def category(self, dimension, name):
         name = str(name).strip()

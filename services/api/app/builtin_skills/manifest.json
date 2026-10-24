@@ -3,24 +3,24 @@
   "skills": [
     {
       "name": "logo-mockup-suite",
-      "revision": "1.5.5",
+      "revision": "1.5.6",
       "files": {
         "SKILL.md": "b1253eede40f503195416f38aed6f04ec06998f9f5d9c542e1eaf611b5708bde",
         "agents/openai.yaml": "ef45f3d2064ff68a88272e1f6aeb7a573ee762f061301be62019f090bf9e99a0",
         "langju.json": "21917e5ba232447f2c67131b00f885bd17a8739a8faf2976ab8dfb2df4ce592c",
         "references/batch-workflow.md": "44da245ffda84d35febed69c685ffcca343bcd5f1b4a1007ce94c548e8b9c5b2",
         "references/host-tools.md": "088fc2b35d39e24138ed003ad8f34f0b931c322f6676d95bdc454f945534aa43",
-        "references/mockup-matrix.md": "8e4dc7db3d6bd549e0f027914e005e39008fd2c2c94b1eac4fdaaf2a1b9623da"
+        "references/mockup-matrix.md": "10d5cc641b18e39112b142b4c4860f0ecb501130325ade79cbfe44470f3c9be9"
       }
     },
     {
       "name": "tourism-ip-design",
-      "revision": "1.4.3",
+      "revision": "1.4.4",
       "files": {
-        "SKILL.md": "f222656ff12e5b125319037bc5066ccb391aaf816a0d8d8c1d85f60d852580bf",
-        "agents/openai.yaml": "18b304af57a2e8d1b02c3704a69b3baed82bb43d84070e5ae2cbeef03a76d79f",
-        "langju.json": "6e5d65c030935f6c7ff8599595965dc9ab84ad8779eb216731a56408c6ba2bcc",
-        "references/character-bible.md": "f955110657d5123f21b70f9e80f29cba49cee8432c07a33da483b069d63a34c7",
+        "SKILL.md": "c790e79759f306777592feac369d97bdd33192be7f36faec92adb10489c16b7f",
+        "agents/openai.yaml": "1b2a76e82c8b24760108906e0f5b9fee11c1c875dee691e9a6275eba38f4da54",
+        "langju.json": "bf2a669d2fe261693093fda2aeeed1a73ff5a1077b7c0a579da0f49dcd0893f5",
+        "references/character-bible.md": "0539f530af0ebe6be7f398ad5794c2a629f55a0bebb61de449d6919c583e1888",
         "references/host-tools.md": "c48654353afe60fe151d1eb0061b6209149a0b49b744cd2730c5f61a9a6b3019"
       }
     },
@@ -37,21 +37,21 @@
     },
     {
       "name": "scenic-wayfinding-design",
-      "revision": "1.4.4",
+      "revision": "1.4.5",
       "files": {
-        "SKILL.md": "b75c92dce75018249616f42a8523e6da99a8ff305d57309add078c272be4736d",
-        "agents/openai.yaml": "be3a67df2dbe2eaf32408f016bf24466c8a2e9f8fb985412b9052fef688ef595",
-        "assets/example-site.json": "b482d4671baef7e315e0c72e1edde05db51dc98f4c2ea20dcdb2d79b0c8e4f9c",
-        "langju.json": "c4143042f3c7531d2361b23001d58d068ffd0b93c6c816c6f25d8b4f918c0e1e",
+        "SKILL.md": "f11be580861c647491f14bfe81f41e64371ef53bc0f950c5e20b69cae074a1ea",
+        "agents/openai.yaml": "b802def706c95215c63925cdf524e618b647711f758339118d14e49f8e0c686b",
+        "assets/example-site.json": "7b4a95c7530681a77c1f1659b7ff12f9997a6850058aba1dd1016b422ea5b33c",
+        "langju.json": "a0b905042551cd175cf1bc930ec80d449133d6ece7e72ef7952b54bbc819fb43",
         "references/host-tools.md": "c48654353afe60fe151d1eb0061b6209149a0b49b744cd2730c5f61a9a6b3019",
-        "references/wayfinding-data.md": "3252d6ce9d60bf8cab187ed54ea2c1ea8042fcac0b9fb06aeeb9e72eb56bfd1a"
+        "references/wayfinding-data.md": "cda4f58b27231932b0e563996087afbbc650cb32fb4033c6b1201e4b6cb7b8e9"
       }
     },
     {
       "name": "xiaohongshu-visual-post",
-      "revision": "1.4.3",
+      "revision": "1.4.4",
       "files": {
-        "SKILL.md": "0d85109e9eb468fd9611ba25df9be5f4b75094651f2a57309bf94d7ccb55bf74",
+        "SKILL.md": "6ac8c2d573082ff8faa663f9cd29cb932691a4997de49e47e0015e929f57ee17",
         "agents/openai.yaml": "93076385434745151ae3d7fb5ccd0361853cf10902f84e355b8bee688c493fe2",
         "langju.json": "92a3399b2b5747716dc3dba1d24f7a3b05a7b778622a54603aae6397c7bc034b",
         "references/host-tools.md": "c48654353afe60fe151d1eb0061b6209149a0b49b744cd2730c5f61a9a6b3019",

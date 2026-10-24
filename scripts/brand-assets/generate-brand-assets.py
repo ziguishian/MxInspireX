@@ -196,4 +196,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit('Legacy artwork generator is disabled. Use scripts/brand-assets/export-app-icon.py with the approved MxinspireX artwork.')

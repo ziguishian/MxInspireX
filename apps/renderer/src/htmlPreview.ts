@@ -1,6 +1,7 @@
 // The generated document runs only in an opaque-origin sandbox. No API,
-// parent document, remote script, form, frame, or network access is granted.
-export const HTML_PREVIEW_SANDBOX = 'allow-scripts';
+// parent document, remote script, frame, or network access is granted.
+// Local form validation/submit events work; CSP still blocks form navigation.
+export const HTML_PREVIEW_SANDBOX = 'allow-scripts allow-forms';
 export const HTML_PREVIEW_CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
 export const HTML_PREVIEW_SCALE = 2 / 3;
 export type HtmlPreviewSize = { width: number; height: number };
@@ -11,7 +12,7 @@ export function htmlPreviewSize(value?: Partial<HtmlPreviewSize>): HtmlPreviewSi
 export function resolveHtmlAssets(source: string, assets: Record<string, string> = {}): string {
   return source.replace(/asset:\/\/([A-Za-z0-9_-]+)/g, (reference, id) => {
     const url = assets[id];
-    return /^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(url || '') ? url : reference;
+    return /^data:(?:image\/(?:png|jpeg|webp|gif)|video\/(?:mp4|webm)|audio\/(?:mpeg|mp3|wav|x-wav|ogg|webm|mp4|aac|flac));base64,[A-Za-z0-9+/=]+$/.test(url || '') ? url : reference;
   });
 }
 export function htmlPreviewDocument(source: string, assets: Record<string, string> = {}, contextMenu = false): string {

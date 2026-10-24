@@ -39,6 +39,7 @@ const args = [
   // supports launching the sidecar without Electron's path override.
   '--add-data', `${standaloneWorker}${path.delimiter}app`,
   '--add-data', `${path.join(apiDir, 'app', 'builtin_skills')}${path.delimiter}app/builtin_skills`,
+  '--add-data', `${path.join(apiDir, 'app', 'web_frameworks')}${path.delimiter}app/web_frameworks`,
   '--add-data', `${path.join(apiDir, 'app', 'print_fonts')}${path.delimiter}app/print_fonts`,
   '--add-data', `${path.join(apiDir, 'app', 'easter_egg_assets')}${path.delimiter}app/easter_egg_assets`,
   '--add-data', `${path.join(apiDir, 'app', 'evolink_price_data.json')}${path.delimiter}app`,

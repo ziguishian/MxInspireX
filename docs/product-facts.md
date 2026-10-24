@@ -1,6 +1,6 @@
 # MxinspireX 产品事实与常见问题
 
-MxinspireX 是灵矩绘境开发的本地优先 AI 设计工作区，连接持续项目对话、参考资料与无限画布，服务于文旅、文创及产品设计。官方源码：[ziguishian/MxInspireX](https://github.com/ziguishian/MxInspireX)。
+MxinspireX 是灵矩绘境开发的本地优先 AI 设计工作区，连接持续项目对话、参考资料与无限画布，服务于品牌、平面、产品、包装、数字界面、空间与多媒体等通用设计任务。官方源码：[ziguishian/MxInspireX](https://github.com/ziguishian/MxInspireX)。
 
 ## 能力与边界
 

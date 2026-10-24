@@ -6,6 +6,7 @@ import AnchoredPopover from './composer/AnchoredPopover.vue';
 import { ArrowUp, ChevronDown, Expand, Shrink, Lightbulb, Plus, SlidersHorizontal, X, WandSparkles, Palette, Video, LoaderCircle, Link2, FileText, Image, Music2 } from 'lucide-vue-next';
 import { referenceImageIds, referenceProblem, type CanvasReference } from '../features/canvasReferences';
 import { requestedMediaRatio } from '../nodeSizing';
+import { mergeVisibleInputs } from '../features/nodePrompt';
 
 const props = defineProps<{ kind: string; modelOptions?: string[]; videoModelOptions?: string[]; audioModelOptions?: string[]; textModelOptions?: string[]; generating?: boolean; params?: Record<string, any>; apiBaseUrl: string; projectId: string; nodeId?: string; referencePreviewUrl?: string; initialPrompt?: string; connectedReferences?: CanvasReference[] }>();
 const emit = defineEmits<{ submit: [payload: { prompt: string; params: Record<string, any> }]; 'aspect-change': [aspect: string] }>();
@@ -18,6 +19,8 @@ function dismissModelMenu(event: PointerEvent) {
 onMounted(() => document.addEventListener('pointerdown', dismissModelMenu));
 onUnmounted(() => document.removeEventListener('pointerdown', dismissModelMenu));
 const prompt = ref(props.initialPrompt || '');
+const originalPrompt = ref(prompt.value);
+const mergedInputs = ref('{}');
 const model = ref(props.params?.model || '');
 const style = ref(props.params?.style || '');
 const imageAspects = ['1:1', '16:9', '9:16', '4:3', '3:4', '4:5', '5:4', '3:2', '2:3', '21:9'];
@@ -55,7 +58,7 @@ const referenceIssue = computed(() => referenceProblem(props.kind, linkedReferen
 const frameLabel = (assetId?: string) => props.kind === 'video' && assetId && imageIds.value.includes(assetId) ? (imageIds.value.indexOf(assetId) === 0 ? '首帧' : '尾帧') : '';
 const failedPreviews = ref<Record<string, string>>({});
 const nodeDraftKey = props.nodeId ? `langjuart.nodeDraft.${props.projectId}.${props.nodeId}` : '';
-const draftFields = { prompt, model, style, aspect, resolution, quality, background, outputFormat, duration, camera, voice, speed, referenceAssetId };
+const draftFields = { prompt, originalPrompt, mergedInputs, model, style, aspect, resolution, quality, background, outputFormat, duration, camera, voice, speed, referenceAssetId };
 try {
   const saved = nodeDraftKey ? JSON.parse(localStorage.getItem(nodeDraftKey) || 'null') : null;
   if (saved && typeof saved === 'object') for (const [key, field] of Object.entries(draftFields)) if (typeof saved[key] === typeof field.value) field.value = saved[key];
@@ -71,6 +74,16 @@ watch(Object.values(draftFields), () => {
   catch { error.value = '节点草稿暂未保存，请保留当前页面'; }
 }, { flush: 'sync' });
 // Follow normalized output parameters while preserving a different unsent choice.
+watch(() => JSON.stringify([style.value, camera.value, linkedReferences.value.map(item => [item.nodeId, item.text])]), () => {
+  let seen = {};
+  try { seen = JSON.parse(mergedInputs.value); } catch { /* Recover old drafts. */ }
+  const inputs: [string, string][] = linkedReferences.value.filter(item => item.text).map(item => [`node:${item.nodeId}`, item.text]);
+  if (style.value && style.value !== '智能识别') inputs.push(['style', `视觉风格：${style.value}`]);
+  if (props.kind === 'video' && camera.value && camera.value !== '跟随描述') inputs.push(['camera', `镜头运动：${camera.value}`]);
+  const result = mergeVisibleInputs(prompt.value, seen, inputs);
+  prompt.value = result.prompt;
+  mergedInputs.value = JSON.stringify(result.seen);
+}, { immediate: true, flush: 'sync' });
 watch(savedAspect, (value, previous) => { if (aspect.value === previous) aspect.value = value; });
 
 // The panel stays mounted while hidden. An upload to the preview card must
@@ -126,13 +139,14 @@ function submit() {
   if (visual.value && props.kind !== 'cad') Object.assign(params, { style: style.value, aspectRatio: aspect.value,
     ...(resolution.value !== 'auto' ? { resolution: resolution.value } : {}) });
   if (imageKind.value) Object.assign(params, {
-    ...(quality.value !== 'auto' ? { quality: !extendedQuality.value && ['xhigh', 'max'].includes(quality.value) ? 'high' : quality.value } : {}),
+    ...(quality.value !== 'auto' ? { quality: quality.value } : {}),
     background: background.value,
-    output_format: background.value === 'transparent' && outputFormat.value === 'jpeg' ? 'png' : outputFormat.value,
+    output_format: outputFormat.value,
   });
   if (props.kind === 'video') Object.assign(params, { duration: duration.value, camera: camera.value });
   if (props.kind === 'audio') Object.assign(params, { voice: voice.value.trim(), speed: speed.value });
-  emit('submit', { prompt: prompt.value.trim(), params });
+  params.originalPrompt = originalPrompt.value;
+  emit('submit', { prompt: prompt.value, params });
 }
 </script>
 <template>
@@ -153,7 +167,7 @@ function submit() {
     <p v-if="linkedReferences.length || kind === 'video' && imageIds.length" class="prompt-reference-status" :class="{ 'has-issue': referenceIssue }" aria-live="polite">{{ referenceIssue || (kind === 'video' && imageIds.length ? (imageIds.length === 2 ? '按参考顺序：第一张首帧，第二张尾帧' : '当前参考图作为首帧') : `已连接 ${linkedReferences.length} 个素材，将作为生成参考`) }}</p>
     <p class="prompt-delivery-summary" aria-live="polite">{{ generating ? '正在生成' : '本次生成' }}：1 项{{ label }}<span v-if="imageIds.length"> · {{ imageIds.length }} 张参考图</span><span v-if="linkedReferences.some(item => item.text.trim())"> · 含上游文字</span></p>
     <input ref="referenceInput" type="file" class="visually-hidden" :accept="referenceAccept" tabindex="-1" @change="uploadReference" />
-    <textarea v-model="prompt" :aria-label="`${label}节点提示词`" :placeholder="placeholder" @paste="pasteReference" @keydown.meta.enter.prevent="submit" @keydown.ctrl.enter.prevent="submit" />
+    <textarea v-model="prompt" :aria-label="`${label}节点提示词`" :placeholder="placeholder" @input="originalPrompt = prompt" @paste="pasteReference" @keydown.meta.enter.prevent="submit" @keydown.ctrl.enter.prevent="submit" />
     <div v-if="settings" class="prompt-options" :aria-label="settings === 'style' ? '风格设置' : settings === 'camera' ? '镜头设置' : '生成参数'">
       <div class="prompt-options-heading"><span>{{ settings === 'style' ? '画面风格' : settings === 'camera' ? '镜头运动' : '生成参数' }}</span><button type="button" aria-label="关闭参数" @click="settings = null"><X :size="13" /></button></div>
       <div class="prompt-advanced-grid">

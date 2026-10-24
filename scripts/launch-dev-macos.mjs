@@ -1,4 +1,5 @@
-import { closeSync, cpSync, existsSync, lstatSync, mkdirSync, openSync, readlinkSync, renameSync, rmSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readlinkSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const electronApp = path.join(root, 'node_modules', 'electron', 'dist', 'Electron.app');
 const devRoot = path.join(root, 'dist', 'dev');
-const devApp = path.join(devRoot, '朗居设计Agent.app');
+const devApp = path.join(devRoot, 'MxinspireX.app');
 const devResources = path.join(devApp, 'Contents', 'Resources');
 const devMacOS = path.join(devApp, 'Contents', 'MacOS');
 const devProject = path.join(devResources, 'app');
@@ -49,7 +50,7 @@ const launchServicesRegister = '/System/Library/Frameworks/CoreServices.framewor
 // macOS surfaces use that runtime identity (and its default icon) for small
 // previews even when CFBundleIconFile has been updated.  Give the bundle a
 // stable product executable name so LaunchServices treats it as our app.
-const executableName = 'LangjuAgent';
+const executableName = 'MxinspireX';
 
 function setPlistValue(plist, key, value) {
   try {
@@ -86,11 +87,11 @@ function refreshLaunchServices() {
 
 function prepareDevApp() {
   if (!existsSync(electronApp)) throw new Error(`未找到 Electron runtime: ${electronApp}`);
-  if (!existsSync(iconSource)) throw new Error(`未找到朗居应用图标: ${iconSource}`);
-  if (!existsSync(iconPngSource)) throw new Error(`未找到朗居 PNG 图标: ${iconPngSource}`);
+  if (!existsSync(iconSource)) throw new Error(`未找到MxinspireX应用图标: ${iconSource}`);
+  if (!existsSync(iconPngSource)) throw new Error(`未找到MxinspireX PNG 图标: ${iconPngSource}`);
   for (const [appearance, variant] of Object.entries(iconVariants)) {
-    if (!existsSync(variant.icns)) throw new Error(`未找到朗居 ${appearance} ICNS 图标: ${variant.icns}`);
-    if (!existsSync(variant.png)) throw new Error(`未找到朗居 ${appearance} PNG 图标: ${variant.png}`);
+    if (!existsSync(variant.icns)) throw new Error(`未找到MxinspireX ${appearance} ICNS 图标: ${variant.icns}`);
+    if (!existsSync(variant.png)) throw new Error(`未找到MxinspireX ${appearance} PNG 图标: ${variant.png}`);
   }
   const frameworkLink = path.join(devApp, 'Contents', 'Frameworks', 'Electron Framework.framework', 'Electron Framework');
   let hasAbsoluteFrameworkLink = false;
@@ -130,8 +131,8 @@ function prepareDevApp() {
     renameSync(electronExecutable, brandedExecutable);
   }
   const plist = path.join(devApp, 'Contents', 'Info.plist');
-  setPlistValue(plist, 'CFBundleDisplayName', '朗居设计Agent');
-  setPlistValue(plist, 'CFBundleName', '朗居设计Agent');
+  setPlistValue(plist, 'CFBundleDisplayName', 'MxinspireX');
+  setPlistValue(plist, 'CFBundleName', 'MxinspireX');
   setPlistValue(plist, 'CFBundleIdentifier', 'com.aicreativestudio.desktop.dev');
   setPlistIconMetadata(plist, iconName);
   setPlistValue(plist, 'CFBundleExecutable', executableName);
@@ -194,6 +195,28 @@ if (process.platform === 'darwin') {
   const child = launchElectron(path.join(devApp, 'Contents', 'MacOS', executableName), [
     `--user-data-dir=${path.join(devRoot, 'user-data')}`,
   ]);
+  child.on('exit', (code, signal) => {
+    if (signal) process.kill(process.pid, signal);
+    else process.exit(code ?? 0);
+  });
+} else if (process.platform === 'win32') {
+  const { brandWindowsExecutable } = await import('./windows-branding.mjs');
+  const runtime = path.join(root, 'node_modules', 'electron', 'dist');
+  const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const icon = path.join(root, 'apps', 'desktop', 'assets', 'langju-agent.ico');
+  // Versioned copies avoid overwriting a running executable or modifying node_modules.
+  const stamp = createHash('sha256').update(readFileSync(path.join(runtime, 'electron.exe')))
+    .update(readFileSync(icon)).update(readFileSync(path.join(root, 'scripts', 'windows-branding.mjs')))
+    .update(JSON.stringify([pkg.productName, pkg.version])).digest('hex').slice(0, 16);
+  const staged = path.join(devRoot, `windows-${stamp}`);
+  const binary = path.join(staged, `${pkg.productName}.exe`);
+  const ready = path.join(staged, '.brand-ready');
+  if (!existsSync(ready) || !existsSync(binary)) {
+    cpSync(runtime, staged, { recursive: true });
+    brandWindowsExecutable(path.join(runtime, 'electron.exe'), binary, icon, pkg);
+    writeFileSync(ready, stamp);
+  }
+  const child = launchElectron(binary, [desktopEntry]);
   child.on('exit', (code, signal) => {
     if (signal) process.kill(process.pid, signal);
     else process.exit(code ?? 0);

@@ -405,22 +405,24 @@ def test_visual_relevance_shortfall_triggers_online_supplement(client):
     assert len(result['output']['structured_data']['referenceSelection']['items']) == 1
 
 
-def test_primary_industries_lead_and_existing_tourism_references_migrate(client):
+def test_general_industries_lead_and_existing_industry_references_survive(client):
     item = add(client)
     library = app.state.references
     with app.state.store._connect() as db:
         db.execute("DELETE FROM reference_migrations WHERE source_id='taxonomy:primary-industries-v1'")
         db.execute("DELETE FROM reference_categories WHERE dimension='industry' AND name IN ('文旅','船舶')")
         db.execute("INSERT INTO reference_categories VALUES ('legacy-tourism','industry','文旅景区')")
+        db.execute("INSERT INTO reference_categories VALUES ('legacy-ships','industry','船舶')")
         db.execute('UPDATE visual_references SET metadata_json=? WHERE id=?', (json.dumps({'industries':['文旅景区','自定义行业'],'tags':['手动标签'],'userEditedFields':['industries','tags']}), item['id']))
     restarted = ReferenceLibraryStore(app.state.store)
     industries = [c for c in restarted.categories() if c['dimension'] == 'industry']
-    assert [c['name'] for c in industries[:2]] == ['文旅', '船舶']
-    assert industries[0]['id'] == 'legacy-tourism'
+    assert [c['name'] for c in industries[:2]] == ['科技数码', '消费零售']
+    assert next(c for c in industries if c['name'] == '文旅')['id'] == 'legacy-tourism'
+    assert next(c for c in industries if c['name'] == '船舶')['id'] == 'legacy-ships'
     assert restarted.get(item['id'])['industries'] == ['文旅', '自定义行业']
     assert restarted.get(item['id'])['tags'] == ['手动标签']
     assert restarted.search(industry='文旅')['total'] == restarted.search(industry='文旅景区')['total'] == 1
     restarted.category('industry', '自定义行业')
     again = ReferenceLibraryStore(app.state.store)
-    assert [c['name'] for c in again.categories() if c['dimension'] == 'industry'][:2] == ['文旅', '船舶']
+    assert [c['name'] for c in again.categories() if c['dimension'] == 'industry'][:2] == ['科技数码', '消费零售']
     assert sum(c['name'] == '船舶' for c in again.categories()) == 1

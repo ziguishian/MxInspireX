@@ -142,6 +142,7 @@ class Deliverable(BaseModel):
     title: str = Field(min_length=1, max_length=100)
     kind: Literal['image', 'html', 'text', 'video', 'audio', '3d', 'cad']
     acceptance: str = Field(min_length=1, max_length=350)
+    supporting: bool = False
     representation: Literal['auto', 'concept', 'raster', 'vector', 'model', 'document'] = 'auto'
     blockingFields: list[str] = Field(default_factory=list, max_length=8)
     dependsOn: list[str] = Field(default_factory=list, max_length=49)
@@ -274,11 +275,19 @@ def save_design_plan(store, project_id, task_id, plan, *, reuse_ready=False, exp
     value = DesignPlan.model_validate(plan).model_dump()
     from .product_identity import bind_product_plan
     value = bind_product_plan(value, initial)
+    support_items = [item for item in value['deliverables'] if item['supporting']]
+    pages = [item for item in value['deliverables'] if item['kind'] == 'html' and not item['supporting']]
+    if support_items:
+        # A supporting item must be used by a real page, never an extra deliverable.
+        for item in support_items:
+            if (initial.get('taskSurface') == 'canvas_node' or item['kind'] not in {'image', 'video', 'audio', 'text'}
+                    or not any(item['id'] in page['dependsOn'] and any(ref['source'] == 'deliverable' and ref['id'] == item['id'] and ref.get('role') == 'content' for ref in page['inputs']) for page in pages)):
+                raise ValueError('网页内部素材必须由 HTML 交付项通过 dependsOn 和 content inputs 引用；节点入口不增加素材生成。')
     if (initial.get('designPlanning') or {}).get('profile') == 'deliverables' and not initial.get('planAccepted'):
         from collections import Counter
         from .task_policy import delivery_contract
         expected_counts = {item['kind']:item['count'] for item in delivery_contract(initial.get('userMessage',''),initial)}
-        actual_counts = dict(Counter(item['kind'] for item in value['deliverables']))
+        actual_counts = dict(Counter(item['kind'] for item in value['deliverables'] if not item['supporting']))
         if actual_counts != expected_counts:
             raise ValueError('交付清单须保留用户要求的类型和数量：'+json.dumps(expected_counts,ensure_ascii=False)+'。文字卡是 text，不用图像工具制作，不增加产物。')
     for key in ('preserve', 'deferred', 'openQuestions'):

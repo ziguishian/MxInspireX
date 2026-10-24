@@ -7,6 +7,8 @@ describe('public product discovery', () => {
     expect(files['index.html']).not.toContain('rel="canonical"');
     expect(files['sitemap.xml']).toBeUndefined();
     expect(files['index.html']).toContain('不是。项目与文件保存在本机');
+    expect(files['index.html']).toContain('通用设计任务');
+    expect(files['index.html']).not.toMatch(/文旅|船舶/);
   });
   it('provides static content, canonical, truthful schema and matching sitemap', () => {
     const files = publicSiteFiles('https://example.com/MxInspireX/');

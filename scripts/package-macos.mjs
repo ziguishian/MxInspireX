@@ -45,7 +45,7 @@ function detectSystemAppearance() {
 const staticIconAppearance = detectSystemAppearance();
 const appIconSource = iconVariants[staticIconAppearance].icns;
 const appIconPngSource = iconVariants[staticIconAppearance].png;
-const executableName = 'LangjuAgent';
+const executableName = 'MxinspireX';
 const launchServicesRegister = '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister';
 
 function copyTreeDereferenced(source, destination) {

@@ -18,7 +18,7 @@ export function directSingleArtifact(constraints, skills = {}, updateRevision = 
     && !(focus.nodes || []).some(node => node.data?.kind && node.data.kind !== 'image');
   const references = attachments.length > 0 || ['referencedAssets','referencedNodes','referencedFiles','attachments'].some(key => constraints?.[key]?.length);
   return efficientExecution(constraints) && constraints.singleDeliveryTarget?.count === 1
-    && ['image','text','html'].includes(constraints.singleDeliveryTarget.kind)
+    && ['image','text'].includes(constraints.singleDeliveryTarget.kind)
     && !updateRevision && !skills.active?.length && !skills.requested?.length && !constraints.referencedSkills?.length
     && !['designPlanning','designPlan','continuation','deliveryRepairOnly','deliveryReviewOnly','reviewRevision'].some(key => constraints[key])
     && !focus.selectionRequired && !focus.unattachedFileCount && !focus.unattachedAssetReferences?.length
@@ -49,6 +49,7 @@ export function singleImageFrame(frame) {
     attachments:frame.attachments?.map(({assetId,filename,mime,mention,visionPreview})=>({assetId,filename,mime,mention,
       ...(visionPreview?.omittedFromInitialContext ? {previewOmitted:true} : {})})),
     evidence:frame.evidence,localKnowledge:frame.localKnowledge,handoff:frame.handoff,
+    ...(frame.promptTemplates ? {promptTemplates:frame.promptTemplates} : {}),
     referenceWorkflow:frame.referenceWorkflow,notice:frame.notice};
 }
 
@@ -101,7 +102,7 @@ export function receiptView(name, result) {
 export function selectRules(rules, constraints, kinds) {
   if (!efficientExecution(constraints) || !kinds.size) return rules;
   return rules.filter(rule => {
-    if (/^网页(?:默认|需要)/.test(rule)) return kinds.has('html');
+    if (/^网页/.test(rule)) return kinds.has('html');
     if (/^CAD 只使用/.test(rule)) return kinds.has('cad');
     if (/^用户要求透明背景/.test(rule)) return kinds.has('image') || kinds.has('html');
     return true;

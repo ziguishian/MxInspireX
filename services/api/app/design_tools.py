@@ -110,7 +110,28 @@ class DesignToolRegistry:
         self.skills = SkillService(store)
         self.trace = None
 
+    def _publish_prompt(self, project_id, task_id, kind, prompt, template_ids=None):
+        if not task_id or not self.trace:
+            return
+        context = self._task_input(project_id, task_id)
+        if context.get('taskSurface') == 'canvas_node':
+            return
+        allowed = {item['id'] for item in context.get('promptTemplates', {}).get('candidates', [])}
+        selected = [identity for identity in (template_ids or []) if identity in allowed]
+        self.trace(task_id, 'generation_prompt', f'{kind}提示词：\n{prompt}', {'templateIds': selected})
+
     def execute(self, *, project_id: str, task_id: str | None, name: str, arguments: dict[str, Any] | None = None, preview_call_id: str | None = None, operation_id: str | None = None, agent_role: str = 'design') -> dict[str, Any]:
+        from .node_prompt import bind_literal, is_literal, literal_prompt
+        context = self._task_input(project_id, task_id) if task_id else {}
+        token = literal_prompt.set(is_literal(context))
+        try:
+            return self._execute_with_prompt_policy(project_id=project_id, task_id=task_id, name=name,
+                arguments=bind_literal(context, name, arguments or {}), preview_call_id=preview_call_id,
+                operation_id=operation_id, agent_role=agent_role)
+        finally:
+            literal_prompt.reset(token)
+
+    def _execute_with_prompt_policy(self, *, project_id, task_id, name, arguments=None, preview_call_id=None, operation_id=None, agent_role='design'):
         from .conversation_memory import ConversationMemoryService, MemoryError
         if task_id and (name.startswith('generate_') or name in {'generation_reference_check', 'image_edit', 'canvas_create_text', 'canvas_create_html', 'canvas_create_node', 'canvas_create_media', 'canvas_update_node'}):
             context = self._task_input(project_id, task_id)
@@ -303,6 +324,8 @@ class DesignToolRegistry:
             if name in IMAGE_TOOLS:
                 from .task_timing import record_timing
                 record_timing(self.store, task_id, 'imagePreflightMs', preflight_started)
+            if name in {'generate_audio', 'generate_text', 'generate_cad', 'generate_3d'} and (arguments or {}).get('prompt'):
+                self._publish_prompt(project_id, task_id, {'generate_audio':'音频', 'generate_text':'文本', 'generate_cad':'CAD', 'generate_3d':'3D'}[name], arguments['prompt'], arguments.get('prompt_template_ids'))
             result = self._execute(project_id=project_id, task_id=task_id, name=name, arguments={**(arguments or {}), "_execution_state": execution_state, '_delivery_binding': binding})
             if binding and result.get('node'):
                 result['node'] = self.canvas_store.update_node(project_id, result['node']['id'], {'data': {'deliveryBinding': binding}})
@@ -404,7 +427,7 @@ class DesignToolRegistry:
                 # Image/file references can be embedded in a new page, but cannot
                 # be overwritten by HTML. Existing HTML targets stay explicit.
                 focused_nodes = focus.get('nodes') or []
-                if not focus['nodeIds'] or focused_nodes and all(n.get('data', {}).get('kind') == 'image' for n in focused_nodes):
+                if not focus['nodeIds'] or focused_nodes and all(n.get('data', {}).get('kind') in {'image', 'video', 'audio', 'text'} for n in focused_nodes):
                     choice = args['output_mode'] = 'create'
             if focus['mode']!='none' and not target and not choice:
                 raise DesignToolError('请先根据用户语义区分修改对象与参考资料：图像调整将原图作为来源并设置 output_mode=create；其他内容的原位修改才明确 canvas_node_id。')
@@ -879,9 +902,11 @@ class DesignToolRegistry:
             key in canvas_params and canvas_params.get(key) == supplied_params.get(key)
             for key in ('size','width','height','resolution','image_size')
         )
-        decision=decide_image_policy(quality,user_message=task_input.get('userMessage','') if task_id else None,prompt=prompt,
+        from .node_prompt import literal_prompt
+        literal = literal_prompt.get()
+        decision=decide_image_policy(quality,user_message='' if literal else task_input.get('userMessage','') if task_id else None,prompt='' if literal else prompt,
                                      params=params,memory=task_input.get('conversationMemory'),has_references=has_references,
-                                     trust_requested=not bool(task_id),trust_dimensions=trusted_dimensions)
+                                     trust_requested=literal or not bool(task_id),trust_dimensions=literal or trusted_dimensions)
         options=dict(params or {})
         base_url=str(options.pop('baseUrl','') or '')
         requested_model=str(model or ('placeholder-v0' if provider_key=='local-placeholder' else '')).strip() or None
@@ -889,6 +914,10 @@ class DesignToolRegistry:
             self.provider_registry,provider=provider_key,base_url=base_url,requested_model=requested_model,
             decision=decision,params=options,has_references=has_references,reference_count=reference_count,
         )
+        if literal:
+            if candidates[0].adjustments:
+                raise ValueError('节点参数与模型不兼容，请修改参数：' + '；'.join(candidates[0].adjustments))
+            candidates = candidates[:1]
         return provider_key,base_url,plan,candidates
 
     def _image_configuration(self, **kwargs):
@@ -918,18 +947,20 @@ class DesignToolRegistry:
     ) -> dict[str, Any]:
         if self.asset_store is None or self.provider_registry is None:
             raise DesignToolError("图像工具尚未初始化")
-        clean_prompt = str(prompt or "").strip()
+        from .node_prompt import literal_prompt
+        literal = literal_prompt.get()
+        clean_prompt = str(prompt or "") if literal else str(prompt or "").strip()
         if not clean_prompt:
             raise DesignToolError("generate_image.prompt 不能为空")
         clean_notes = normalize_production_notes(production_notes)
         task_input = self._task_input(project_id,task_id) if task_id else {}
         user_message = task_input.get('userMessage') if task_id else clean_prompt
-        clean_prompt, clean_negative_prompt = prepare_production_image_request(
+        clean_prompt, clean_negative_prompt = (clean_prompt, negative_prompt or '') if literal else prepare_production_image_request(
             clean_prompt, negative_prompt,
             allow_disclaimer=explicit_image_disclaimer_requested(user_message),
         )
         options = dict(params) if isinstance(params, dict) else {}
-        if options.get("style"):
+        if options.get("style") and not literal:
             clean_prompt += f"\n视觉风格：{options['style']}"
         target_node = next((node for node in self.canvas_store.load(project_id)['nodes'] if node['id']==canvas_node_id),{}) if canvas_node_id else {}
         target_asset_id = target_node.get('data',{}).get('assetId') or (target_node.get('data',{}).get('asset') or {}).get('id')
@@ -966,7 +997,7 @@ class DesignToolRegistry:
             direction = task_input['referenceWorkflow']
             reference_snapshot = {**reference_snapshot, 'visualDirection': {key: direction.get(key) for key in ('selectionId', 'notes')} | {'choices': [c for c in direction.get('choices', []) if c.get('assetId') in source_ids]}}
         from .image_reference_design import prepare_reference_design, drawing_reference_ids
-        clean_prompt, reference_snapshot, provider_input_ids = prepare_reference_design(
+        clean_prompt, reference_snapshot, provider_input_ids = (clean_prompt, reference_snapshot, source_ids) if literal else prepare_reference_design(
             clean_prompt, source_ids, reference_analysis, reference_snapshot, required=bool(task_input.get('memoryProtocol')),
             masked_edit=bool(options.get('maskAssetId')),
             layout_source_ids=drawing_reference_ids(self.asset_store, project_id, source_ids))
@@ -978,6 +1009,7 @@ class DesignToolRegistry:
         provider_key,base_url,route_plan,route_candidates=self._image_configurations(project_id=project_id,task_id=task_id,
             provider=provider,model=model,params=options,quality=quality,has_references=bool(provider_input_ids),
             reference_count=len(provider_input_ids),prompt=clean_prompt)
+        self._publish_prompt(project_id, task_id, '图像', clean_prompt, _.get('prompt_template_ids'))
         pending = None
         original = next((n for n in self.canvas_store.load(project_id)['nodes'] if n['id']==canvas_node_id), None)
         automatic = canvas_node_id is None
@@ -1127,7 +1159,8 @@ class DesignToolRegistry:
     ) -> dict[str, Any]:
         if self.provider_registry is None:
             raise DesignToolError("视频工具尚未初始化")
-        clean_prompt = str(prompt or "").strip()
+        from .node_prompt import literal_prompt
+        clean_prompt = str(prompt or "") if literal_prompt.get() else str(prompt or "").strip()
         if not clean_prompt:
             raise DesignToolError("generate_video.prompt 不能为空")
         try:
@@ -1139,9 +1172,10 @@ class DesignToolRegistry:
         # Style and camera are creative directions, not portable API fields.
         # Keep them effective even when an adapter filters provider parameters.
         for field, label in (("style", "视觉风格"), ("camera", "镜头运动"), ("camera_motion", "镜头运动")):
-            if options.get(field):
+            if options.get(field) and not literal_prompt.get():
                 clean_prompt += f"\n{label}：{options[field]}"
         model = model or DEFAULT_VIDEO_MODEL
+        self._publish_prompt(project_id, task_id, '视频', clean_prompt, _.get('prompt_template_ids'))
         source_paths = []
         for asset_id in (source_asset_id, last_frame_asset_id):
             if not asset_id:
@@ -1334,14 +1368,22 @@ class DesignToolRegistry:
             result["notice"] = "此资产仅返回元数据，未作图像内容检查"
         return result
 
-    def canvas_create_html(self, *, project_id, task_id=None, html, title="网页", canvas_node_id=None, x=None, y=None, **_):
+    def canvas_create_html(self, *, project_id, task_id=None, html, title="网页", canvas_node_id=None, x=None, y=None, style_framework=None, **_):
         self._validate_svg(task_id, 'canvas_create_html', {'html': html})
         html = str(html).strip()
         if not html or len(html.encode()) > 1024 * 1024:
             raise DesignToolError("HTML 内容须为 1 字节至 1 MB")
         from .html_syntax import validate_html_styles
-        validate_html_styles(html)
+        from .web_framework import apply_web_framework, strip_web_framework
+        authored = strip_web_framework(html)
+        if style_framework is None and canvas_node_id:
+            previous = next((n for n in self.canvas_store.load(project_id)['nodes'] if n['id'] == canvas_node_id), {})
+            style_framework = previous.get('data', {}).get('styleFramework')
+        if style_framework is None and authored != html: style_framework = 'bootstrap'
+        validate_html_styles(authored)
+        html = apply_web_framework(authored, style_framework)
         data = {"kind": "html", "html": html, "title": title, "draft": False, "generating": False, "error": "", "status": "已生成"}
+        data['styleFramework'] = style_framework or 'none'
         data.update(prepare_html_assets(html, self.asset_store, project_id))
         if canvas_node_id:
             node = self.canvas_store.update_node(project_id, canvas_node_id, {"data": data, "meta": {"createdBy": "design-agent", "taskId": task_id, "executionReceipt": _.get("_execution_state", {}).get("fingerprint")}})
@@ -1567,7 +1609,13 @@ class DesignToolRegistry:
                 from .svg_policy import ERROR
                 raise DesignToolError(ERROR)
         if isinstance(patch.get('data'), dict) and 'html' in patch['data']:
-            patch = {**patch, 'data': {**patch['data'], **prepare_html_assets(patch['data']['html'], self.asset_store, project_id)}}
+            from .web_framework import apply_web_framework, strip_web_framework
+            from .html_syntax import validate_html_styles
+            authored = strip_web_framework(patch['data']['html'])
+            validate_html_styles(authored)
+            framework = patch['data'].get('styleFramework', (current or {}).get('data', {}).get('styleFramework'))
+            html = apply_web_framework(authored, framework)
+            patch = {**patch, 'data': {**patch['data'], 'html': html, 'styleFramework': framework or 'none', **prepare_html_assets(html, self.asset_store, project_id)}}
         node = self.canvas_store.update_node(project_id, str(node_id), {**patch, **({"meta": {"createdBy": "design-agent", "taskId": task_id, "executionReceipt": _.get("_execution_state", {}).get("fingerprint")}} if task_id else {})})
         return {"tool": "canvas_update_node", "node": node, "canvas": self.canvas_store.load(project_id)}
 

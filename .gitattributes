@@ -1,0 +1,3 @@
+# Preserve the exact upstream bytes verified by web_framework.py on every OS.
+services/api/app/web_frameworks/bootstrap/*.min.css -text
+services/api/app/web_frameworks/bootstrap/*.min.js -text

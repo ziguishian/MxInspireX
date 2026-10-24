@@ -39,6 +39,8 @@ def test_builtins_portable_complete_and_no_automatic_execution(workspace):
     AssetStore(workspace)
     values = install_bundled_skills(service)
     assert {v['name'] for v in values} == NAMES
+    assert next(v for v in values if v['name'] == 'tourism-ip-design')['title'] == '原创 IP 形象设计'
+    assert next(v for v in values if v['name'] == 'scenic-wayfinding-design')['title'] == '空间导览与导视设计'
     assert all(not v['missingTools'] and not v['compatibilityWarnings'] for v in values)
     assert len(service.runtime('new')['catalog']) == 6
     assert service.runtime('new')['active'] == []

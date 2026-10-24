@@ -5,13 +5,15 @@
 | 标识 | 对话示例 | 交付方向 |
 |---|---|---|
 | logo-mockup-suite | 用我刚生成的 Logo 做一套品牌延展 | 锁定母版、材质样机、应用说明 |
-| tourism-ip-design | 给我们的湿地景区做一个原创 IP | 角色设定、视图、动作、文创应用 |
+| tourism-ip-design | 给我们的品牌做一个原创 IP | 角色设定、视图、动作、衍生应用 |
 | notebook-print-design | 做一本 A5 线圈笔记本，给我效果图和印刷 SVG | 封面/封底/内页、字体转曲、出血和技术稿 |
-| scenic-wayfinding-design | 根据上传底图做景区导览和方向牌 | 固定点位与路线、SVG 版面、台账、场景 |
+| scenic-wayfinding-design | 根据上传底图做空间导览和方向牌 | 固定点位与路线、SVG 版面、台账、场景 |
 | xiaohongshu-visual-post | 把这个项目做成三页小红书图文 | 封面、内页、标题正文和标签；不自动发布 |
 | exhibition-hall-design | 根据三维视图、文档和参考图做展厅设计 | 墙面台账、整体母版确认、绑定同一母版的逐墙深化 |
 
 ## 安装与升级
+
+2026-10-24：角色 IP 与导视技能改为跨行业方法，显示名为「原创 IP 形象设计」「空间导览与导视设计」。`tourism-ip-design`、`scenic-wayfinding-design` 仅保留作稳定标识，避免破坏历史引用；源包版本与文件摘要同步升级。用户自行修改或已卸载的技能沿用原有保护规则。
 
 FastAPI lifespan 调用 `install_bundled_skills`，先按 manifest.json 校验全部源文件与依赖，再利用现有不可变版本和幂等回执写入当前工作区。`bundled_skill_installs` 保存来源标识、已安装 ID 和内容哈希。页面来源列显示“内置”，可以查看、在对话中修改、启停、卸载和导出。
 

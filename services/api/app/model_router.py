@@ -319,6 +319,9 @@ class RoutedDesignRuntime:
             raise DesignRuntimeError("任务已停止", kind="interrupted")
         current = kwargs["provider_ref"]
         constraints = kwargs.get("constraints", {})
+        from .node_prompt import is_literal
+        if is_literal(constraints):
+            return self.runtime.run(**kwargs)
         simple = is_simple_conversation(kwargs["brief"], {**constraints, "attachments": kwargs.get("attachments") or constraints.get("attachments", [])})
         constraints = {**constraints, "attachments": kwargs.get("attachments") or constraints.get("attachments", []),
                        "requiredArtifacts": delivery_requirements(kwargs["brief"], constraints),

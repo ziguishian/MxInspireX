@@ -50,6 +50,8 @@ def contains_svg(value):
         return any(contains_svg(item) for item in value)
     if not isinstance(value, str):
         return False
+    from .web_framework import strip_web_framework
+    value = strip_web_framework(value)
     for _ in range(3):
         decoded = html.unescape(unquote(value))
         decoded = re.sub(r'\\(?:u00|x)([0-9a-f]{2})', lambda m: chr(int(m[1], 16)), decoded, flags=re.I)

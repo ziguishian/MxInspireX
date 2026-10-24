@@ -4,6 +4,12 @@ import { boardChanges, cleanBoard } from './canvasEditing';
 import { runInNewContext } from 'node:vm';
 
 describe('HTML canvas boundary', () => {
+  it('embeds local players while rejecting external or active media URLs', () => {
+    const html = '<audio src="asset://a"></audio><video src="asset://v"></video>';
+    expect(resolveHtmlAssets(html,{a:'data:audio/wav;base64,YQ==',v:'data:video/mp4;base64,Yg=='}))
+      .toBe('<audio src="data:audio/wav;base64,YQ=="></audio><video src="data:video/mp4;base64,Yg=="></video>');
+    expect(resolveHtmlAssets(html,{a:'https://example.com/audio.mp3',v:'data:text/html;base64,YQ=='})).toBe(html);
+  });
   it('keeps fragment links inside srcdoc without navigating back into the host app', () => {
     const listeners: Record<string, (event: any) => void> = {};
     let scrolled = false, prevented = false;
@@ -37,7 +43,7 @@ describe('HTML canvas boundary', () => {
   it('isolates preview code and places the restrictive policy before generated markup', () => {
     const markup = '<html><script>fetch("http://127.0.0.1:8765/api/projects")</script><h1>Preview</h1></html>';
     const document = htmlPreviewDocument(markup);
-    expect(HTML_PREVIEW_SANDBOX.split(' ')).toEqual(['allow-scripts']);
+    expect(HTML_PREVIEW_SANDBOX.split(' ')).toEqual(['allow-scripts','allow-forms']);
     expect(document.indexOf('Content-Security-Policy')).toBeLessThan(document.indexOf('<script>'));
     expect(HTML_PREVIEW_CSP).toContain("connect-src 'none'");
     expect(HTML_PREVIEW_CSP).toContain("form-action 'none'");

@@ -7,7 +7,7 @@
 [![Non-Commercial License](https://img.shields.io/badge/License-Non--Commercial-c79a49?style=flat-square)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/ziguishian/MxInspireX?style=flat-square&color=c79a49&label=Stars)](https://github.com/ziguishian/MxInspireX/stargazers)
 
-MxinspireX 是灵矩绘境出品的 **AI 设计工作区**，面向设计师、文创团队和产品创作者，用来把需求与参考资料变成可继续编辑、比较和导出的设计作品。
+MxinspireX 是灵矩绘境出品的 **AI 设计工作区**，面向设计师、创意团队和产品创作者，支持不同领域的设计任务，用来把需求与参考资料变成可继续编辑、比较和导出的设计作品。
 
 你可以上传产品图、品牌资料或文档，用自然语言说明需求；Agent 结合上下文调用模型，将产品概念、包装、海报、IP 形象、场景图等结果放到同一个无限画布。后续可以继续对话修改，也可以连接节点，让上游文字或图片成为下一次生成的参考。
 

@@ -174,7 +174,7 @@ if (!process.versions.electron) {
       await click('.asset-preview-close');
       await open('自然空间.html'); await wait(`!!document.querySelector('.asset-preview-stage iframe') && document.querySelector('.asset-preview-stage').getAttribute('aria-busy')==='false'`, 'canvas HTML modal');
       assert.equal(await frame().executeJavaScript(`document.querySelector('h1').textContent`), '让自然，走进日常。');
-      assert.equal(await js(`document.querySelector('.asset-preview-stage iframe').getAttribute('sandbox')`), 'allow-scripts');
+      assert.equal(await js(`document.querySelector('.asset-preview-stage iframe').getAttribute('sandbox')`), 'allow-scripts allow-forms');
       await frame().executeJavaScript(`document.querySelector('button').click()`);
       assert.equal(await frame().executeJavaScript(`document.querySelector('button').textContent`), '已点击');
       assert.equal(await frame().executeJavaScript(`(()=>{try{return !!parent.document.body}catch{return false}})()`), false);

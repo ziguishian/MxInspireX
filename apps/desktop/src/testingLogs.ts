@@ -29,7 +29,7 @@ export function registerTestingLogExport(apiPort: () => number) {
     if (exporting) throw new Error('日志正在导出，请稍候');
     exporting = true;
     try {
-      const filename = `LangjuAgent-beta-logs-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.zip`;
+      const filename = `MxinspireX-beta-logs-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.zip`;
       const result = await dialog.showSaveDialog({ title: '导出内部测试日志', defaultPath: path.join(app.getPath('downloads'), filename), filters: [{ name: '日志压缩包', extensions: ['zip'] }] });
       if (result.canceled || !result.filePath) return null;
       const response = await fetch(`http://127.0.0.1:${apiPort()}/api/testing/export`);

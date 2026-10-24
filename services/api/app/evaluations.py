@@ -51,8 +51,8 @@ class AIEvaluator:
         try:
             response = text_provider.complete(
                 system=(
-                    "你是文旅文创视觉评审。只评价附件中的真实图像与给定 Prompt，"
-                    "不要补写不存在的文化来源或项目数据。返回严格 JSON："
+                    "你是通用设计视觉评审。只评价附件中的真实图像与给定 Prompt，"
+                    "依据用户目标、主体、场景、风格与明确约束评价，不预设行业或文化主题，不编造来源或项目数据。兼容字段 culturalRelevance 表示主题与需求契合度，不因缺少文化元素扣分。返回严格 JSON："
                     '{"score":{"overall":0,"promptCompleteness":0,"culturalRelevance":0,"styleMaterialControl":0,"visualConsistency":0},'
                     '"feedback":"..."}。所有分数为 0 到 5 的数字，feedback 使用中文。'
                 ),
@@ -106,8 +106,8 @@ class AIEvaluator:
     def _test_evaluation(*, prompt: str, params: dict[str, Any], provider: str, has_lineage: bool) -> dict[str, Any]:
         """Deterministic test fixture; never reachable in a packaged run."""
         prompt_score = 5 if len(prompt.strip()) >= 18 else 3
-        culture_score = 5 if re.search(r"西湖|宋|文化|文旅|博物馆|传统|IP|礼赠", prompt) else 3
+        relevance_score = 5 if prompt.strip() else 3
         controls_score = 5 if params.get("style") and params.get("material") else 3
         consistency_score = 5 if has_lineage or params.get("ipProfileVersion") else 3
-        overall = round((prompt_score + culture_score + controls_score + consistency_score) / 4, 1)
-        return {"score": {"overall": overall, "promptCompleteness": prompt_score, "culturalRelevance": culture_score, "styleMaterialControl": controls_score, "visualConsistency": consistency_score}, "feedback": "测试评价结果", "provenance": {"evaluator": "test-fixture", "provider": provider, "mode": "test-only", "explainable": True}}
+        overall = round((prompt_score + relevance_score + controls_score + consistency_score) / 4, 1)
+        return {"score": {"overall": overall, "promptCompleteness": prompt_score, "culturalRelevance": relevance_score, "styleMaterialControl": controls_score, "visualConsistency": consistency_score}, "feedback": "测试评价结果", "provenance": {"evaluator": "test-fixture", "provider": provider, "mode": "test-only", "explainable": True}}

@@ -14,7 +14,8 @@ from app.html_generation import HtmlGenerationPreviews
 def test_sdk_shows_html_progress_before_arguments_finish(api, mode):
     root = Path(__file__).resolve().parents[1]
     payload = {'api':api,'model':'fixture','apiKey':'fixture','baseUrl':'http://fixture.invalid/v1',
-        'context':{'projectId':'one','taskId':'current','brief':'制作网页方案','constraints':{'agentCollaboration':False,'executionFlow':'direct'}}}
+        'context':{'projectId':'one','taskId':'current','brief':'制作网页方案','constraints':{'agentCollaboration':False,'executionFlow':'direct',
+            'executionPolicyVersion':3,'requiredArtifacts':['html'],'singleDeliveryTarget':{'kind':'html','count':1}}}}
     result = subprocess.run([shutil.which('node'),'--import',(root/'tests/fixtures/html_progress_transport.mjs').resolve().as_uri(),str(root/'app/openai_agent_worker.mjs')],input=json.dumps(payload),text=True, encoding='utf-8',capture_output=True,timeout=30,env={**os.environ,'HTML_PROGRESS_FIXTURE':mode})
     events = [json.loads(line) for line in result.stdout.splitlines() if line.startswith('{')]
     public = [event for event in events if event['type']=='event']

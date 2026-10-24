@@ -8,7 +8,7 @@ import { build } from 'esbuild';
 
 export const workerName = 'openai_agent_worker.mjs';
 export const runtimeManifestName = 'agent-runtime-build.json';
-export const runtimeDataDirectories = ['builtin_skills', 'print_fonts'];
+export const runtimeDataDirectories = ['builtin_skills', 'print_fonts', 'web_frameworks'];
 
 export function fileDigest(filename) {
   return createHash('sha256').update(readFileSync(filename)).digest('hex');

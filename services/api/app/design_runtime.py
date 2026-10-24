@@ -146,7 +146,11 @@ class DesignRuntime:
         worker_failure = {}
         provider = str(provider_ref.get("key") or "openrouter").strip() or "openrouter"
         spec = next((item for item in self.provider_registry.list() if item["key"] == provider), None)
+        from .node_prompt import is_literal
+        direct_node = is_literal(constraints) and (constraints.get('canvasParams') or {}).get('kind') in {'image', 'upload', 'video', 'audio'}
         api_key = self.provider_registry.credentials.get(provider) or (provider if spec and spec.get("requiresKey") is False else None)
+        if direct_node:
+            api_key = api_key or 'local-node-dispatch-no-text-call'
         if not api_key:
             raise DesignRuntimeError(f"未找到 {provider} 的本地 API Key，请在 Provider 设置中保存凭据", kind="configuration")
         if not self.worker_path.is_file():
@@ -160,14 +164,14 @@ class DesignRuntime:
             return self._agent_result(checkpoint["finalResult"], provider=provider, model=model)
         catalog = getattr(self.provider_registry, "catalog", None)
         record = catalog.record(provider, base_url, model) if catalog else {}
-        if any(a.get("data") and str(a.get("mime", "")).startswith("image/") for a in attachments) and record.get("inputModalities") and "image" not in record["inputModalities"]:
+        if not direct_node and any(a.get("data") and str(a.get("mime", "")).startswith("image/") for a in attachments) and record.get("inputModalities") and "image" not in record["inputModalities"]:
             raise DesignRuntimeError(f"模型 {model} 不支持图片输入，请选择支持视觉理解的模型", kind="configuration")
         from .model_capabilities import model_record
         protocol = provider_ref.get("api", "auto")
         if protocol == "auto":
             protocol = model_record({**record, "id": model})["textApi"]
         roles = {}
-        if catalog and not constraints.get('simpleConversation') and ((constraints.get('modelRouting') or {}).get('mode') != 'manual' or constraints.get('deliveryReviewOnly') and constraints.get('allowRoleModels')):
+        if not is_literal(constraints) and catalog and not constraints.get('simpleConversation') and ((constraints.get('modelRouting') or {}).get('mode') != 'manual' or constraints.get('deliveryReviewOnly') and constraints.get('allowRoleModels')):
             for role, selected in catalog.settings().roles.items():
                 if role != 'research' or not selected.model: continue
                 if role=='research' and constraints.get('executionFlow') in {'direct','design','delivery','design_review','delivery_review'}: continue
@@ -232,8 +236,9 @@ class DesignRuntime:
             # ExecutionStore.load initializes toolOutputs=[] even on a new task.
             if not any(checkpoint.values()):
                 memory_service.prepare_single_image_selection(project_id, task_id, attachments, constraints)
-            payload['memory'] = memory_service.runtime(project_id,task_id,images=True)
-            payload['skills'] = SkillService(self.executions.store).runtime(task_id, simple=bool(constraints.get('simpleConversation')))
+            if not is_literal(constraints):
+                payload['memory'] = memory_service.runtime(project_id,task_id,images=True)
+                payload['skills'] = SkillService(self.executions.store).runtime(task_id, simple=bool(constraints.get('simpleConversation')))
         process: subprocess.Popen[bytes] | None = None
         stderr_chunks: list[bytes] = []
         stderr_thread: threading.Thread | None = None
